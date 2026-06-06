@@ -1,17 +1,5 @@
-"use client";
+import { redirect } from "next/navigation";
 
-export default function ReportsPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Official Reports</h1>
-        <p className="text-muted-foreground">
-          View and process structured official reports.
-        </p>
-      </div>
-      <div className="bg-surface-raised border rounded-xl p-8 flex items-center justify-center min-h-[400px]">
-        <p className="text-muted-foreground">Reports Table Placeholder</p>
-      </div>
-    </div>
-  );
+export default function ReportsAliasPage() {
+  redirect("/intake?tab=reports");
 }

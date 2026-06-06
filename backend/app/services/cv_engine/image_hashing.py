@@ -2,9 +2,8 @@
 
 from typing import Any
 
-from PIL import Image
-
 # TODO: Uncomment when imagehash is available
+# from PIL import Image
 # import imagehash
 
 from app.utils.constants import PHASH_DUPLICATE_THRESHOLD, PHASH_SIMILAR_THRESHOLD
