@@ -96,7 +96,14 @@ export default function DashboardHome() {
       </div>
 
       <HelperPanel>
-        Recommended Demo Flow: Command Center {"->"} High-Risk Case {"->"} Signals {"->"} Evidence {"->"} Scoring {"->"} Copilot {"->"} Ticket {"->"} Audit Trail {"->"} Vendor Profile.
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <span>
+            Recommended Demo Flow: Oversight Flow Simulator {"->"} Case Detail {"->"} Evidence {"->"} Scoring {"->"} Copilot {"->"} Ticket {"->"} Audit Trail {"->"} Vendor Profile.
+          </span>
+          <Link href="/simulation" className="inline-flex shrink-0 items-center gap-2 rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-400">
+            Run Simulator <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
       </HelperPanel>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">

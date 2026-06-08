@@ -8,6 +8,7 @@ import {
   ClipboardList,
   Factory,
   FileSearch,
+  GitBranch,
   History,
   Inbox,
   LayoutDashboard,
@@ -20,7 +21,10 @@ import { cn } from "@/lib/utils";
 const navGroups = [
   {
     label: "Monitoring",
-    items: [{ name: "Command Center", href: "/", icon: LayoutDashboard }],
+    items: [
+      { name: "Command Center", href: "/", icon: LayoutDashboard },
+      { name: "Oversight Flow Simulator", href: "/simulation", icon: GitBranch },
+    ],
   },
   {
     label: "Intake",

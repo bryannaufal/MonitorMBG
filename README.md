@@ -40,6 +40,7 @@ MonitorMBG helps operators supervise MBG vendors/SPPG through:
 Implemented demo workflows:
 
 - Command Center dashboard with active cases, critical/high-risk cases, incoming signals, regional risk, anomaly alerts, watchlist preview, and priority work queue.
+- Oversight Flow Simulator that walks through report intake, AI-assisted pre-verification, evidence fusion, risk scoring, case creation, ticket orchestration, human review, audit trail, Command Center update, and vendor risk learning.
 - Signal Inbox that unifies public complaints, official reports, and daily vendor reports.
 - Case Work Queue with filters, SLA indicators, recommended actions, and direct case links.
 - Case Detail / Investigation Hub with Overview, Signals, Evidence, Scoring, Ticket, Copilot, and Audit Trail tabs.
@@ -101,7 +102,7 @@ The MVP is intentionally demo-data driven. PostgreSQL, Redis, SQLAlchemy, Alembi
 
 The navigation is grouped around the oversight workflow:
 
-- Monitoring: Command Center
+- Monitoring: Command Center, Oversight Flow Simulator
 - Intake: Signal Inbox
 - Case Work: Cases, Tickets
 - Intelligence: Risk Prioritization, Nutrition & Cost, Regional Heatmap
@@ -157,14 +158,44 @@ docker compose up --build
 
 Docker compose overrides backend service hostnames to use `postgres` and `redis`. `.env.example` remains optimized for manual local development from the host.
 
+## End-to-End Demo Flow
+
+```text
+Oversight Flow Simulator
+-> Submit Demo Report
+-> AI-Assisted Pre-Verification
+-> Evidence Fusion
+-> Risk Scoring
+-> Case Creation
+-> Ticket Orchestration
+-> Human Review
+-> Audit Trail
+-> Command Center Update
+-> Vendor Risk Learning
+```
+
+## Recommended Judge Demo
+
+```text
+1. Open /simulation
+2. Run the golden scenario
+3. Open generated case detail
+4. Review evidence and scoring
+5. Ask Copilot
+6. Update ticket through human review
+7. Open audit trail
+8. Open vendor profile
+9. Return to Command Center
+```
+
 ## Recommended Demo Flow
 
 ```text
-Command Center -> High-Risk Case -> Signals -> Evidence -> Scoring -> Copilot -> Ticket -> Audit Trail -> Vendor Profile
+Oversight Flow Simulator -> Case Detail -> Signals -> Evidence -> Scoring -> Copilot -> Ticket -> Audit Trail -> Vendor Profile -> Command Center
 ```
 
-1. Start at Command Center and review what needs attention now.
-2. Open a high-risk case from the Priority Work Queue.
+1. Start at `/simulation` and run the Low Protein Portion + Late Delivery Pattern scenario.
+2. Open the generated `case-001` detail page.
 3. Review Signals to show how complaints, official reports, and daily reports entered the system.
 4. Review Evidence to show OCR, image-text match, duplicate warning, confidence, and reviewer notes.
 5. Open Scoring to explain severity, confidence, nutrition, cost, anomaly, and final priority.
@@ -178,6 +209,10 @@ Command Center -> High-Risk Case -> Signals -> Evidence -> Scoring -> Copilot ->
     - “What evidence supports this case?”
     - “Show nutrition-related anomalies.”
     - “Which region has the highest risk?”
+
+## Honest AI Note
+
+The MVP uses deterministic demo intelligence to simulate AI-assisted pre-verification, evidence fusion, scoring, and bounded copilot behavior. Production deployment would replace or augment these modules with validated models, secure integrations, model monitoring, and government-approved data pipelines.
 
 ## API Overview
 

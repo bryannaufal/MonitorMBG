@@ -25,10 +25,10 @@ def _ts(day: int, hour: int, minute: int = 0) -> str:
 VENDORS: list[dict[str, Any]] = [
     {
         "id": "vnd-001",
-        "name": "SPPG Gizi Nusantara Selatan",
+        "name": "SPPG Nusantara Sehat",
         "region": "DKI Jakarta",
-        "district": "Jakarta Selatan",
-        "assigned_schools": ["SDN Pejaten 03", "SMPN 182 Jakarta", "SDN Ragunan 07"],
+        "district": "Jakarta Timur",
+        "assigned_schools": ["SDN Melati 03", "SMPN 182 Jakarta", "SDN Rawamangun 07"],
         "daily_meal_volume": 3280,
         "compliance_status": "Under Review",
         "risk_score": 88,
@@ -37,8 +37,8 @@ VENDORS: list[dict[str, Any]] = [
         "watchlist_reason": "Repeated low protein complaints, late delivery, and duplicate photo suspicion.",
         "last_inspection_date": "2026-05-29",
         "repeated_issue_categories": ["low protein portion", "delayed delivery", "duplicate photo"],
-        "coverage_notes": "Three schools in South Jakarta cluster; high public-signal density this week.",
-        "recommended_action": "Escalate field verification within 24 hours and request replacement evidence.",
+        "coverage_notes": "Three schools in East Jakarta cluster; high public-signal density this week.",
+        "recommended_action": "Request vendor clarification and schedule field verification.",
     },
     {
         "id": "vnd-002",
@@ -207,6 +207,46 @@ for idx in range(1, 21):
         }
     )
 
+COMPLAINTS[0].update(
+    {
+        "source": "Parent Form",
+        "source_confidence": 0.64,
+        "summary": "Low protein portion and late delivery reported near SDN Melati 03",
+        "text": (
+            "Menu hari ini hanya nasi, sayur sedikit, dan lauk telur sangat kecil. "
+            "Makanan juga datang terlambat sekitar 45 menit."
+        ),
+        "issue_category": "low protein portion",
+        "sentiment": "negative",
+        "severity_score": 86,
+        "district": "Jakarta Timur",
+        "school": "SDN Melati 03",
+        "vendor_id": "vnd-001",
+        "vendor_name": "SPPG Nusantara Sehat",
+        "status": "Linked to Ticket",
+        "anomaly_tag": "Spike",
+    }
+)
+COMPLAINTS[10].update(
+    {
+        "case_id": "case-001",
+        "source": "School Hotline",
+        "source_confidence": 0.72,
+        "summary": "Repeated late delivery pattern reported near SDN Melati 03",
+        "text": "Fictional demo signal: repeated parent and school complaints mention late MBG delivery.",
+        "issue_category": "delayed delivery",
+        "sentiment": "negative",
+        "severity_score": 78,
+        "region": "DKI Jakarta",
+        "district": "Jakarta Timur",
+        "school": "SDN Melati 03",
+        "vendor_id": "vnd-001",
+        "vendor_name": "SPPG Nusantara Sehat",
+        "status": "Linked to Ticket",
+        "anomaly_tag": "Spike",
+    }
+)
+
 REPORTS: list[dict[str, Any]] = [
     {
         "id": idx,
@@ -269,6 +309,22 @@ DAILY_REPORTS: list[dict[str, Any]] = [
     for idx, vendor in enumerate(VENDORS + VENDORS[:2], start=1)
 ]
 
+DAILY_REPORTS[0].update(
+    {
+        "school": "SDN Melati 03",
+        "actual_menu": "Nasi, telur kecil, sayur",
+        "delivery_timestamp": _ts(4, 10, 15),
+        "expected_timestamp": _ts(4, 9, 30),
+        "photo_verification": "Menu Mismatch",
+        "verification_status": "Flagged",
+        "duplicate_indicator": False,
+        "mismatch_indicator": True,
+        "nutrition_estimate": {"calories": 505, "protein_g": 11, "carbs_g": 64, "fat_g": 11},
+        "cost_estimate": {"cost_per_portion": 15800, "standard_budget": 15000, "cost_anomaly_flag": True},
+        "recommended_follow_up": "Request vendor clarification and schedule field verification.",
+    }
+)
+
 EVIDENCE: list[dict[str, Any]] = []
 evidence_types = ["photo", "document", "text", "public signal"]
 for idx in range(1, 21):
@@ -301,9 +357,60 @@ for idx in range(1, 21):
         }
     )
 
+EVIDENCE[0].update(
+    {
+        "type": "photo",
+        "title": "Meal photo evidence from SDN Melati 03",
+        "linked_entity": "RPT-MBG-2026-001",
+        "ocr_result": None,
+        "image_text_match_score": 0.46,
+        "duplicate_score": 0.18,
+        "confidence_score": 0.68,
+        "reviewer_note": "Meal photo partially matches low protein report; operator verification required.",
+    }
+)
+EVIDENCE[10].update(
+    {
+        "case_id": "case-001",
+        "report_id": 1,
+        "type": "document",
+        "title": "Daily report and menu OCR simulation",
+        "linked_entity": "DR-001",
+        "ocr_result": "Simulated OCR: menu text extracted as nasi, telur, sayur with medium confidence.",
+        "image_text_match_score": None,
+        "duplicate_score": None,
+        "confidence_score": 0.7,
+        "reviewer_note": "Vendor clarification document is incomplete; cost and menu fields need review.",
+    }
+)
+
 
 def _score_for_report(report: dict[str, Any], idx: int) -> dict[str, Any]:
     vendor = _vendor_lookup[report["vendor_id"]]
+    if idx == 1:
+        return {
+            "id": idx,
+            "case_id": report["case_id"],
+            "report_id": report["id"],
+            "vendor_id": vendor["id"],
+            "vendor_name": vendor["name"],
+            "region": vendor["region"],
+            "severity_score": 86,
+            "confidence_score": 78,
+            "nutrition_concern_score": 82,
+            "cost_anomaly_score": 64,
+            "anomaly_score": 73,
+            "final_priority_score": 86,
+            "priority_label": "High",
+            "explanation": (
+                "High priority because repeated complaints, a late delivery pattern, low protein estimate, "
+                "and daily report mismatch converge. Confidence is elevated by multiple independent signals, "
+                "but operator review is required due to partial image-text match and incomplete vendor clarification."
+            ),
+            "recommended_action": vendor["recommended_action"],
+            "computed_at": _ts(4, 13, idx),
+            "ai_notice": DEMO_NOTICE,
+        }
     nutrition = 35 + ((idx * 11) % 60)
     cost = 20 + ((idx * 13) % 70)
     anomaly = 15 + ((idx * 17) % 80)
@@ -366,6 +473,22 @@ TICKETS: list[dict[str, Any]] = [
     }
     for idx, score in enumerate(SCORES[:10], start=1)
 ]
+
+for ticket in TICKETS:
+    if ticket["case_id"] == "case-001":
+        ticket.update(
+            {
+                "id": "tkt-001",
+                "title": "High review: SPPG Nusantara Sehat",
+                "status": "New",
+                "sla": "24h",
+                "assigned_unit": "Dinas Kesehatan Jakarta Timur",
+                "escalation_level": "Regional Supervisor",
+                "recommended_action": "Schedule field verification and request vendor clarification.",
+                "linked_evidence_ids": [1, 11],
+            }
+        )
+        break
 
 AUDIT_TRAIL: list[dict[str, Any]] = []
 for idx in range(1, 21):
