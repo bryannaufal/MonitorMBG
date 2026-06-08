@@ -62,7 +62,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-surface md:flex">
+    <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-surface lg:flex">
       <div className="flex h-16 shrink-0 items-center border-b border-border px-6">
         <Link href="/" className="flex items-center gap-2">
           <ShieldAlert className="h-6 w-6 text-brand-400" />

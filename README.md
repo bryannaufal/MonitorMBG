@@ -214,6 +214,29 @@ Oversight Flow Simulator -> Case Detail -> Signals -> Evidence -> Scoring -> Cop
 
 The MVP uses deterministic demo intelligence to simulate AI-assisted pre-verification, evidence fusion, scoring, and bounded copilot behavior. Production deployment would replace or augment these modules with validated models, secure integrations, model monitoring, and government-approved data pipelines.
 
+## Responsive QA Checklist
+
+Before a judge demo, check the app at 320, 375, 768, 1024, and 1440 px widths. Also check browser zoom at 125% and 150%.
+
+Priority routes:
+
+- `/simulation`
+- `/cases/case-001`
+- `/`
+- `/intake`
+- `/tickets`
+- `/vendors/vnd-001`
+- `/audit-trail`
+- `/copilot`
+
+Responsive review points:
+
+- No page-level horizontal scroll except inside table/tab scroll containers.
+- Long vendor, school, issue, status, and action text wraps without breaking card layouts.
+- Tabs remain usable on small screens.
+- Score cards, metric cards, ticket actions, and timeline rows stack cleanly.
+- Copilot chat messages and source cards remain readable on mobile.
+
 ## API Overview
 
 Health:

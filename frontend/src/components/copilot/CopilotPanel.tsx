@@ -66,30 +66,30 @@ export default function CopilotPanel() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-surface relative">
-      <div className="p-4 border-b border-border bg-surface-raised flex items-center gap-3">
-        <div className="h-10 w-10 rounded-full bg-brand-500/20 flex items-center justify-center text-brand-500">
+    <div className="relative flex h-full min-w-0 flex-col bg-surface">
+      <div className="flex min-w-0 items-center gap-3 border-b border-border bg-surface-raised p-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-500/20 text-brand-500">
           <Bot className="h-5 w-5" />
         </div>
-        <div>
-          <h2 className="font-semibold text-lg">AI Copilot</h2>
-          <p className="text-xs text-brand-400">Bounded demo synthesis &bull; internal demo sources</p>
+        <div className="min-w-0">
+          <h2 className="break-words text-lg font-semibold">AI Copilot</h2>
+          <p className="break-words text-xs text-brand-400">Bounded demo synthesis &bull; internal demo sources</p>
         </div>
       </div>
       <div className="border-b border-border bg-brand-500/10 px-4 py-3 text-xs text-brand-100">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="h-4 w-4 text-brand-300" />
-          AI-assisted synthesis, operator review required. No external API is called by default.
+        <div className="flex items-start gap-2">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-300" />
+          <span className="min-w-0 break-words">AI-assisted synthesis, operator review required. No external API is called by default.</span>
         </div>
       </div>
       <div className="border-b border-border bg-surface-raised px-4 py-3">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
           {suggestedQuestions.map((question) => (
             <button
               key={question}
               onClick={() => handleSend(question)}
               disabled={loading}
-              className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-brand-500/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
+              className="shrink-0 rounded-full border border-border bg-surface px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:border-brand-500/60 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-60 sm:whitespace-normal"
             >
               {question}
             </button>
@@ -97,7 +97,7 @@ export default function CopilotPanel() {
         </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
+      <div className="min-w-0 flex-1 space-y-6 overflow-y-auto p-3 sm:p-4">
         {messages.map((msg) => (
           <ChatMessage key={msg.id} role={msg.role} content={msg.content} sources={msg.sources} />
         ))}
@@ -106,7 +106,7 @@ export default function CopilotPanel() {
         ) : null}
       </div>
 
-      <div className="p-4 bg-surface-raised border-t border-border">
+      <div className="border-t border-border bg-surface-raised p-3 sm:p-4">
         <ChatInput onSend={handleSend} />
       </div>
     </div>

@@ -138,29 +138,32 @@ export default function IntakePage() {
         Intake is not a final enforcement view. Public complaints, official reports, and daily vendor reports become actionable only after they are linked to a case, scored, reviewed, and audited.
       </HelperPanel>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricTile label="All Signals" value={String(signals.length)} />
         <MetricTile label="Complaints" value={String(complaints.length)} />
         <MetricTile label="Official Reports" value={String(reports.length)} />
         <MetricTile label="Daily Reports" value={String(dailyReports.length)} />
       </div>
 
-      <div className="flex flex-wrap gap-2 rounded-xl border border-border bg-surface-raised p-2">
+      <div className="overflow-x-auto rounded-xl border border-border bg-surface-raised p-2">
+        <div className="flex min-w-max gap-2">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+            className={`shrink-0 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
               activeTab === tab.id ? "bg-brand-500 text-white" : "text-muted-foreground hover:bg-surface hover:text-foreground"
             }`}
           >
             {tab.label}
           </button>
         ))}
+        </div>
       </div>
 
-      <section className="overflow-hidden rounded-xl border border-border bg-surface-raised">
-        <table className="w-full text-left text-sm">
+      <section className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface-raised">
+        <div className="overflow-x-auto">
+        <table className="min-w-[920px] w-full text-left text-sm">
           <thead className="border-b border-border bg-surface-overlay text-xs uppercase text-muted-foreground">
             <tr>
               <th className="px-4 py-3">Signal</th>
@@ -178,7 +181,7 @@ export default function IntakePage() {
                   <div className="flex items-start gap-3">
                     <SourceIcon source={signal.tab} />
                     <div>
-                      <p className="font-medium">{signal.summary}</p>
+                      <p className="line-clamp-2 break-words font-medium">{signal.summary}</p>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {signal.sourceType} · {new Date(signal.timestamp).toLocaleString()}
                       </p>
@@ -190,7 +193,7 @@ export default function IntakePage() {
                 </td>
                 <td className="px-4 py-4">
                   <EntityChip label={signal.vendorName} href={`/vendors/${signal.vendorId}`} tone="vendor" />
-                  <p className="mt-2 text-xs text-muted-foreground">{signal.school} · {signal.region}</p>
+                  <p className="mt-2 break-words text-xs text-muted-foreground">{signal.school} · {signal.region}</p>
                 </td>
                 <td className="px-4 py-4">
                   <p className="font-semibold">S {signal.severity}</p>
@@ -215,6 +218,7 @@ export default function IntakePage() {
             ))}
           </tbody>
         </table>
+        </div>
       </section>
     </div>
   );

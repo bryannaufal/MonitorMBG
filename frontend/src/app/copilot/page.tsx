@@ -45,25 +45,25 @@ export default function CopilotPage() {
         Every answer should be treated as AI-assisted synthesis based on demo evidence. Final decision requires authorized operator review.
       </HelperPanel>
 
-      <div className="grid min-h-[680px] grid-cols-1 gap-6 xl:grid-cols-[320px_1fr]">
-        <aside className="rounded-xl border border-border bg-surface-raised p-5">
+      <div className="grid min-h-[620px] grid-cols-1 gap-6 2xl:grid-cols-[320px_minmax(0,1fr)]">
+        <aside className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
           <h2 className="text-lg font-semibold">High-Risk Case Context</h2>
           <p className="mt-1 text-sm text-muted-foreground">Open a case to use the dedicated case copilot tab.</p>
           <div className="mt-4 space-y-3">
             {cases.slice(0, 5).map((item) => (
-              <Link key={item.case_id} href={`/cases/${item.case_id}?tab=copilot`} className="block rounded-lg border border-border bg-surface p-4 hover:border-brand-500/60">
-                <div className="flex items-start justify-between gap-3">
+              <Link key={item.case_id} href={`/cases/${item.case_id}?tab=copilot`} className="block min-w-0 rounded-lg border border-border bg-surface p-4 hover:border-brand-500/60">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between 2xl:flex-col">
                   <EntityChip label={item.case_id} tone="case" />
                   <StatusBadge label={item.priority_label} />
                 </div>
-                <p className="mt-2 text-sm font-medium">{item.title}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{item.vendor_name} · Score {item.score.final_priority_score}</p>
+                <p className="mt-2 break-words text-sm font-medium">{item.title}</p>
+                <p className="mt-1 break-words text-xs text-muted-foreground">{item.vendor_name} · Score {item.score.final_priority_score}</p>
               </Link>
             ))}
           </div>
         </aside>
 
-        <div className="overflow-hidden rounded-xl border border-border bg-surface-raised shadow-sm">
+        <div className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface-raised shadow-sm">
           <CopilotPanel />
         </div>
       </div>

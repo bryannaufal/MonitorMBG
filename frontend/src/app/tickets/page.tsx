@@ -65,7 +65,7 @@ export default function TicketsPage() {
         Tickets are not separate tasks. Each ticket is the action record for a case and should preserve evidence links, status changes, assigned unit, and audit history.
       </HelperPanel>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricTile label="Tickets" value={String(tickets.length)} />
         <MetricTile label="Open" value={String(tickets.filter((item) => item.status !== "Resolved").length)} />
         <MetricTile label="Escalated" value={String(tickets.filter((item) => item.status.includes("Escalated")).length)} />
@@ -76,31 +76,31 @@ export default function TicketsPage() {
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         {tickets.map((ticket) => (
-          <article key={ticket.id} className="rounded-xl border border-border bg-surface-raised p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
+          <article key={ticket.id} className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
                 <div className="flex flex-wrap gap-2">
                   <EntityChip label={ticket.id} tone="ticket" />
                   <EntityChip label={ticket.case_id} href={`/cases/${ticket.case_id}`} tone="case" />
                   <EntityChip label={ticket.linked_vendor_name} href={`/vendors/${ticket.linked_vendor_id}`} tone="vendor" />
                 </div>
-                <h2 className="mt-3 text-lg font-semibold">{ticket.title}</h2>
-                <p className="text-sm text-muted-foreground">{ticket.linked_region} · {ticket.assigned_unit}</p>
+                <h2 className="mt-3 break-words text-lg font-semibold">{ticket.title}</h2>
+                <p className="break-words text-sm text-muted-foreground">{ticket.linked_region} · {ticket.assigned_unit}</p>
               </div>
               <StatusBadge label={ticket.status} />
             </div>
-            <div className="mt-4 grid gap-3 md:grid-cols-4">
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <Info label="SLA" value={ticket.sla} />
               <Info label="Priority" value={String(ticket.priority)} />
               <Info label="Escalation" value={ticket.escalation_level} />
               <Info label="Last Update" value={new Date(ticket.updated_at).toLocaleString()} />
             </div>
-            <p className="mt-4 text-sm text-muted-foreground">{ticket.recommended_action}</p>
-            <div className="mt-4 rounded-lg bg-surface p-3 text-sm text-muted-foreground">
+            <p className="mt-4 break-words text-sm text-muted-foreground">{ticket.recommended_action}</p>
+            <div className="mt-4 break-words rounded-lg bg-surface p-3 text-sm text-muted-foreground">
               Evidence #{ticket.linked_evidence_ids.join(", #")} · {ticket.audit_preview}
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Link href={`/cases/${ticket.case_id}`} className="rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-400">
+              <Link href={`/cases/${ticket.case_id}`} className="inline-flex justify-center rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-400">
                 Open Case
               </Link>
               {statuses.map((status) => (
@@ -122,9 +122,9 @@ export default function TicketsPage() {
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-surface p-3">
+    <div className="min-w-0 rounded-lg bg-surface p-3">
       <p className="text-xs uppercase text-muted-foreground">{label}</p>
-      <p className="mt-1 text-sm font-medium">{value}</p>
+      <p className="mt-1 break-words text-sm font-medium">{value}</p>
     </div>
   );
 }

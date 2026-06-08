@@ -45,31 +45,31 @@ export default function AuditTrailPage() {
         The governance log answers whether a case can be traced from intake through scoring, action, human review, and resolution.
       </HelperPanel>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricTile label="Events" value={String(events.length)} />
         <MetricTile label="AI-Assisted" value={String(events.filter((event) => event.role.includes("AI") || event.actor.includes("AI")).length)} />
         <MetricTile label="Operator Reviewed" value={String(events.filter((event) => event.role.includes("Operator")).length)} />
         <MetricTile label="Escalations" value={String(events.filter((event) => event.event_type.includes("escalation")).length)} />
       </div>
 
-      <section className="rounded-xl border border-border bg-surface-raised p-5">
+      <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
         <div className="space-y-4">
           {sorted.map((event) => (
-            <div key={event.id} className="grid gap-4 rounded-lg border border-border bg-surface p-4 md:grid-cols-[190px_1fr_220px]">
-              <div>
+            <div key={event.id} className="grid min-w-0 gap-4 rounded-lg border border-border bg-surface p-4 lg:grid-cols-[170px_minmax(0,1fr)_190px] xl:grid-cols-[190px_minmax(0,1fr)_220px]">
+              <div className="min-w-0">
                 <EntityChip label={event.case_id} href={`/cases/${event.case_id}?tab=audit-trail`} tone="case" />
                 <p className="mt-2 text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleString()}</p>
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="flex flex-wrap gap-2">
                   <StatusBadge label={event.event_type.replaceAll("_", " ")} />
                   <StatusBadge label={classifyEvent(event)} />
                 </div>
-                <p className="mt-3 text-sm text-muted-foreground">{event.description}</p>
+                <p className="mt-3 break-words text-sm text-muted-foreground">{event.description}</p>
               </div>
-              <div className="text-sm">
-                <p className="font-medium">{event.actor}</p>
-                <p className="text-muted-foreground">{event.role}</p>
+              <div className="min-w-0 text-sm">
+                <p className="break-words font-medium">{event.actor}</p>
+                <p className="break-words text-muted-foreground">{event.role}</p>
                 <div className="mt-2">
                   <EntityChip label={event.ticket_id} tone="ticket" />
                 </div>

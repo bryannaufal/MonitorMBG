@@ -60,14 +60,14 @@ export default function VendorProfilePage() {
         Vendor profiles answer whether the current case is isolated or part of a repeated SPPG/vendor risk pattern that should change oversight intensity.
       </HelperPanel>
 
-      <section className="rounded-xl border border-border bg-surface-raised p-5">
+      <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div>
+          <div className="min-w-0">
             <StatusBadge label={vendor.watchlist_status} />
-            <p className="mt-3 text-xl font-semibold">Risk Score {vendor.risk_score}</p>
-            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">{vendor.watchlist_reason}</p>
+            <p className="mt-3 break-words text-xl font-semibold">Risk Score {vendor.risk_score}</p>
+            <p className="mt-2 max-w-3xl break-words text-sm text-muted-foreground">{vendor.watchlist_reason}</p>
           </div>
-          <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+          <div className="grid w-full grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:w-auto lg:grid-cols-4">
             <MetricTile label="Region" value={vendor.region} />
             <MetricTile label="Meals/day" value={vendor.daily_meal_volume.toLocaleString("id-ID")} />
             <MetricTile label="Schools" value={String(vendor.assigned_schools.length)} />
@@ -84,7 +84,7 @@ export default function VendorProfilePage() {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <MetricTile label="Cases" value={String(vendorCases.length)} />
         <MetricTile label="Complaints" value={String(complaints.length)} />
         <MetricTile label="Reports" value={String(reports.length)} />
@@ -93,16 +93,16 @@ export default function VendorProfilePage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <section className="rounded-xl border border-border bg-surface-raised p-5 xl:col-span-2">
+        <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5 xl:col-span-2">
           <h2 className="text-lg font-semibold">Active & Historical Cases</h2>
           <div className="mt-4 space-y-3">
             {vendorCases.map((item) => (
-              <Link key={item.case_id} href={`/cases/${item.case_id}`} className="block rounded-lg border border-border bg-surface p-4 hover:border-brand-500/60">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
+              <Link key={item.case_id} href={`/cases/${item.case_id}`} className="block min-w-0 rounded-lg border border-border bg-surface p-4 hover:border-brand-500/60">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
                     <EntityChip label={item.case_id} tone="case" />
-                    <p className="mt-2 font-medium">{item.title}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{item.issue_category} · {item.region} · Score {item.score.final_priority_score}</p>
+                    <p className="mt-2 break-words font-medium">{item.title}</p>
+                    <p className="mt-1 break-words text-sm text-muted-foreground">{item.issue_category} · {item.region} · Score {item.score.final_priority_score}</p>
                   </div>
                   <StatusBadge label={item.priority_label} />
                 </div>
@@ -111,9 +111,9 @@ export default function VendorProfilePage() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-border bg-surface-raised p-5">
+        <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
           <h2 className="text-lg font-semibold">Recommended Oversight Action</h2>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">{vendor.recommended_action}</p>
+          <p className="mt-3 break-words text-sm leading-6 text-muted-foreground">{vendor.recommended_action}</p>
           <div className="mt-4 flex flex-wrap gap-2">
             {vendor.repeated_issue_categories.length ? vendor.repeated_issue_categories.map((issue) => <StatusBadge key={issue} label={issue} />) : <StatusBadge label="Routine Monitoring" />}
           </div>
@@ -131,10 +131,10 @@ export default function VendorProfilePage() {
 
 function Summary({ title, count, text }: { title: string; count: number; text: string }) {
   return (
-    <section className="rounded-xl border border-border bg-surface-raised p-5">
+    <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
       <p className="text-sm text-muted-foreground">{title}</p>
       <p className="mt-1 text-3xl font-bold">{count}</p>
-      <p className="mt-3 text-sm text-muted-foreground">{text}</p>
+      <p className="mt-3 break-words text-sm text-muted-foreground">{text}</p>
     </section>
   );
 }

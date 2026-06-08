@@ -86,7 +86,7 @@ export default function DashboardHome() {
       />
       <GovernanceNote />
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
         <StatsCard title="Active Cases" value={String(activeCases)} trend="Case queue" />
         <StatsCard title="Critical/High" value={String(data.overview.high_risk_cases)} trend="+3" />
         <StatsCard title="New Signals" value={String(incomingSignals)} trend={data.overview.public_signal_spike} />
@@ -107,9 +107,9 @@ export default function DashboardHome() {
       </HelperPanel>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <section className="rounded-xl border border-border bg-surface-raised p-5 xl:col-span-2">
-          <div className="mb-4 flex items-center justify-between gap-4">
-            <div>
+        <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5 xl:col-span-2">
+          <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <h2 className="text-lg font-semibold">Priority Work Queue</h2>
               <p className="text-sm text-muted-foreground">Top cases that require operator attention now.</p>
             </div>
@@ -119,19 +119,19 @@ export default function DashboardHome() {
           </div>
           <div className="space-y-3">
             {priorityCases.map((item) => (
-              <article key={item.case_id} className="rounded-lg border border-border bg-surface p-4">
+              <article key={item.case_id} className="min-w-0 rounded-lg border border-border bg-surface p-4">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div>
+                  <div className="min-w-0">
                     <div className="flex flex-wrap gap-2">
                       <EntityChip label={item.case_id} href={`/cases/${item.case_id}`} tone="case" />
                       <StatusBadge label={item.priority_label} />
                       <StatusBadge label={item.status} />
                     </div>
-                    <h3 className="mt-2 font-semibold">{item.title}</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">{item.vendor_name} · {item.region} · {item.sla_status}</p>
-                    <p className="mt-2 text-sm text-muted-foreground">{item.recommended_action}</p>
+                    <h3 className="mt-2 break-words font-semibold">{item.title}</h3>
+                    <p className="mt-1 break-words text-sm text-muted-foreground">{item.vendor_name} · {item.region} · {item.sla_status}</p>
+                    <p className="mt-2 break-words text-sm text-muted-foreground">{item.recommended_action}</p>
                   </div>
-                  <Link href={`/cases/${item.case_id}`} className="shrink-0 rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-400">
+                  <Link href={`/cases/${item.case_id}`} className="inline-flex shrink-0 justify-center rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-400">
                     Open Case
                   </Link>
                 </div>
@@ -140,22 +140,22 @@ export default function DashboardHome() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-border bg-surface-raised p-5">
+        <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
           <div className="mb-4 flex items-center gap-2">
             <ShieldAlert className="h-5 w-5 text-red-300" />
             <h2 className="text-lg font-semibold">Vendor Watchlist Preview</h2>
           </div>
           <div className="space-y-3">
             {watchlist.map((vendor) => (
-              <Link key={vendor.id} href={`/vendors/${vendor.id}`} className="block rounded-lg border border-border bg-surface p-4 transition-colors hover:border-brand-500/60">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="font-medium">{vendor.name}</p>
-                    <p className="text-xs text-muted-foreground">{vendor.district}, {vendor.region}</p>
+              <Link key={vendor.id} href={`/vendors/${vendor.id}`} className="block min-w-0 rounded-lg border border-border bg-surface p-4 transition-colors hover:border-brand-500/60">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="break-words font-medium">{vendor.name}</p>
+                    <p className="break-words text-xs text-muted-foreground">{vendor.district}, {vendor.region}</p>
                   </div>
                   <StatusBadge label={vendor.watchlist_status} />
                 </div>
-                <p className="mt-2 text-sm text-muted-foreground">{vendor.watchlist_reason}</p>
+                <p className="mt-2 break-words text-sm text-muted-foreground">{vendor.watchlist_reason}</p>
                 <p className="mt-3 text-sm font-semibold text-brand-300">Risk {vendor.risk_score}</p>
               </Link>
             ))}
@@ -164,7 +164,7 @@ export default function DashboardHome() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <section className="rounded-xl border border-border bg-surface-raised p-5">
+        <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
           <div className="mb-4 flex items-center gap-2">
             <RadioTower className="h-5 w-5 text-brand-300" />
             <h2 className="text-lg font-semibold">Situation Panel</h2>
@@ -173,9 +173,9 @@ export default function DashboardHome() {
             {data.heatmap.slice(0, 4).map((region) => (
               <Link key={`${region.region}-${region.district}`} href="/heatmap" className="block rounded-lg border border-border bg-surface p-4 hover:border-brand-500/60">
                 <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-medium">{region.region}</p>
-                    <p className="text-xs text-muted-foreground">{region.district}</p>
+                  <div className="min-w-0">
+                    <p className="break-words font-medium">{region.region}</p>
+                    <p className="break-words text-xs text-muted-foreground">{region.district}</p>
                   </div>
                   <StatusBadge label={region.risk_score >= 80 ? "Critical" : region.risk_score >= 65 ? "High" : "Medium"} />
                 </div>
@@ -187,7 +187,7 @@ export default function DashboardHome() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-border bg-surface-raised p-5">
+        <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
           <div className="mb-4 flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-amber-300" />
             <h2 className="text-lg font-semibold">Active Anomaly Alerts</h2>
@@ -199,7 +199,7 @@ export default function DashboardHome() {
                   <p className="font-medium">{anomaly.issue_category}</p>
                   <StatusBadge label={anomaly.severity} />
                 </div>
-                <p className="mt-2 text-sm text-muted-foreground">{anomaly.description}</p>
+                <p className="mt-2 break-words text-sm text-muted-foreground">{anomaly.description}</p>
                 <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
                   <Clock className="h-3 w-3" /> {anomaly.region}
                 </p>
@@ -208,13 +208,13 @@ export default function DashboardHome() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-border bg-surface-raised p-5">
+        <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
           <h2 className="text-lg font-semibold">Recent Signals</h2>
           <div className="mt-4 space-y-3">
             {data.complaints.map((complaint) => (
-              <Link key={complaint.id} href={`/cases/${complaint.case_id}`} className="block rounded-lg border border-border bg-surface p-4 hover:border-brand-500/60">
-                <p className="font-medium">{complaint.summary}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{complaint.source} · {complaint.region}</p>
+              <Link key={complaint.id} href={`/cases/${complaint.case_id}`} className="block min-w-0 rounded-lg border border-border bg-surface p-4 hover:border-brand-500/60">
+                <p className="break-words font-medium">{complaint.summary}</p>
+                <p className="mt-1 break-words text-sm text-muted-foreground">{complaint.source} · {complaint.region}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <EntityChip label={complaint.case_id} tone="case" />
                   <EntityChip label={complaint.vendor_name} tone="vendor" />

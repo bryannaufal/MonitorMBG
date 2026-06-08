@@ -21,7 +21,7 @@ export default function StatusBadge({ label, className }: { label: string; class
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium",
+        "inline-flex max-w-full items-center rounded-full border px-2.5 py-1 text-xs font-medium leading-tight whitespace-normal break-words",
         key ? colorByKeyword[key] : "border-border bg-surface-overlay text-muted-foreground",
         className,
       )}

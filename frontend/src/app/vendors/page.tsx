@@ -46,7 +46,7 @@ export default function VendorsPage() {
         Vendor risk learning accumulates linked complaints, reports, daily evidence, tickets, scoring outcomes, and audit notes from cases over time.
       </HelperPanel>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricTile label="Vendors" value={String(vendors.length)} />
         <MetricTile label="Watchlist" value={String(watchlist.length)} />
         <MetricTile label="Critical" value={String(vendors.filter((vendor) => vendor.watchlist_status === "Critical").length)} />
@@ -58,26 +58,26 @@ export default function VendorsPage() {
           const vendorCases = fallbackCases.filter((item) => item.vendor_id === vendor.id);
           const latestCase = vendorCases[0];
           return (
-            <article key={vendor.id} className="rounded-xl border border-border bg-surface-raised p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-semibold">{vendor.name}</h2>
-                  <p className="text-sm text-muted-foreground">{vendor.district}, {vendor.region}</p>
+            <article key={vendor.id} className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <h2 className="break-words text-lg font-semibold">{vendor.name}</h2>
+                  <p className="break-words text-sm text-muted-foreground">{vendor.district}, {vendor.region}</p>
                 </div>
                 <StatusBadge label={vendor.watchlist_status} />
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-5">
+              <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
                 <Metric label="Risk" value={String(vendor.risk_score)} />
                 <Metric label="Meals/day" value={vendor.daily_meal_volume.toLocaleString("id-ID")} />
                 <Metric label="Schools" value={String(vendor.assigned_schools.length)} />
                 <Metric label="Issues" value={String(vendor.repeated_issue_categories.length)} />
                 <Metric label="Cases" value={String(vendorCases.length)} />
               </div>
-              <p className="mt-4 text-sm text-muted-foreground">{vendor.watchlist_reason}</p>
+              <p className="mt-4 break-words text-sm text-muted-foreground">{vendor.watchlist_reason}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {vendor.repeated_issue_categories.map((issue) => <StatusBadge key={issue} label={issue} />)}
               </div>
-              <div className="mt-4 rounded-lg border border-border bg-surface p-3 text-sm text-muted-foreground">
+              <div className="mt-4 break-words rounded-lg border border-border bg-surface p-3 text-sm text-muted-foreground">
                 Latest case: {latestCase ? <EntityChip label={latestCase.case_id} href={`/cases/${latestCase.case_id}`} tone="case" /> : "No active linked case in fallback data"}
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
@@ -100,9 +100,9 @@ export default function VendorsPage() {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-surface p-3">
+    <div className="min-w-0 rounded-lg bg-surface p-3">
       <p className="text-xs uppercase text-muted-foreground">{label}</p>
-      <p className="mt-1 text-sm font-semibold">{value}</p>
+      <p className="mt-1 break-words text-sm font-semibold">{value}</p>
     </div>
   );
 }

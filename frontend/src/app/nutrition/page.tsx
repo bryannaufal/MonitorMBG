@@ -52,7 +52,7 @@ export default function NutritionPage() {
         Nutrition and cost anomalies are not final violations. They are pre-verification signals that affect case priority and help operators decide whether to request clarification or schedule field verification.
       </HelperPanel>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <MetricTile label="Avg Calories" value={`${summary.avg_calories} kcal`} />
         <MetricTile label="Avg Protein" value={`${summary.avg_protein_g} g`} />
         <MetricTile label="Flagged Reports" value={String(flagged.length)} />
@@ -64,19 +64,19 @@ export default function NutritionPage() {
         {reports.map((report) => {
           const lowProtein = report.nutrition_estimate.protein_g < 15;
           return (
-            <article key={report.id} className="rounded-xl border border-border bg-surface-raised p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div>
+            <article key={report.id} className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
                   <div className="flex flex-wrap gap-2">
                     <EntityChip label={report.case_id} href={`/cases/${report.case_id}?tab=scoring`} tone="case" />
                     <EntityChip label={report.vendor_name} href={`/vendors/${report.vendor_id}`} tone="vendor" />
                   </div>
-                  <h2 className="mt-3 text-lg font-semibold">{report.school}</h2>
-                  <p className="text-sm text-muted-foreground">{report.region} · {report.actual_menu}</p>
+                  <h2 className="mt-3 break-words text-lg font-semibold">{report.school}</h2>
+                  <p className="break-words text-sm text-muted-foreground">{report.region} · {report.actual_menu}</p>
                 </div>
                 <StatusBadge label={report.cost_estimate.cost_anomaly_flag ? "Cost Anomaly" : lowProtein ? "Low Protein Estimate" : "Needs Verification"} />
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-5">
+              <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
                 <Summary label="Calories" value={`${report.nutrition_estimate.calories}`} />
                 <Summary label="Protein" value={`${report.nutrition_estimate.protein_g}g`} />
                 <Summary label="Carbs" value={`${report.nutrition_estimate.carbs_g}g`} />
@@ -89,7 +89,7 @@ export default function NutritionPage() {
                 {report.cost_estimate.cost_anomaly_flag ? <StatusBadge label="Cost Anomaly" /> : null}
                 {!report.document_complete ? <StatusBadge label="Documents Incomplete" /> : null}
               </div>
-              <p className="mt-4 text-sm text-muted-foreground">{report.recommended_follow_up}</p>
+              <p className="mt-4 break-words text-sm text-muted-foreground">{report.recommended_follow_up}</p>
               <Link href={`/cases/${report.case_id}?tab=scoring`} className="mt-4 inline-flex rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-400">
                 Open Linked Case
               </Link>
@@ -103,9 +103,9 @@ export default function NutritionPage() {
 
 function Summary({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-border bg-surface p-4">
+    <div className="min-w-0 rounded-lg border border-border bg-surface p-4">
       <p className="text-xs uppercase text-muted-foreground">{label}</p>
-      <p className="mt-1 text-lg font-semibold">{value}</p>
+      <p className="mt-1 break-words text-base font-semibold sm:text-lg">{value}</p>
     </div>
   );
 }

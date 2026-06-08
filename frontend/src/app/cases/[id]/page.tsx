@@ -110,18 +110,18 @@ export default function CaseDetailPage() {
       />
       <GovernanceNote compact />
 
-      <section className="rounded-xl border border-border bg-surface-raised p-5">
+      <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-          <div>
+          <div className="min-w-0">
             <div className="flex flex-wrap gap-2">
               <StatusBadge label={item.priority_label} />
               <StatusBadge label={item.status} />
               <EntityChip label={item.vendor_name} href={`/vendors/${item.vendor_id}`} tone="vendor" />
               {item.ticket_id ? <EntityChip label={item.ticket_id} tone="ticket" /> : null}
             </div>
-            <p className="mt-4 max-w-4xl text-sm leading-6 text-muted-foreground">{item.summary}</p>
+            <p className="mt-4 max-w-4xl break-words text-sm leading-6 text-muted-foreground">{item.summary}</p>
           </div>
-          <div className="grid min-w-[280px] grid-cols-2 gap-3 text-sm">
+          <div className="grid w-full min-w-0 grid-cols-1 gap-3 text-sm sm:grid-cols-2 xl:w-auto xl:min-w-[280px]">
             <Info label="Region/School" value={`${item.school}, ${item.region}`} />
             <Info label="SLA" value={item.sla_status} />
             <Info label="Assigned Unit" value={item.assigned_unit} />
@@ -130,7 +130,7 @@ export default function CaseDetailPage() {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <MetricTile label="Severity" value={String(item.score.severity_score)} />
         <MetricTile label="Confidence" value={String(item.score.confidence_score)} />
         <MetricTile label="Nutrition" value={String(item.score.nutrition_concern_score)} />
@@ -138,18 +138,20 @@ export default function CaseDetailPage() {
         <MetricTile label="Final Priority" value={String(item.score.final_priority_score)} detail={item.score.priority_label} />
       </div>
 
-      <div className="flex flex-wrap gap-2 rounded-xl border border-border bg-surface-raised p-2">
+      <div className="overflow-x-auto rounded-xl border border-border bg-surface-raised p-2">
+        <div className="flex min-w-max gap-2">
         {tabs.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`rounded-md px-3 py-2 text-sm font-medium capitalize transition-colors ${
+            className={`shrink-0 rounded-md px-3 py-2 text-sm font-medium capitalize transition-colors ${
               activeTab === tab ? "bg-brand-500 text-white" : "text-muted-foreground hover:bg-surface hover:text-foreground"
             }`}
           >
             {tab}
           </button>
         ))}
+        </div>
       </div>
 
       {activeTab === "overview" ? <OverviewTab item={item} /> : null}
@@ -166,16 +168,16 @@ export default function CaseDetailPage() {
 function OverviewTab({ item }: { item: OversightCase }) {
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-      <section className="rounded-xl border border-border bg-surface-raised p-5 xl:col-span-2">
+      <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5 xl:col-span-2">
         <h2 className="text-lg font-semibold">Overview</h2>
         <div className="mt-4 space-y-4 text-sm leading-6 text-muted-foreground">
-          <p><span className="font-medium text-foreground">What happened: </span>{item.what_happened}</p>
-          <p><span className="font-medium text-foreground">Why it matters: </span>{item.why_it_matters}</p>
-          <p><span className="font-medium text-foreground">Risk explanation: </span>{item.risk_explanation}</p>
-          <p><span className="font-medium text-foreground">Recommended action: </span>{item.recommended_action}</p>
+          <p className="break-words"><span className="font-medium text-foreground">What happened: </span>{item.what_happened}</p>
+          <p className="break-words"><span className="font-medium text-foreground">Why it matters: </span>{item.why_it_matters}</p>
+          <p className="break-words"><span className="font-medium text-foreground">Risk explanation: </span>{item.risk_explanation}</p>
+          <p className="break-words"><span className="font-medium text-foreground">Recommended action: </span>{item.recommended_action}</p>
         </div>
       </section>
-      <section className="rounded-xl border border-border bg-surface-raised p-5">
+      <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
         <h2 className="text-lg font-semibold">Related Entities</h2>
         <div className="mt-4 flex flex-wrap gap-2">
           <EntityChip label={item.case_id} tone="case" />
@@ -231,15 +233,15 @@ function SignalsTab({ item }: { item: OversightCase }) {
   ];
 
   return (
-    <section className="rounded-xl border border-border bg-surface-raised p-5">
+    <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
       <h2 className="text-lg font-semibold">Connected Intake Signals</h2>
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
         {signals.map((signal) => (
-          <article key={signal.id} className="rounded-lg border border-border bg-surface p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-sm font-medium">{signal.summary}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{signal.source} · {new Date(signal.timestamp).toLocaleString()}</p>
+          <article key={signal.id} className="min-w-0 rounded-lg border border-border bg-surface p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <p className="break-words text-sm font-medium">{signal.summary}</p>
+                <p className="mt-1 break-words text-xs text-muted-foreground">{signal.source} · {new Date(signal.timestamp).toLocaleString()}</p>
               </div>
               <StatusBadge label={signal.status} />
             </div>
@@ -258,25 +260,25 @@ function SignalsTab({ item }: { item: OversightCase }) {
 
 function EvidenceTab({ item }: { item: OversightCase }) {
   return (
-    <section className="rounded-xl border border-border bg-surface-raised p-5">
+    <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
       <h2 className="text-lg font-semibold">Evidence Review</h2>
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
         {item.evidence.map((evidence) => (
-          <article key={evidence.id} className="rounded-lg border border-border bg-surface p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="font-medium">{evidence.title}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{evidence.linked_entity} · {new Date(evidence.created_at).toLocaleString()}</p>
+          <article key={evidence.id} className="min-w-0 rounded-lg border border-border bg-surface p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <p className="break-words font-medium">{evidence.title}</p>
+                <p className="mt-1 break-words text-xs text-muted-foreground">{evidence.linked_entity} · {new Date(evidence.created_at).toLocaleString()}</p>
               </div>
               <StatusBadge label={evidence.type} />
             </div>
-            <div className="mt-3 grid grid-cols-3 gap-3">
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
               <Info label="Confidence" value={`${Math.round(evidence.confidence_score * 100)}%`} />
               <Info label="Image/Text" value={evidence.image_text_match_score == null ? "N/A" : `${Math.round(evidence.image_text_match_score * 100)}%`} />
               <Info label="Duplicate" value={evidence.duplicate_score == null ? "N/A" : `${Math.round(evidence.duplicate_score * 100)}%`} />
             </div>
-            {evidence.ocr_result ? <p className="mt-3 rounded-lg bg-surface-overlay p-3 text-sm text-muted-foreground">{evidence.ocr_result}</p> : null}
-            <p className="mt-3 text-sm text-muted-foreground">{evidence.reviewer_note}</p>
+            {evidence.ocr_result ? <p className="mt-3 break-words rounded-lg bg-surface-overlay p-3 text-sm text-muted-foreground">{evidence.ocr_result}</p> : null}
+            <p className="mt-3 break-words text-sm text-muted-foreground">{evidence.reviewer_note}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <StatusBadge label={evidence.ai_signal} />
               <EntityChip label="Confidence impact to score" tone="score" />
@@ -292,9 +294,9 @@ function ScoringTab({ item }: { item: OversightCase }) {
   const score = item.score;
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-      <section className="rounded-xl border border-border bg-surface-raised p-5 xl:col-span-2">
+      <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5 xl:col-span-2">
         <h2 className="text-lg font-semibold">Risk Scoring Factors</h2>
-        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-2">
           <ScoreBar label="Severity" value={score.severity_score} />
           <ScoreBar label="Confidence" value={score.confidence_score} />
           <ScoreBar label="Nutrition Concern" value={score.nutrition_concern_score} />
@@ -303,13 +305,13 @@ function ScoringTab({ item }: { item: OversightCase }) {
           <ScoreBar label="Final Priority" value={score.final_priority_score} />
         </div>
       </section>
-      <section className="rounded-xl border border-border bg-surface-raised p-5">
+      <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
         <h2 className="text-lg font-semibold">Explanation</h2>
         <div className="mt-4">
           <StatusBadge label={score.priority_label} />
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">{score.explanation}</p>
+          <p className="mt-3 break-words text-sm leading-6 text-muted-foreground">{score.explanation}</p>
           <p className="mt-4 text-sm font-medium">Recommended action</p>
-          <p className="mt-2 text-sm text-muted-foreground">{score.recommended_action}</p>
+          <p className="mt-2 break-words text-sm text-muted-foreground">{score.recommended_action}</p>
         </div>
       </section>
     </div>
@@ -330,22 +332,22 @@ function TicketTab({
   }
 
   return (
-    <section className="rounded-xl border border-border bg-surface-raised p-5">
+    <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold">{item.ticket.title}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{item.ticket.id} · {item.assigned_unit}</p>
+        <div className="min-w-0">
+          <h2 className="break-words text-lg font-semibold">{item.ticket.title}</h2>
+          <p className="mt-1 break-words text-sm text-muted-foreground">{item.ticket.id} · {item.assigned_unit}</p>
         </div>
         <StatusBadge label={item.ticket.status} />
       </div>
-      <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-4">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Info label="SLA" value={item.ticket.sla} />
         <Info label="Escalation" value={item.ticket.escalation_level} />
         <Info label="Evidence" value={`${item.ticket.linked_evidence_ids.length} linked`} />
         <Info label="Last Update" value={new Date(item.ticket.updated_at).toLocaleString()} />
       </div>
-      <p className="mt-4 text-sm leading-6 text-muted-foreground">{item.ticket.recommended_action}</p>
-      <div className="mt-4 flex flex-wrap gap-2">
+      <p className="mt-4 break-words text-sm leading-6 text-muted-foreground">{item.ticket.recommended_action}</p>
+      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:flex-wrap">
         {ticketActions.map((status) => (
           <button
             key={status}
@@ -371,28 +373,28 @@ function CopilotTab({ item }: { item: OversightCase }) {
   ];
   return (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-      <section className="rounded-xl border border-border bg-surface-raised p-5">
+      <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
         <h2 className="text-lg font-semibold">Suggested Questions</h2>
         <div className="mt-4 space-y-2">
           {questions.map((question) => (
-            <button key={question} className="flex w-full items-center gap-2 rounded-lg border border-border bg-surface p-3 text-left text-sm text-muted-foreground hover:text-foreground">
+            <button key={question} className="flex w-full min-w-0 items-center gap-2 rounded-lg border border-border bg-surface p-3 text-left text-sm text-muted-foreground hover:text-foreground">
               <Bot className="h-4 w-4 text-brand-300" />
-              {question}
+              <span className="min-w-0 break-words">{question}</span>
             </button>
           ))}
         </div>
       </section>
-      <section className="rounded-xl border border-border bg-surface-raised p-5 xl:col-span-2">
+      <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5 xl:col-span-2">
         <h2 className="text-lg font-semibold">Generated Case Summary</h2>
-        <p className="mt-4 text-sm leading-6 text-muted-foreground">
+        <p className="mt-4 break-words text-sm leading-6 text-muted-foreground">
           {item.case_id} is {item.priority_label.toLowerCase()} priority because {item.vendor_name} has linked signals for {item.issue_category}, evidence confidence of {item.score.confidence_score}, and final priority score {item.score.final_priority_score}. Recommended next step: {item.recommended_action}
         </p>
-        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3">
           {item.copilot_sources.map((source) => (
-            <div key={`${source.source_type}-${source.source_id}`} className="rounded-lg border border-border bg-surface p-3">
+            <div key={`${source.source_type}-${source.source_id}`} className="min-w-0 rounded-lg border border-border bg-surface p-3">
               <StatusBadge label={source.label} />
-              <p className="mt-2 text-sm font-medium">{source.title}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{source.source_type}:{source.source_id}</p>
+              <p className="mt-2 break-words text-sm font-medium">{source.title}</p>
+              <p className="mt-1 break-words text-xs text-muted-foreground">{source.source_type}:{source.source_id}</p>
             </div>
           ))}
         </div>
@@ -406,23 +408,23 @@ function CopilotTab({ item }: { item: OversightCase }) {
 
 function AuditTab({ events }: { events: AuditTrailEvent[] }) {
   return (
-    <section className="rounded-xl border border-border bg-surface-raised p-5">
+    <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
       <h2 className="text-lg font-semibold">Case Audit Trail</h2>
       <div className="mt-4 space-y-3">
         {events.map((event) => (
-          <div key={event.id} className="grid gap-4 rounded-lg border border-border bg-surface p-4 md:grid-cols-[180px_1fr_180px]">
+          <div key={event.id} className="grid min-w-0 gap-4 rounded-lg border border-border bg-surface p-4 lg:grid-cols-[170px_minmax(0,1fr)_170px]">
             <div>
               <p className="font-mono text-xs text-brand-300">{event.case_id}</p>
               <p className="mt-1 text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleString()}</p>
             </div>
             <div>
               <StatusBadge label={event.event_type.replaceAll("_", " ")} />
-              <p className="mt-3 text-sm text-muted-foreground">{event.description}</p>
+              <p className="mt-3 break-words text-sm text-muted-foreground">{event.description}</p>
             </div>
-            <div className="text-sm">
-              <p className="font-medium">{event.actor}</p>
-              <p className="text-muted-foreground">{event.role}</p>
-              <p className="font-mono text-xs text-muted-foreground">{event.ticket_id}</p>
+            <div className="min-w-0 text-sm">
+              <p className="break-words font-medium">{event.actor}</p>
+              <p className="break-words text-muted-foreground">{event.role}</p>
+              <p className="break-words font-mono text-xs text-muted-foreground">{event.ticket_id}</p>
             </div>
           </div>
         ))}
@@ -433,18 +435,18 @@ function AuditTab({ events }: { events: AuditTrailEvent[] }) {
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg bg-surface p-3">
+    <div className="min-w-0 rounded-lg bg-surface p-3">
       <p className="text-xs uppercase text-muted-foreground">{label}</p>
-      <p className="mt-1 text-sm font-medium">{value}</p>
+      <p className="mt-1 break-words text-sm font-medium">{value}</p>
     </div>
   );
 }
 
 function ScoreBar({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg border border-border bg-surface p-4">
+    <div className="min-w-0 rounded-lg border border-border bg-surface p-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-medium">{label}</p>
+        <p className="break-words text-sm font-medium">{label}</p>
         <p className="text-sm font-semibold">{value}</p>
       </div>
       <div className="mt-3 h-2 rounded-full bg-surface-overlay">

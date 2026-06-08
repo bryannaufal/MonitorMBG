@@ -317,8 +317,9 @@ export default function SimulationPage() {
         Human review required. This simulator uses deterministic demo intelligence for pre-verification, evidence fusion, scoring, and ticket action. It is not a final audit judgment and does not use real government data, real social scraping, OCR, CV inference, or production RAG.
       </HelperPanel>
 
-      <section className="rounded-xl border border-border bg-surface-raised p-4">
-        <div className="grid grid-cols-2 gap-2 md:grid-cols-9">
+      <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-3 sm:p-4">
+        <div className="overflow-x-auto">
+        <div className="grid min-w-[820px] grid-cols-9 gap-2">
           {steps.map((step, index) => {
             const Icon = step.icon;
             const isActive = activeStep === index;
@@ -327,7 +328,7 @@ export default function SimulationPage() {
               <button
                 key={step.label}
                 onClick={() => setActiveStep(index)}
-                className={`flex min-h-[76px] flex-col items-start justify-between rounded-lg border p-3 text-left transition-colors ${
+                className={`flex min-h-[76px] min-w-0 flex-col items-start justify-between rounded-lg border p-3 text-left transition-colors ${
                   isActive
                     ? "border-brand-400 bg-brand-500/15 text-brand-100"
                     : isDone
@@ -339,19 +340,20 @@ export default function SimulationPage() {
                   <Icon className="h-4 w-4" />
                   {index + 1}
                 </span>
-                <span className="text-sm font-medium">{step.label}</span>
+                <span className="break-words text-sm font-medium">{step.label}</span>
               </button>
             );
           })}
         </div>
+        </div>
       </section>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[320px_1fr_360px]">
-        <aside className="space-y-4">
-          <section className="rounded-xl border border-border bg-surface-raised p-5">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[280px_minmax(0,1fr)] 2xl:grid-cols-[300px_minmax(0,1fr)_340px]">
+        <aside className="min-w-0 space-y-4">
+          <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
             <p className="text-xs uppercase text-muted-foreground">Primary scenario</p>
-            <h2 className="mt-2 text-lg font-semibold">{scenario.title}</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            <h2 className="mt-2 break-words text-lg font-semibold">{scenario.title}</h2>
+            <p className="mt-2 break-words text-sm leading-6 text-muted-foreground">
               Fictional Indonesian MBG report linked to existing demo entities so generated outputs connect back to the app.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -361,14 +363,14 @@ export default function SimulationPage() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-border bg-surface-raised p-5">
+          <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
             <h2 className="text-lg font-semibold">Simulation Progress</h2>
             <div className="mt-4 space-y-3">
               {steps.map((step, index) => (
                 <button
                   key={step.label}
                   onClick={() => setActiveStep(index)}
-                  className="flex w-full items-center justify-between gap-3 rounded-lg border border-border bg-surface p-3 text-left text-sm hover:border-brand-500/60"
+                  className="flex w-full min-w-0 items-center justify-between gap-3 rounded-lg border border-border bg-surface p-3 text-left text-sm hover:border-brand-500/60"
                 >
                   <span className="flex items-center gap-2">
                     {maxCompleted >= index + 1 ? <CheckCircle2 className="h-4 w-4 text-emerald-300" /> : <span className="h-4 w-4 rounded-full border border-border" />}
@@ -381,17 +383,17 @@ export default function SimulationPage() {
           </section>
         </aside>
 
-        <main className="space-y-4">
-          <section className="rounded-xl border border-border bg-surface-raised p-5">
+        <main className="min-w-0 space-y-4">
+          <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div>
+              <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <StepIcon className="h-5 w-5 text-brand-300" />
                   <StatusBadge label={`Step ${activeStep + 1}`} />
                   <StatusBadge label={steps[activeStep].label} />
                 </div>
-                <h2 className="mt-3 text-2xl font-semibold">{stepTitle(activeStep)}</h2>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{stepDescription(activeStep)}</p>
+                <h2 className="mt-3 break-words text-xl font-semibold sm:text-2xl">{stepTitle(activeStep)}</h2>
+                <p className="mt-2 break-words text-sm leading-6 text-muted-foreground">{stepDescription(activeStep)}</p>
               </div>
               <button
                 onClick={advance}
@@ -423,14 +425,14 @@ export default function SimulationPage() {
           {activeStep === 8 ? <SystemUpdateStep ticketStatus={ticketStatus} operatorDecision={operatorDecision} /> : null}
         </main>
 
-        <aside className="space-y-4">
-          <section className="rounded-xl border border-border bg-surface-raised p-5">
+        <aside className="min-w-0 space-y-4 xl:col-span-2 2xl:col-span-1">
+          <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
             <div className="flex items-center gap-2">
               <RadioTower className="h-5 w-5 text-brand-300" />
               <h2 className="text-lg font-semibold">Generated Outputs</h2>
             </div>
-            <p className="mt-3 rounded-lg border border-brand-500/25 bg-brand-500/10 p-3 text-sm text-brand-100">{notice}</p>
-            <div className="mt-4 grid grid-cols-2 gap-3">
+            <p className="mt-3 break-words rounded-lg border border-brand-500/25 bg-brand-500/10 p-3 text-sm text-brand-100">{notice}</p>
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <MetricTile label="Confidence" value={maxCompleted >= 3 ? "78" : "--"} detail="Pre-verification" />
               <MetricTile label="Severity" value={maxCompleted >= 3 ? "86" : "--"} detail="Fusion result" />
               <MetricTile label="Priority" value={maxCompleted >= 4 ? "High" : "--"} detail="Human review required" />
@@ -438,7 +440,7 @@ export default function SimulationPage() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-border bg-surface-raised p-5">
+          <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
             <h2 className="text-lg font-semibold">Connected System Updates</h2>
             <div className="mt-4 space-y-2 text-sm">
               <SystemLink href="/" label="Command Center" detail="Active high-risk cases +1" done={maxCompleted >= 9} />
@@ -449,17 +451,17 @@ export default function SimulationPage() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-border bg-surface-raised p-5">
+          <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
             <h2 className="text-lg font-semibold">Latest Audit Events</h2>
             <div className="mt-4 space-y-3">
               {visibleEvents.slice(0, 5).length ? (
                 visibleEvents.slice(0, 5).map((event) => (
-                  <div key={event.id} className="rounded-lg border border-border bg-surface p-3">
+                  <div key={event.id} className="min-w-0 rounded-lg border border-border bg-surface p-3">
                     <div className="flex flex-wrap gap-2">
                       <StatusBadge label={event.badge} />
                       <EntityChip label={scenario.caseId} tone="case" />
                     </div>
-                    <p className="mt-2 text-sm text-muted-foreground">{event.action}</p>
+                    <p className="mt-2 break-words text-sm text-muted-foreground">{event.action}</p>
                     <p className="mt-2 text-xs text-muted-foreground">{event.actor} - {event.timestamp}</p>
                   </div>
                 ))
@@ -554,8 +556,8 @@ function FusionStep() {
       <SectionCard title="Evidence Fusion Inputs">
         <div className="space-y-2">
           {fusionRows.map(([label, impact]) => (
-            <div key={label} className="flex items-center justify-between gap-3 rounded-lg bg-surface p-3 text-sm">
-              <span className="text-muted-foreground">{label}</span>
+            <div key={label} className="flex flex-col gap-2 rounded-lg bg-surface p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+              <span className="break-words text-muted-foreground">{label}</span>
               <span className={impact.startsWith("-") ? "font-semibold text-amber-200" : "font-semibold text-emerald-200"}>{impact}</span>
             </div>
           ))}
@@ -578,7 +580,7 @@ function FusionStep() {
               <span className="flex h-8 w-8 items-center justify-center rounded-full border border-brand-500/40 bg-brand-500/10 text-xs font-semibold text-brand-100">
                 {index + 1}
               </span>
-              <div className="flex-1 rounded-lg border border-border bg-surface p-3 text-sm">{item}</div>
+              <div className="min-w-0 flex-1 break-words rounded-lg border border-border bg-surface p-3 text-sm">{item}</div>
             </div>
           ))}
         </div>
@@ -726,15 +728,15 @@ function AuditStep({ events }: { events: TimelineEvent[] }) {
       <div className="space-y-3">
         {events.length ? (
           events.map((event) => (
-            <div key={event.id} className="grid gap-3 rounded-lg border border-border bg-surface p-4 md:grid-cols-[170px_1fr_190px]">
-              <div>
+            <div key={event.id} className="grid min-w-0 gap-3 rounded-lg border border-border bg-surface p-4 lg:grid-cols-[160px_minmax(0,1fr)_180px]">
+              <div className="min-w-0">
                 <p className="text-xs text-muted-foreground">{event.timestamp}</p>
                 <div className="mt-2"><StatusBadge label={event.badge} /></div>
               </div>
-              <p className="text-sm leading-6 text-muted-foreground">{event.action}</p>
-              <div className="text-sm">
-                <p className="font-medium">{event.actor}</p>
-                <p className="text-muted-foreground">{event.role}</p>
+              <p className="break-words text-sm leading-6 text-muted-foreground">{event.action}</p>
+              <div className="min-w-0 text-sm">
+                <p className="break-words font-medium">{event.actor}</p>
+                <p className="break-words text-muted-foreground">{event.role}</p>
               </div>
             </div>
           ))
@@ -787,9 +789,9 @@ function SystemUpdateStep({ ticketStatus, operatorDecision }: { ticketStatus: st
 
 function SectionCard({ title, badge, children }: { title: string; badge?: string; children: ReactNode }) {
   return (
-    <section className="rounded-xl border border-border bg-surface-raised p-5">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h3 className="text-lg font-semibold">{title}</h3>
+    <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h3 className="min-w-0 break-words text-lg font-semibold">{title}</h3>
         {badge ? <StatusBadge label={badge} /> : null}
       </div>
       {children}
@@ -799,17 +801,17 @@ function SectionCard({ title, badge, children }: { title: string; badge?: string
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-border bg-surface p-3">
+    <div className="min-w-0 rounded-lg border border-border bg-surface p-3">
       <p className="text-xs uppercase text-muted-foreground">{label}</p>
-      <p className="mt-1 text-sm font-medium">{value}</p>
+      <p className="mt-1 break-words text-sm font-medium">{value}</p>
     </div>
   );
 }
 
 function StatusLine({ label, status }: { label: string; status: string }) {
   return (
-    <div className="flex items-start justify-between gap-3 rounded-lg border border-border bg-surface p-3 text-sm">
-      <span className="text-muted-foreground">{label}</span>
+    <div className="flex flex-col gap-3 rounded-lg border border-border bg-surface p-3 text-sm sm:flex-row sm:items-start sm:justify-between">
+      <span className="break-words text-muted-foreground">{label}</span>
       <StatusBadge label={status} />
     </div>
   );
@@ -817,9 +819,9 @@ function StatusLine({ label, status }: { label: string; status: string }) {
 
 function ScoreBar({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg border border-border bg-surface p-4">
-      <div className="flex items-center justify-between text-sm">
-        <span className="font-medium">{label}</span>
+    <div className="min-w-0 rounded-lg border border-border bg-surface p-4">
+      <div className="flex items-center justify-between gap-3 text-sm">
+        <span className="break-words font-medium">{label}</span>
         <span className="font-semibold">{value}</span>
       </div>
       <div className="mt-3 h-2 rounded-full bg-surface-overlay">
@@ -849,10 +851,10 @@ function SecondaryLink({ href, label }: { href: string; label: string }) {
 
 function SystemLink({ href, label, detail, done }: { href: string; label: string; detail: string; done: boolean }) {
   return (
-    <Link href={href} className="flex items-start justify-between gap-3 rounded-lg border border-border bg-surface p-3 hover:border-brand-500/60">
+    <Link href={href} className="flex min-w-0 items-start justify-between gap-3 rounded-lg border border-border bg-surface p-3 hover:border-brand-500/60">
       <span>
-        <span className="block font-medium">{label}</span>
-        <span className="mt-1 block text-xs text-muted-foreground">{detail}</span>
+        <span className="block break-words font-medium">{label}</span>
+        <span className="mt-1 block break-words text-xs text-muted-foreground">{detail}</span>
       </span>
       {done ? <ClipboardCheck className="h-4 w-4 text-emerald-300" /> : <ShieldAlert className="h-4 w-4 text-muted-foreground" />}
     </Link>

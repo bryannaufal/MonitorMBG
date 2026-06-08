@@ -52,29 +52,29 @@ export default function HeatmapPage() {
         Regional risk is a prioritization signal for supervision planning. Operators should open linked cases before taking field or vendor actions.
       </HelperPanel>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricTile label="Highest Region" value={top?.region ?? "N/A"} detail={top ? `Risk ${top.risk_score}` : undefined} />
         <MetricTile label="Regions Ranked" value={String(regions.length)} />
         <MetricTile label="Complaint Signals" value={String(regions.reduce((sum, item) => sum + item.complaint_count, 0))} />
         <MetricTile label="High-Risk Cases" value={String(regions.reduce((sum, item) => sum + item.high_priority_cases, 0))} />
       </div>
 
-      <section className="rounded-xl border border-border bg-surface-raised p-5">
+      <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
         <h2 className="text-lg font-semibold">Region Risk Ranking</h2>
         <div className="mt-4 space-y-3">
           {regions.map((region, index) => {
             const anomaly = anomalies.find((item) => item.region === region.region);
             const vendor = fallbackVendors.find((item) => item.region === region.region || item.district === region.district);
             return (
-              <article key={`${region.region}-${region.district}`} className="rounded-lg border border-border bg-surface p-4">
+              <article key={`${region.region}-${region.district}`} className="min-w-0 rounded-lg border border-border bg-surface p-4">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div>
+                  <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-mono text-sm text-brand-300">#{index + 1}</span>
-                      <h3 className="font-semibold">{region.region}</h3>
+                      <h3 className="break-words font-semibold">{region.region}</h3>
                       <StatusBadge label={region.risk_score >= 80 ? "Critical" : region.risk_score >= 65 ? "High" : "Medium"} />
                     </div>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    <p className="mt-1 break-words text-sm text-muted-foreground">
                       {region.district} · {region.complaint_count} signals · {region.high_priority_cases} high-risk cases
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -82,7 +82,7 @@ export default function HeatmapPage() {
                       {vendor ? <EntityChip label={vendor.name} href={`/vendors/${vendor.id}`} tone="vendor" /> : null}
                     </div>
                   </div>
-                  <div className="min-w-[220px]">
+                  <div className="min-w-0 lg:w-64 lg:shrink-0">
                     <div className="h-2 rounded-full bg-surface-overlay">
                       <div className="h-2 rounded-full bg-brand-500" style={{ width: `${region.risk_score}%` }} />
                     </div>
