@@ -9,7 +9,7 @@ import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 import { getWithFallback } from "@/lib/api";
 import { asList, fallbackCases, fallbackVendors } from "@/lib/demoFallback";
-import type { ListResponse, Vendor } from "@/types/monitoring";
+import type { ListResponse, OversightCase, Vendor } from "@/types/monitoring";
 
 export default function VendorsPage() {
   const [vendors, setVendors] = useState<Vendor[]>([]);
@@ -55,7 +55,7 @@ export default function VendorsPage() {
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         {vendors.map((vendor) => {
-          const vendorCases = fallbackCases.filter((item) => item.vendor_id === vendor.id);
+          const vendorCases = getVendorCases(vendor, source);
           const latestCase = vendorCases[0];
           return (
             <article key={vendor.id} className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
@@ -78,7 +78,7 @@ export default function VendorsPage() {
                 {vendor.repeated_issue_categories.map((issue) => <StatusBadge key={issue} label={issue} />)}
               </div>
               <div className="mt-4 break-words rounded-lg border border-border bg-surface p-3 text-sm text-muted-foreground">
-                Latest case: {latestCase ? <EntityChip label={latestCase.case_id} href={`/cases/${latestCase.case_id}`} tone="case" /> : "No active linked case in fallback data"}
+                Latest case: {latestCase ? <EntityChip label={latestCase.case_id} href={`/cases/${latestCase.case_id}`} tone="case" /> : noLinkedCaseMessage(source)}
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Link href={`/vendors/${vendor.id}`} className="rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-400">
@@ -96,6 +96,29 @@ export default function VendorsPage() {
       </div>
     </div>
   );
+}
+
+function getVendorCases(vendor: Vendor, source: "api" | "fallback") {
+  if (source === "api") {
+    return sortByLatestUpdate(vendor.cases ?? []);
+  }
+
+  return sortByLatestUpdate(fallbackCases.filter((item) => item.vendor_id === vendor.id));
+}
+
+function sortByLatestUpdate(cases: OversightCase[]) {
+  return [...cases].sort((a, b) => timestampForCase(b) - timestampForCase(a));
+}
+
+function timestampForCase(item: OversightCase) {
+  const timestamp = Date.parse(item.updated_at || item.created_at);
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function noLinkedCaseMessage(source: "api" | "fallback") {
+  return source === "api"
+    ? "No active linked case returned by the API list. Open vendor profile for full case history."
+    : "No active linked case in fallback data.";
 }
 
 function Metric({ label, value }: { label: string; value: string }) {

@@ -12,13 +12,14 @@ import { fallbackTickets } from "@/lib/demoFallback";
 import type { Ticket } from "@/types/monitoring";
 
 const statuses = ["Under Review", "Waiting Vendor Clarification", "Escalated", "Field Verification Scheduled", "Resolved"];
+type TicketMessage = { tone: "success" | "warning"; text: string };
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [source, setSource] = useState<"api" | "fallback">("fallback");
   const [error, setError] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<TicketMessage | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -36,16 +37,32 @@ export default function TicketsPage() {
 
   async function updateStatus(ticket: Ticket, status: string) {
     const updated = { ...ticket, status, updated_at: new Date().toISOString() };
-    setTickets((current) => current.map((item) => (item.id === ticket.id ? updated : item)));
-    setMessage(`${ticket.id} moved to ${status}. The linked case audit trail records this action in live API mode.`);
+
+    if (source === "fallback") {
+      setTickets((current) => current.map((item) => (item.id === ticket.id ? updated : item)));
+      setMessage({
+        tone: "warning",
+        text: `${ticket.id} moved to ${status} in local demo state. No backend audit trail was written.`,
+      });
+      return;
+    }
+
+    setMessage(null);
     try {
       const result = await api.patch<{ ticket: Ticket }, { status: string; note: string }>(
         `/tickets/${ticket.id}/status`,
         { status, note: `Ticket queue action: ${status}` },
       );
       setTickets((current) => current.map((item) => (item.id === ticket.id ? result.ticket : item)));
+      setMessage({
+        tone: "success",
+        text: `${ticket.id} moved to ${status}. Audit trail updated in the live demo API.`,
+      });
     } catch {
-      setSource("fallback");
+      setMessage({
+        tone: "warning",
+        text: `${ticket.id} was not changed. Backend update failed, so the audit trail was not recorded. Please retry before relying on audit history.`,
+      });
     }
   }
 
@@ -72,7 +89,7 @@ export default function TicketsPage() {
         <MetricTile label="Resolved" value={String(tickets.filter((item) => item.status === "Resolved").length)} />
       </div>
 
-      {message ? <p className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-200">{message}</p> : null}
+      {message ? <p className={messageClass(message.tone)}>{message.text}</p> : null}
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         {tickets.map((ticket) => (
@@ -118,6 +135,12 @@ export default function TicketsPage() {
       </div>
     </div>
   );
+}
+
+function messageClass(tone: TicketMessage["tone"]) {
+  return tone === "success"
+    ? "rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-200"
+    : "rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-200";
 }
 
 function Info({ label, value }: { label: string; value: string }) {

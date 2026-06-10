@@ -118,14 +118,14 @@ cd ~/projects/MonitorMBG
 docker compose up -d postgres redis
 
 cd backend
-/home/mcdimas/.local/bin/python3.12 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Use Python 3.12 for the backend. On this machine, plain `python3` points to Python 3.14, which is newer than the pinned FastAPI/Pydantic runtime stack.
+Use the Python 3.12 interpreter available on your system. On some machines this may be `python3`, `python3.12`, or a pyenv-managed interpreter.
 
 In another terminal:
 
