@@ -11,8 +11,7 @@ pydantic-settings==2.5.0
 # ──────────────────────────────────────────────
 # Database
 # ──────────────────────────────────────────────
-sqlalchemy[asyncio]==2.0.32
-asyncpg==0.29.0
+sqlalchemy==2.0.32
 alembic==1.13.0
 
 # ──────────────────────────────────────────────
@@ -22,34 +21,10 @@ celery[redis]==5.4.0
 redis==5.1.0
 
 # ──────────────────────────────────────────────
-# NLP / ML
+# Demo Intelligence
 # ──────────────────────────────────────────────
-transformers==4.44.0
-torch==2.4.0
-bertopic==0.16.0
-scikit-learn==1.5.0
-scipy==1.14.0
-
-# ──────────────────────────────────────────────
-# Computer Vision
-# ──────────────────────────────────────────────
-Pillow==10.4.0
-opencv-python-headless==4.10.0.84
-imagehash==4.3.1
-ultralytics==8.2.0
-
-# ──────────────────────────────────────────────
-# OCR
-# ──────────────────────────────────────────────
-pytesseract==0.3.13
-easyocr==1.7.1
-
-# ──────────────────────────────────────────────
-# AI Copilot / RAG
-# ──────────────────────────────────────────────
-openai==1.42.0
-chromadb==0.5.0
-sentence-transformers==3.0.0
+# Heavy ML/CV/RAG libraries are intentionally not required for the MVP.
+# The current prototype uses deterministic simulated AI-assisted signals.
 
 # ──────────────────────────────────────────────
 # HTTP Client (Scraping)

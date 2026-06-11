@@ -3,8 +3,6 @@
 from datetime import datetime
 from typing import Any
 
-import numpy as np
-
 
 class AnomalyDetector:
     """
@@ -36,13 +34,14 @@ class AnomalyDetector:
         if len(values) < self.window_size + 1:
             return []
 
-        arr = np.array(values, dtype=float)
+        arr = [float(value) for value in values]
         anomalies = []
 
         for i in range(self.window_size, len(arr)):
             window = arr[i - self.window_size : i]
-            mean = np.mean(window)
-            std = np.std(window)
+            mean = sum(window) / len(window)
+            variance = sum((value - mean) ** 2 for value in window) / len(window)
+            std = variance ** 0.5
 
             if std == 0:
                 continue
@@ -74,9 +73,17 @@ class AnomalyDetector:
         if len(values) < lookback:
             return {"trend": "stable", "slope": 0.0}
 
-        recent = np.array(values[-lookback:])
-        x = np.arange(len(recent))
-        slope = np.polyfit(x, recent, 1)[0]
+        recent = [float(value) for value in values[-lookback:]]
+        n = len(recent)
+        x_values = list(range(n))
+        x_mean = sum(x_values) / n
+        y_mean = sum(recent) / n
+        denominator = sum((x - x_mean) ** 2 for x in x_values)
+        slope = (
+            sum((x - x_mean) * (y - y_mean) for x, y in zip(x_values, recent)) / denominator
+            if denominator
+            else 0.0
+        )
 
         if slope > 0.5:
             trend = "increasing"

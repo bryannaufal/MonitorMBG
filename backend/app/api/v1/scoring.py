@@ -1,48 +1,52 @@
 """Scoring API — Severity, confidence, and cost plausibility endpoints."""
 
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Query
 
-from app.api.deps import get_session
-from app.schemas.scoring import ScoreResponse, ScoreListResponse
+from app import demo_data
 
 router = APIRouter()
 
 
-@router.get("/report/{report_id}", response_model=ScoreResponse)
-async def get_report_scores(
-    report_id: int,
-    session: AsyncSession = Depends(get_session),
-):
+@router.get("/report/{report_id}")
+async def get_report_scores(report_id: int):
     """
     Get computed scores for a specific report.
 
     Returns severity score, confidence score, and cost plausibility analysis.
     """
-    # TODO: Implement via scoring service
-    return {}
+    score = next((item for item in demo_data.SCORES if item["report_id"] == report_id), None)
+    if score is None:
+        return demo_data.get_or_404([], report_id, "Score")
+    return score
 
 
 @router.get("/rankings")
 async def get_severity_rankings(
     limit: int = Query(20, ge=1, le=100),
     severity: str | None = None,
-    session: AsyncSession = Depends(get_session),
 ):
     """
     Get reports ranked by severity score (highest first).
 
     Used for triage prioritization by operators.
     """
-    # TODO: Implement severity-ranked listing
-    return {"items": [], "total": 0}
+    items = sorted(demo_data.SCORES, key=lambda item: item["final_priority_score"], reverse=True)
+    if severity:
+        items = [item for item in items if item["priority_label"].lower() == severity.lower()]
+    return {"items": items[:limit], "total": len(items)}
 
 
 @router.post("/recompute/{report_id}")
 async def recompute_scores(
     report_id: int,
-    session: AsyncSession = Depends(get_session),
 ):
     """Trigger a re-computation of all scores for a report."""
-    # TODO: Dispatch scoring task via Celery
-    return {"message": "Score recomputation dispatched", "report_id": report_id}
+    score = next((item for item in demo_data.SCORES if item["report_id"] == report_id), None)
+    if score is None:
+        demo_data.get_or_404([], report_id, "Score")
+    return {
+        "message": "Demo score recomputed deterministically.",
+        "report_id": report_id,
+        "score": score,
+        "ai_notice": demo_data.DEMO_NOTICE,
+    }

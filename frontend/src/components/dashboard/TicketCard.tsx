@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, Clock, ExternalLink } from "lucide-react";
+import { Clock, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TicketCardProps {
@@ -21,11 +21,11 @@ export default function TicketCard({ source, severity, title, time }: TicketCard
   const colorClass = severityColors[severity] || severityColors.low;
 
   return (
-    <div className="bg-surface border border-border rounded-lg p-4 hover:shadow-md transition-shadow group">
-      <div className="flex justify-between items-start mb-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-muted-foreground uppercase">{source}</span>
-          <span className={cn("text-[10px] uppercase px-2 py-0.5 rounded-full border", colorClass)}>
+    <div className="group min-w-0 rounded-lg border border-border bg-surface p-4 transition-shadow hover:shadow-md">
+      <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <span className="break-words text-xs font-semibold uppercase text-muted-foreground">{source}</span>
+          <span className={cn("rounded-full border px-2 py-0.5 text-[10px] uppercase", colorClass)}>
             {severity}
           </span>
         </div>
@@ -34,8 +34,8 @@ export default function TicketCard({ source, severity, title, time }: TicketCard
           {time}
         </div>
       </div>
-      <h4 className="font-medium text-sm text-foreground line-clamp-2 mb-3">{title}</h4>
-      <div className="flex justify-between items-center mt-auto">
+      <h4 className="mb-3 line-clamp-2 break-words text-sm font-medium text-foreground">{title}</h4>
+      <div className="mt-auto flex items-center justify-between gap-3">
         <button className="text-xs flex items-center gap-1 text-brand-500 hover:text-brand-600 transition-colors">
           View Details
         </button>

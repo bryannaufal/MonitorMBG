@@ -13,9 +13,9 @@ class CopilotQuery(BaseModel):
 class SourceDocument(BaseModel):
     """A source document retrieved by the RAG pipeline."""
     title: str
-    content_snippet: str
+    content_snippet: str = ""
     source_type: str  # "complaint", "report", "daily_report"
-    source_id: int
+    source_id: int | str
     relevance_score: float
 
 

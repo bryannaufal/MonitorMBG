@@ -22,6 +22,7 @@ env/
 # ──────────────────────────────────────────────
 node_modules/
 .next/
+tsconfig.tsbuildinfo
 out/
 .turbo/
 npm-debug.log*

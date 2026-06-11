@@ -17,13 +17,13 @@ export default function StatsCard({ title, value, trend }: StatsCardProps) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-surface-raised border rounded-xl p-5 shadow-sm"
+      className="min-w-0 rounded-xl border bg-surface-raised p-4 shadow-sm sm:p-5"
     >
-      <h3 className="text-sm font-medium text-muted-foreground mb-2">{title}</h3>
-      <div className="flex items-end justify-between">
-        <span className="text-3xl font-bold">{value}</span>
+      <h3 className="mb-2 break-words text-sm font-medium text-muted-foreground">{title}</h3>
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <span className="break-words text-2xl font-bold sm:text-3xl">{value}</span>
         <span
-          className={`text-sm font-medium ${
+          className={`break-words text-sm font-medium ${
             isPositive
               ? "text-severity-low"
               : isNegative

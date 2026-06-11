@@ -4,8 +4,8 @@ import { Search, Filter } from "lucide-react";
 
 export default function ReportTable() {
   return (
-    <div className="w-full bg-surface border rounded-xl overflow-hidden">
-      <div className="p-4 border-b border-border flex justify-between items-center bg-surface-raised">
+    <div className="w-full min-w-0 overflow-hidden rounded-xl border bg-surface">
+      <div className="flex flex-col gap-3 border-b border-border bg-surface-raised p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <input
@@ -19,7 +19,7 @@ export default function ReportTable() {
         </button>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left">
+        <table className="min-w-[720px] w-full text-left text-sm">
           <thead className="text-xs text-muted-foreground uppercase bg-surface-overlay border-b">
             <tr>
               <th className="px-6 py-3 font-medium">Report ID</th>
