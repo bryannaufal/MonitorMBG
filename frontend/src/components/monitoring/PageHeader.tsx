@@ -59,7 +59,7 @@ export function PageHeader({
 
 export function HelperPanel({ children }: { children: ReactNode }) {
   return (
-    <div className="min-w-0 rounded-lg border border-brand-500/25 bg-brand-500/10 p-4 text-sm leading-6 text-brand-100 break-words">
+    <div className="min-w-0 rounded-lg border border-brand-500/25 bg-brand-500/10 p-4 text-sm leading-6 text-brand-800 dark:text-brand-100 break-words">
       {children}
     </div>
   );
@@ -86,11 +86,11 @@ export function EntityChip({
 }) {
   const toneClass = {
     default: "border-border bg-surface-overlay text-muted-foreground",
-    case: "border-brand-500/40 bg-brand-500/10 text-brand-200",
-    vendor: "border-emerald-500/35 bg-emerald-500/10 text-emerald-200",
-    ticket: "border-sky-500/35 bg-sky-500/10 text-sky-200",
-    evidence: "border-amber-500/35 bg-amber-500/10 text-amber-200",
-    score: "border-orange-500/35 bg-orange-500/10 text-orange-200",
+    case: "border-brand-500/40 bg-brand-500/10 text-brand-800 dark:text-brand-200",
+    vendor: "border-emerald-500/35 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200",
+    ticket: "border-sky-500/35 bg-sky-500/10 text-sky-800 dark:text-sky-200",
+    evidence: "border-amber-500/35 bg-amber-500/10 text-amber-800 dark:text-amber-200",
+    score: "border-orange-500/35 bg-orange-500/10 text-orange-800 dark:text-orange-200",
     audit: "border-violet-500/35 bg-violet-500/10 text-violet-200",
   }[tone];
   const className = cn(

@@ -15,14 +15,14 @@ interface Message {
 }
 
 const suggestedQuestions = [
-  "Which cases are highest priority today?",
-  "Summarize the highest risk case.",
-  "Why is this vendor on the watchlist?",
-  "What evidence supports this case?",
-  "What should the operator do next?",
-  "Show nutrition anomalies.",
-  "Which region has the highest risk?",
-  "Explain the scoring result.",
+  "Kasus mana yang prioritas tertinggi hari ini?",
+  "Ringkas kasus berisiko tertinggi.",
+  "Mengapa vendor ini masuk daftar pantauan?",
+  "Bukti apa yang mendukung kasus ini?",
+  "Apa langkah berikutnya untuk operator?",
+  "Tampilkan anomali gizi.",
+  "Wilayah mana yang paling berisiko?",
+  "Jelaskan hasil penilaian.",
 ];
 
 export default function CopilotPanel() {
@@ -31,7 +31,7 @@ export default function CopilotPanel() {
       id: "1",
       role: "assistant",
       content:
-        "Hello, I'm your bounded MonitorMBG AI Copilot. Ask about priority cases, vendor watchlist reasons, evidence, nutrition anomalies, regions, or recommended next steps.",
+        "Halo, saya Asisten Ringkasan Kasus MonitorMBG (terbatas). Tanyakan tentang kasus prioritas, alasan daftar pantauan vendor, bukti, anomali gizi, wilayah, atau langkah tindak lanjut yang disarankan.",
     },
   ]);
   const [loading, setLoading] = useState(false);
@@ -57,7 +57,7 @@ export default function CopilotPanel() {
           id: (Date.now() + 1).toString(),
           role: "assistant",
           content:
-            "I cannot reach the backend copilot service right now. Demo fallback guidance: review Critical and High tickets first, verify evidence packages, and record all operator decisions in the audit trail.\n\nAI-assisted synthesis, operator review required.",
+            "Saya tidak dapat menjangkau layanan asisten backend saat ini. Panduan demo offline: tinjau tiket Kritis dan Tinggi lebih dulu, verifikasi paket bukti, dan catat semua keputusan operator di jejak audit.\n\nSintesis berbantuan AI, memerlukan tinjauan operator.",
         },
       ]);
     } finally {
@@ -72,14 +72,14 @@ export default function CopilotPanel() {
           <Bot className="h-5 w-5" />
         </div>
         <div className="min-w-0">
-          <h2 className="break-words text-lg font-semibold">AI Copilot</h2>
-          <p className="break-words text-xs text-brand-400">Bounded demo synthesis &bull; internal demo sources</p>
+          <h2 className="break-words text-lg font-semibold">Asisten Ringkasan Kasus</h2>
+          <p className="break-words text-xs text-brand-400">Sintesis demo terbatas &bull; sumber demo internal</p>
         </div>
       </div>
-      <div className="border-b border-border bg-brand-500/10 px-4 py-3 text-xs text-brand-100">
+      <div className="border-b border-border bg-brand-500/10 px-4 py-3 text-xs text-brand-800 dark:text-brand-100">
         <div className="flex items-start gap-2">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-300" />
-          <span className="min-w-0 break-words">AI-assisted synthesis, operator review required. No external API is called by default.</span>
+          <span className="min-w-0 break-words">Sintesis berbantuan AI, memerlukan tinjauan operator. Tidak ada API eksternal yang dipanggil secara bawaan.</span>
         </div>
       </div>
       <div className="border-b border-border bg-surface-raised px-4 py-3">
@@ -102,7 +102,7 @@ export default function CopilotPanel() {
           <ChatMessage key={msg.id} role={msg.role} content={msg.content} sources={msg.sources} />
         ))}
         {loading ? (
-          <ChatMessage role="assistant" content="Synthesizing from internal demo sources..." />
+          <ChatMessage role="assistant" content="Menyusun ringkasan dari sumber demo internal..." />
         ) : null}
       </div>
 

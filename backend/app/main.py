@@ -1,12 +1,17 @@
 """MonitorMBG — FastAPI Application Factory."""
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.api.v1.router import api_v1_router
+
+# Folder dataset asli tidak dipindahkan; hanya disajikan read-only.
+_EVIDENCE_DIR = Path(__file__).resolve().parents[2] / "Dataset Gambar"
 
 
 @asynccontextmanager
@@ -43,6 +48,10 @@ def create_app() -> FastAPI:
 
     # ── Routers ──
     app.include_router(api_v1_router, prefix="/api/v1")
+
+    # ── Bukti foto (read-only, folder dataset tidak dipindahkan) ──
+    if _EVIDENCE_DIR.is_dir():
+        app.mount("/evidence-media", StaticFiles(directory=str(_EVIDENCE_DIR)), name="evidence-media")
 
     @app.get("/health", tags=["Health"])
     async def health_check():

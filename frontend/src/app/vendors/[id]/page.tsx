@@ -10,6 +10,7 @@ import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 import { getWithFallback } from "@/lib/api";
 import { fallbackCases, fallbackVendors } from "@/lib/demoFallback";
+import { caseNumber } from "@/lib/utils";
 import type { Vendor } from "@/types/monitoring";
 
 export default function VendorProfilePage() {
@@ -47,9 +48,9 @@ export default function VendorProfilePage() {
     <div className="space-y-6">
       <PageHeader
         title={vendor.name}
-        description="Vendor risk profile showing recurring patterns across linked cases, signals, evidence, tickets, and audit notes."
+        description="Profil risiko vendor yang menunjukkan pola berulang lintas kasus, sinyal, bukti, tiket, dan catatan audit terhubung."
         breadcrumbs={[
-          { label: "Vendor Watchlist", href: "/vendors" },
+          { label: "Daftar Pantauan Vendor", href: "/vendors" },
           { label: vendor.name },
         ]}
         source={source}
@@ -57,25 +58,25 @@ export default function VendorProfilePage() {
       />
       <GovernanceNote compact />
       <HelperPanel>
-        Vendor profiles answer whether the current case is isolated or part of a repeated SPPG/vendor risk pattern that should change oversight intensity.
+        Profil vendor menjawab apakah kasus saat ini terisolasi atau bagian dari pola risiko SPPG/vendor berulang yang perlu mengubah intensitas pengawasan.
       </HelperPanel>
 
       <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
             <StatusBadge label={vendor.watchlist_status} />
-            <p className="mt-3 break-words text-xl font-semibold">Risk Score {vendor.risk_score}</p>
+            <p className="mt-3 break-words text-xl font-semibold">Skor Risiko {vendor.risk_score}</p>
             <p className="mt-2 max-w-3xl break-words text-sm text-muted-foreground">{vendor.watchlist_reason}</p>
           </div>
           <div className="grid w-full grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:w-auto lg:grid-cols-4">
-            <MetricTile label="Region" value={vendor.region} />
-            <MetricTile label="Meals/day" value={vendor.daily_meal_volume.toLocaleString("id-ID")} />
-            <MetricTile label="Schools" value={String(vendor.assigned_schools.length)} />
-            <MetricTile label="Active Cases" value={String(vendorCases.filter((item) => item.status !== "Resolved").length)} />
+            <MetricTile label="Wilayah" value={vendor.region} />
+            <MetricTile label="Porsi/hari" value={vendor.daily_meal_volume.toLocaleString("id-ID")} />
+            <MetricTile label="Sekolah" value={String(vendor.assigned_schools.length)} />
+            <MetricTile label="Kasus Aktif" value={String(vendorCases.filter((item) => item.status !== "Selesai").length)} />
           </div>
         </div>
         <div className="mt-5">
-          <p className="text-sm font-medium">Risk Trend</p>
+          <p className="text-sm font-medium">Tren Risiko</p>
           <div className="mt-3 flex h-24 items-end gap-2 rounded-lg bg-surface p-3">
             {vendor.risk_trend.map((value, index) => (
               <div key={`${value}-${index}`} className="w-8 rounded-t bg-brand-500" style={{ height: `${value}%` }} title={`${value}`} />
@@ -85,24 +86,24 @@ export default function VendorProfilePage() {
       </section>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <MetricTile label="Cases" value={String(vendorCases.length)} />
-        <MetricTile label="Complaints" value={String(complaints.length)} />
-        <MetricTile label="Reports" value={String(reports.length)} />
-        <MetricTile label="Daily Reports" value={String(dailyReports.length)} />
-        <MetricTile label="Tickets" value={String(tickets.length)} />
+        <MetricTile label="Kasus" value={String(vendorCases.length)} />
+        <MetricTile label="Aduan" value={String(complaints.length)} />
+        <MetricTile label="Laporan" value={String(reports.length)} />
+        <MetricTile label="Laporan Harian" value={String(dailyReports.length)} />
+        <MetricTile label="Tiket" value={String(tickets.length)} />
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5 xl:col-span-2">
-          <h2 className="text-lg font-semibold">Active & Historical Cases</h2>
+          <h2 className="text-lg font-semibold">Kasus Aktif & Riwayat</h2>
           <div className="mt-4 space-y-3">
             {vendorCases.map((item) => (
               <Link key={item.case_id} href={`/cases/${item.case_id}`} className="block min-w-0 rounded-lg border border-border bg-surface p-4 hover:border-brand-500/60">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
-                    <EntityChip label={item.case_id} tone="case" />
+                    <EntityChip label={item.case_number ?? caseNumber(item.case_id)} tone="case" />
                     <p className="mt-2 break-words font-medium">{item.title}</p>
-                    <p className="mt-1 break-words text-sm text-muted-foreground">{item.issue_category} · {item.region} · Score {item.score.final_priority_score}</p>
+                    <p className="mt-1 break-words text-sm text-muted-foreground">{item.issue_category} · {item.region} · Skor {item.score.final_priority_score}</p>
                   </div>
                   <StatusBadge label={item.priority_label} />
                 </div>
@@ -112,18 +113,18 @@ export default function VendorProfilePage() {
         </section>
 
         <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
-          <h2 className="text-lg font-semibold">Recommended Oversight Action</h2>
+          <h2 className="text-lg font-semibold">Rekomendasi Tindakan Pengawasan</h2>
           <p className="mt-3 break-words text-sm leading-6 text-muted-foreground">{vendor.recommended_action}</p>
           <div className="mt-4 flex flex-wrap gap-2">
-            {vendor.repeated_issue_categories.length ? vendor.repeated_issue_categories.map((issue) => <StatusBadge key={issue} label={issue} />) : <StatusBadge label="Routine Monitoring" />}
+            {vendor.repeated_issue_categories.length ? vendor.repeated_issue_categories.map((issue) => <StatusBadge key={issue} label={issue} />) : <StatusBadge label="Pemantauan Rutin" />}
           </div>
         </section>
       </div>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <Summary title="Linked Complaints" count={complaints.length} text={complaints[0]?.summary ?? "No linked public complaint in demo data."} />
-        <Summary title="Nutrition/Cost History" count={dailyReports.length} text={dailyReports[0]?.recommended_follow_up ?? "No nutrition/cost anomaly in demo data."} />
-        <Summary title="Audit Notes" count={audit.length} text={audit[0]?.description ?? "Audit notes appear when case actions are recorded."} />
+        <Summary title="Aduan Terhubung" count={complaints.length} text={complaints[0]?.summary ?? "Tidak ada aduan publik terhubung pada data demo."} />
+        <Summary title="Riwayat Gizi/Biaya" count={dailyReports.length} text={dailyReports[0]?.recommended_follow_up ?? "Tidak ada anomali gizi/biaya pada data demo."} />
+        <Summary title="Catatan Audit" count={audit.length} text={audit[0]?.description ?? "Catatan audit muncul ketika tindakan kasus tercatat."} />
       </div>
     </div>
   );

@@ -34,7 +34,7 @@ export default function ChatInput({ onSend }: ChatInputProps) {
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Ask the copilot anything..."
+        placeholder="Tanyakan apa saja ke asisten..."
         className="w-full min-w-0 rounded-full border border-border bg-surface py-3 pl-11 pr-12 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-brand-500 sm:pl-12"
       />
       <button

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import GovernanceNote from "@/components/monitoring/GovernanceNote";
 import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
@@ -9,9 +9,11 @@ import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 import { api, getWithFallback } from "@/lib/api";
 import { fallbackTickets } from "@/lib/demoFallback";
+import { caseNumber } from "@/lib/utils";
 import type { Ticket } from "@/types/monitoring";
 
-const statuses = ["Under Review", "Waiting Vendor Clarification", "Escalated", "Field Verification Scheduled", "Resolved"];
+// Kolom board (Kanban) — hanya di halaman Tiket Tindak Lanjut.
+const COLUMNS = ["Baru", "Sedang Ditinjau", "Menunggu Klarifikasi Vendor", "Verifikasi Lapangan", "Selesai"];
 type TicketMessage = { tone: "success" | "warning"; text: string };
 
 export default function TicketsPage() {
@@ -35,34 +37,33 @@ export default function TicketsPage() {
     load();
   }, []);
 
-  async function updateStatus(ticket: Ticket, status: string) {
-    const updated = { ...ticket, status, updated_at: new Date().toISOString() };
+  const byColumn = useMemo(() => {
+    const map = new Map<string, Ticket[]>(COLUMNS.map((c) => [c, []]));
+    for (const t of tickets) {
+      // Normalisasi status yang belum tercakup ke kolom "Sedang Ditinjau".
+      const col = COLUMNS.includes(t.status) ? t.status : "Sedang Ditinjau";
+      map.get(col)!.push(t);
+    }
+    return map;
+  }, [tickets]);
 
+  async function moveTicket(ticket: Ticket, status: string) {
+    const updated = { ...ticket, status, updated_at: new Date().toISOString() };
     if (source === "fallback") {
-      setTickets((current) => current.map((item) => (item.id === ticket.id ? updated : item)));
-      setMessage({
-        tone: "warning",
-        text: `${ticket.id} moved to ${status} in local demo state. No backend audit trail was written.`,
-      });
+      setTickets((cur) => cur.map((t) => (t.id === ticket.id ? updated : t)));
+      setMessage({ tone: "warning", text: `${ticket.id} dipindahkan ke "${status}" pada data demo lokal. Jejak audit backend tidak ditulis.` });
       return;
     }
-
     setMessage(null);
     try {
       const result = await api.patch<{ ticket: Ticket }, { status: string; note: string }>(
         `/tickets/${ticket.id}/status`,
-        { status, note: `Ticket queue action: ${status}` },
+        { status, note: `Aksi antrean tiket: ${status}` },
       );
-      setTickets((current) => current.map((item) => (item.id === ticket.id ? result.ticket : item)));
-      setMessage({
-        tone: "success",
-        text: `${ticket.id} moved to ${status}. Audit trail updated in the live demo API.`,
-      });
+      setTickets((cur) => cur.map((t) => (t.id === ticket.id ? result.ticket : t)));
+      setMessage({ tone: "success", text: `${ticket.id} dipindahkan ke "${status}". Jejak audit diperbarui di API demo.` });
     } catch {
-      setMessage({
-        tone: "warning",
-        text: `${ticket.id} was not changed. Backend update failed, so the audit trail was not recorded. Please retry before relying on audit history.`,
-      });
+      setMessage({ tone: "warning", text: `${ticket.id} gagal diperbarui. Pembaruan backend gagal, jejak audit tidak tercatat. Coba lagi.` });
     }
   }
 
@@ -71,83 +72,102 @@ export default function TicketsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Ticket Queue"
-        description="Operational action layer for linked oversight cases, SLA handling, assignment, escalation, and resolution."
-        breadcrumbs={[{ label: "Command Center", href: "/" }, { label: "Tickets" }]}
+        title="Tiket Tindak Lanjut"
+        description="Papan tindakan operasional untuk kasus pengawasan terhubung: penanganan SLA, penugasan, eskalasi, dan penyelesaian."
+        breadcrumbs={[{ label: "Pusat Kendali", href: "/" }, { label: "Tiket Tindak Lanjut" }]}
         source={source}
         error={error}
       />
       <GovernanceNote compact />
       <HelperPanel>
-        Tickets are not separate tasks. Each ticket is the action record for a case and should preserve evidence links, status changes, assigned unit, and audit history.
+        Tiket bukan tugas terpisah. Setiap tiket adalah catatan tindakan untuk satu kasus dan mempertahankan tautan bukti,
+        perubahan status, unit penanggung jawab, dan riwayat audit.
       </HelperPanel>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricTile label="Tickets" value={String(tickets.length)} />
-        <MetricTile label="Open" value={String(tickets.filter((item) => item.status !== "Resolved").length)} />
-        <MetricTile label="Escalated" value={String(tickets.filter((item) => item.status.includes("Escalated")).length)} />
-        <MetricTile label="Resolved" value={String(tickets.filter((item) => item.status === "Resolved").length)} />
+        <MetricTile label="Total Tiket" value={String(tickets.length)} />
+        <MetricTile label="Terbuka" value={String(tickets.filter((t) => t.status !== "Selesai").length)} />
+        <MetricTile label="Verifikasi Lapangan" value={String(tickets.filter((t) => t.status === "Verifikasi Lapangan").length)} />
+        <MetricTile label="Selesai" value={String(tickets.filter((t) => t.status === "Selesai").length)} />
       </div>
 
       {message ? <p className={messageClass(message.tone)}>{message.text}</p> : null}
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        {tickets.map((ticket) => (
-          <article key={ticket.id} className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0">
-                <div className="flex flex-wrap gap-2">
-                  <EntityChip label={ticket.id} tone="ticket" />
-                  <EntityChip label={ticket.case_id} href={`/cases/${ticket.case_id}`} tone="case" />
-                  <EntityChip label={ticket.linked_vendor_name} href={`/vendors/${ticket.linked_vendor_id}`} tone="vendor" />
+      <div className="overflow-x-auto pb-2">
+        <div className="flex min-w-max gap-4">
+          {COLUMNS.map((col) => {
+            const items = byColumn.get(col) ?? [];
+            return (
+              <div key={col} className="flex w-80 shrink-0 flex-col rounded-xl border border-border bg-surface-raised">
+                <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                  <h2 className="break-words text-sm font-semibold">{col}</h2>
+                  <span className="rounded-full bg-surface-overlay px-2 py-0.5 text-xs text-muted-foreground">{items.length}</span>
                 </div>
-                <h2 className="mt-3 break-words text-lg font-semibold">{ticket.title}</h2>
-                <p className="break-words text-sm text-muted-foreground">{ticket.linked_region} · {ticket.assigned_unit}</p>
+                <div className="flex flex-col gap-3 p-3">
+                  {items.length === 0 ? (
+                    <p className="px-1 py-6 text-center text-xs text-muted-foreground">Tidak ada tiket.</p>
+                  ) : (
+                    items.map((ticket) => (
+                      <TicketCard key={ticket.id} ticket={ticket} columns={COLUMNS} current={col} onMove={moveTicket} />
+                    ))
+                  )}
+                </div>
               </div>
-              <StatusBadge label={ticket.status} />
-            </div>
-            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <Info label="SLA" value={ticket.sla} />
-              <Info label="Priority" value={String(ticket.priority)} />
-              <Info label="Escalation" value={ticket.escalation_level} />
-              <Info label="Last Update" value={new Date(ticket.updated_at).toLocaleString()} />
-            </div>
-            <p className="mt-4 break-words text-sm text-muted-foreground">{ticket.recommended_action}</p>
-            <div className="mt-4 break-words rounded-lg bg-surface p-3 text-sm text-muted-foreground">
-              Evidence #{ticket.linked_evidence_ids.join(", #")} · {ticket.audit_preview}
-            </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Link href={`/cases/${ticket.case_id}`} className="inline-flex justify-center rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-400">
-                Open Case
-              </Link>
-              {statuses.map((status) => (
-                <button
-                  key={status}
-                  onClick={() => updateStatus(ticket, status)}
-                  className="rounded-md border border-border px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-surface hover:text-foreground"
-                >
-                  {status}
-                </button>
-              ))}
-            </div>
-          </article>
-        ))}
+            );
+          })}
+        </div>
       </div>
     </div>
+  );
+}
+
+function TicketCard({
+  ticket,
+  columns,
+  current,
+  onMove,
+}: {
+  ticket: Ticket;
+  columns: string[];
+  current: string;
+  onMove: (ticket: Ticket, status: string) => void;
+}) {
+  return (
+    <article className="min-w-0 rounded-lg border border-border bg-surface p-4">
+      <div className="flex flex-wrap gap-2">
+        <EntityChip label={ticket.id} tone="ticket" />
+        <EntityChip label={caseNumber(ticket.case_id)} href={`/cases/${ticket.case_id}`} tone="case" />
+      </div>
+      <h3 className="mt-2 break-words text-sm font-semibold">{ticket.title}</h3>
+      <p className="mt-1 break-words text-xs text-muted-foreground">{ticket.linked_region} · {ticket.assigned_unit}</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <StatusBadge label={`SLA ${ticket.sla}`} />
+        <StatusBadge label={ticket.escalation_level} />
+      </div>
+      <p className="mt-3 break-words text-xs text-muted-foreground">{ticket.recommended_action}</p>
+      <div className="mt-3 flex flex-col gap-2">
+        <Link href={`/cases/${ticket.case_id}`} className="inline-flex justify-center rounded-md bg-brand-500 px-3 py-2 text-xs font-medium text-white hover:bg-brand-400">
+          Buka Kasus
+        </Link>
+        <label className="text-xs text-muted-foreground">
+          <span className="mb-1 block">Pindahkan ke</span>
+          <select
+            value={current}
+            onChange={(e) => onMove(ticket, e.target.value)}
+            className="w-full rounded-md border border-border bg-surface-raised px-2 py-1.5 text-xs text-foreground"
+          >
+            {columns.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+    </article>
   );
 }
 
 function messageClass(tone: TicketMessage["tone"]) {
   return tone === "success"
-    ? "rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-200"
-    : "rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-200";
-}
-
-function Info({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="min-w-0 rounded-lg bg-surface p-3">
-      <p className="text-xs uppercase text-muted-foreground">{label}</p>
-      <p className="mt-1 break-words text-sm font-medium">{value}</p>
-    </div>
-  );
+    ? "rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-800 dark:text-emerald-200"
+    : "rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-200";
 }

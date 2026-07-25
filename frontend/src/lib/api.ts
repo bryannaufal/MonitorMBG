@@ -18,7 +18,9 @@ class ApiClient {
       ...options.headers,
     };
 
-    const response = await fetch(url, { ...options, headers });
+    const requestInit: RequestInit = { ...options, headers };
+    if (requestInit.method === "GET") requestInit.cache = "no-store";
+    const response = await fetch(url, requestInit);
 
     if (!response.ok) {
       throw new ApiError(`API error: ${response.status} ${response.statusText}`, response.status);

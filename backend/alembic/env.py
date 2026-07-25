@@ -21,6 +21,7 @@ if config.config_file_name is not None:
 
 # Import all models so Alembic can detect them
 from app.models import complaint, report, daily_report, nutrition_result, score_result  # noqa: F401
+from app.models import oversight  # noqa: F401  (vendors, cases, signals, evidence, dst.)
 
 target_metadata = Base.metadata
 

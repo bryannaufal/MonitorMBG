@@ -1,6 +1,10 @@
+// FILE DIBANGKITKAN OTOMATIS — jangan diedit manual.
+// Sumber: backend/app/seed_data.py (via scripts/gen_frontend_fallback.py).
+// Cermin identik dengan data API & seed DB (mode offline).
 import type {
   AnalyticsOverview,
   AnomalyHighlight,
+  AssignmentCandidate,
   AuditTrailEvent,
   Complaint,
   DailyReport,
@@ -11,333 +15,7004 @@ import type {
   OversightCase,
   Report,
   ScoreResult,
+  Signal,
   Ticket,
   TrendPoint,
   Vendor,
+  LocationRegistryEntry,
 } from "@/types/monitoring";
 
-export const demoNotice =
-  "AI output is a pre-verification signal. Final decisions remain with authorized operators.";
+export const demoNotice = "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang.";
 
 export const fallbackOverview: AnalyticsOverview = {
-  total_reports: 20,
-  public_signals: 20,
-  high_risk_cases: 7,
-  average_triage_time: "18h",
-  ticket_response_rate: 86,
-  public_signal_spike: "+31%",
-  open_tickets: 8,
-  vendors_on_watchlist: 4,
-  top_region: "DKI Jakarta",
-  ai_notice: demoNotice,
+  "total_reports": 20,
+  "public_signals": 20,
+  "high_risk_cases": 6,
+  "average_triage_time": "18 jam",
+  "ticket_response_rate": 86,
+  "public_signal_spike": "+31%",
+  "open_tickets": 8,
+  "vendors_on_watchlist": 4,
+  "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang.",
+  "top_region": "DKI Jakarta"
 };
 
 export const fallbackVendors: Vendor[] = [
   {
-    id: "vnd-001",
-    name: "SPPG Nusantara Sehat",
-    region: "DKI Jakarta",
-    district: "Jakarta Timur",
-    assigned_schools: ["SDN Melati 03", "SMPN 182 Jakarta", "SDN Rawamangun 07"],
-    daily_meal_volume: 3280,
-    compliance_status: "Under Review",
-    risk_score: 88,
-    risk_trend: [62, 68, 74, 81, 88],
-    watchlist_status: "Critical",
-    watchlist_reason: "Repeated low protein complaints, late delivery, and duplicate photo suspicion.",
-    last_inspection_date: "2026-05-29",
-    repeated_issue_categories: ["low protein portion", "delayed delivery", "duplicate photo"],
-    coverage_notes: "High public-signal density in East Jakarta cluster.",
-    recommended_action: "Request vendor clarification and schedule field verification.",
+    "id": "vnd-001",
+    "name": "SPPG Nusantara Sehat",
+    "region": "DKI Jakarta",
+    "district": "Jakarta Timur",
+    "assigned_schools": [
+      "SDN Melati 03",
+      "SMPN 182 Jakarta",
+      "SDN Rawamangun 07"
+    ],
+    "daily_meal_volume": 3280,
+    "compliance_status": "Sedang Ditinjau",
+    "risk_score": 88,
+    "risk_trend": [
+      62,
+      68,
+      74,
+      81,
+      88
+    ],
+    "watchlist_status": "Kritis",
+    "watchlist_reason": "Aduan porsi protein rendah berulang, keterlambatan distribusi, dan indikasi foto duplikat.",
+    "last_inspection_date": "2026-05-29",
+    "repeated_issue_categories": [
+      "porsi protein kurang",
+      "keterlambatan distribusi",
+      "indikasi foto duplikat"
+    ],
+    "coverage_notes": "Klaster tiga sekolah di Jakarta Timur; kepadatan sinyal publik tinggi pekan ini.",
+    "recommended_action": "Minta klarifikasi vendor dan jadwalkan verifikasi lapangan."
   },
   {
-    id: "vnd-002",
-    name: "Dapur Sehat Bandung Raya",
-    region: "Jawa Barat",
-    district: "Kota Bandung",
-    assigned_schools: ["SDN Sukajadi 05", "SMPN 12 Bandung"],
-    daily_meal_volume: 2410,
-    compliance_status: "Needs Verification",
-    risk_score: 79,
-    risk_trend: [52, 56, 63, 72, 79],
-    watchlist_status: "High",
-    watchlist_reason: "Hygiene concern and suspected food poisoning signals from two channels.",
-    last_inspection_date: "2026-05-25",
-    repeated_issue_categories: ["hygiene concern", "suspected food poisoning", "cold food"],
-    coverage_notes: "Two nearby schools reported similar symptoms within 48 hours.",
-    recommended_action: "Coordinate health office inspection and temporarily increase sampling.",
+    "id": "vnd-002",
+    "name": "Dapur Sehat Bandung Raya",
+    "region": "Jawa Barat",
+    "district": "Kota Bandung",
+    "assigned_schools": [
+      "SDN Sukajadi 05",
+      "SMPN 12 Bandung"
+    ],
+    "daily_meal_volume": 2410,
+    "compliance_status": "Perlu Verifikasi",
+    "risk_score": 79,
+    "risk_trend": [
+      52,
+      56,
+      63,
+      72,
+      79
+    ],
+    "watchlist_status": "Tinggi",
+    "watchlist_reason": "Kekhawatiran higiene dan indikasi gejala keracunan dari dua kanal independen.",
+    "last_inspection_date": "2026-05-25",
+    "repeated_issue_categories": [
+      "kekhawatiran higiene",
+      "indikasi keracunan makanan",
+      "makanan dingin"
+    ],
+    "coverage_notes": "Dua sekolah berdekatan melaporkan gejala serupa dalam 48 jam.",
+    "recommended_action": "Koordinasikan inspeksi dinas kesehatan dan tingkatkan sampling sementara."
   },
   {
-    id: "vnd-004",
-    name: "Dapur Mandiri Surabaya Timur",
-    region: "Jawa Timur",
-    district: "Surabaya",
-    assigned_schools: ["SDN Rungkut Menanggal", "SMPN 35 Surabaya"],
-    daily_meal_volume: 2875,
-    compliance_status: "Escalated",
-    risk_score: 83,
-    risk_trend: [55, 61, 70, 77, 83],
-    watchlist_status: "Critical",
-    watchlist_reason: "Cost anomaly, missing fruit/milk, and repeated menu mismatch.",
-    last_inspection_date: "2026-05-22",
-    repeated_issue_categories: ["cost anomaly", "missing fruit/milk", "menu mismatch"],
-    coverage_notes: "Reported cost above benchmark while menu completeness declined.",
-    recommended_action: "Escalate to procurement review and conduct menu verification.",
+    "id": "vnd-003",
+    "name": "SPPG Pangan Aman Semarang",
+    "region": "Jawa Tengah",
+    "district": "Kota Semarang",
+    "assigned_schools": [
+      "SDN Tembalang 01",
+      "SMPN 21 Semarang"
+    ],
+    "daily_meal_volume": 1980,
+    "compliance_status": "Sesuai",
+    "risk_score": 34,
+    "risk_trend": [
+      38,
+      36,
+      34,
+      33,
+      34
+    ],
+    "watchlist_status": "Rendah",
+    "watchlist_reason": "Pemantauan rutin saja.",
+    "last_inspection_date": "2026-05-31",
+    "repeated_issue_categories": [
+      "dokumentasi belum lengkap"
+    ],
+    "coverage_notes": "Operasional stabil dengan sedikit celah dokumentasi.",
+    "recommended_action": "Minta pelengkapan checklist distribusi pada laporan harian berikutnya."
   },
+  {
+    "id": "vnd-004",
+    "name": "Dapur Mandiri Surabaya Timur",
+    "region": "Jawa Timur",
+    "district": "Surabaya",
+    "assigned_schools": [
+      "SDN Rungkut Menanggal",
+      "SMPN 35 Surabaya"
+    ],
+    "daily_meal_volume": 2875,
+    "compliance_status": "Dieskalasi",
+    "risk_score": 83,
+    "risk_trend": [
+      55,
+      61,
+      70,
+      77,
+      83
+    ],
+    "watchlist_status": "Kritis",
+    "watchlist_reason": "Anomali biaya, buah/susu tidak lengkap, dan ketidaksesuaian menu berulang.",
+    "last_inspection_date": "2026-05-22",
+    "repeated_issue_categories": [
+      "anomali biaya",
+      "buah/susu tidak lengkap",
+      "ketidaksesuaian menu"
+    ],
+    "coverage_notes": "Biaya per porsi dilaporkan di atas patokan sementara kelengkapan menu menurun.",
+    "recommended_action": "Eskalasikan ke tinjauan pengadaan dan lakukan verifikasi menu."
+  },
+  {
+    "id": "vnd-005",
+    "name": "SPPG Cerdas Gizi Medan",
+    "region": "Sumatera Utara",
+    "district": "Kota Medan",
+    "assigned_schools": [
+      "SDN Medan Johor 09",
+      "SMPN 28 Medan"
+    ],
+    "daily_meal_volume": 1740,
+    "compliance_status": "Sesuai",
+    "risk_score": 41,
+    "risk_trend": [
+      43,
+      39,
+      40,
+      42,
+      41
+    ],
+    "watchlist_status": "Sedang",
+    "watchlist_reason": "Aduan makanan dingin masih di bawah ambang eskalasi.",
+    "last_inspection_date": "2026-05-30",
+    "repeated_issue_categories": [
+      "makanan dingin",
+      "keterlambatan distribusi"
+    ],
+    "coverage_notes": "Isu tampak operasional, bukan terkait kecurangan bukti.",
+    "recommended_action": "Pantau waktu rute distribusi selama satu pekan."
+  },
+  {
+    "id": "vnd-006",
+    "name": "Dapur Prima Makassar",
+    "region": "Sulawesi Selatan",
+    "district": "Makassar",
+    "assigned_schools": [
+      "SDN Panakkukang 02",
+      "SMPN 8 Makassar"
+    ],
+    "daily_meal_volume": 2135,
+    "compliance_status": "Perlu Verifikasi",
+    "risk_score": 67,
+    "risk_trend": [
+      45,
+      51,
+      56,
+      63,
+      67
+    ],
+    "watchlist_status": "Tinggi",
+    "watchlist_reason": "Dokumentasi belum lengkap dan paket bukti berkeyakinan rendah.",
+    "last_inspection_date": "2026-05-27",
+    "repeated_issue_categories": [
+      "dokumentasi belum lengkap",
+      "ketidaksesuaian menu"
+    ],
+    "coverage_notes": "Foto laporan harian lengkap tetapi hasil OCR faktur lemah.",
+    "recommended_action": "Minta faktur perbaikan dan tinjauan operator atas bukti."
+  },
+  {
+    "id": "vnd-007",
+    "name": "SPPG Sejahtera Denpasar",
+    "region": "Bali",
+    "district": "Denpasar",
+    "assigned_schools": [
+      "SDN Renon 04",
+      "SMPN 10 Denpasar"
+    ],
+    "daily_meal_volume": 1320,
+    "compliance_status": "Sesuai",
+    "risk_score": 28,
+    "risk_trend": [
+      31,
+      30,
+      29,
+      27,
+      28
+    ],
+    "watchlist_status": "Rendah",
+    "watchlist_reason": "Tidak ada isu berisiko tinggi berulang.",
+    "last_inspection_date": "2026-06-01",
+    "repeated_issue_categories": [],
+    "coverage_notes": "Vendor stabil dengan dokumentasi harian lengkap.",
+    "recommended_action": "Lanjutkan pemantauan rutin."
+  },
+  {
+    "id": "vnd-008",
+    "name": "Dapur Anak Hebat Yogyakarta",
+    "region": "DI Yogyakarta",
+    "district": "Sleman",
+    "assigned_schools": [
+      "SDN Condongcatur 02",
+      "SMPN 4 Sleman"
+    ],
+    "daily_meal_volume": 1565,
+    "compliance_status": "Sedang Ditinjau",
+    "risk_score": 58,
+    "risk_trend": [
+      35,
+      42,
+      46,
+      53,
+      58
+    ],
+    "watchlist_status": "Sedang",
+    "watchlist_reason": "Laporan buah tidak lengkap meningkat dan satu lonjakan anomali publik.",
+    "last_inspection_date": "2026-05-28",
+    "repeated_issue_categories": [
+      "buah/susu tidak lengkap",
+      "dokumentasi belum lengkap"
+    ],
+    "coverage_notes": "Tren terkini meningkat namun keyakinan bukti sedang.",
+    "recommended_action": "Tinjau tiga laporan harian berikutnya dan konfirmasi substitusi menu."
+  },
+  {
+    "id": "vnd-009",
+    "name": "SPPG Banten Tangerang Sehat",
+    "region": "Banten",
+    "district": "Kota Tangerang",
+    "assigned_schools": [
+      "SDN Tangerang 01",
+      "SMPN 4 Tangerang"
+    ],
+    "daily_meal_volume": 1860,
+    "compliance_status": "Perlu Verifikasi",
+    "risk_score": 48,
+    "risk_trend": [
+      42,
+      44,
+      46,
+      47,
+      48
+    ],
+    "watchlist_status": "Sedang",
+    "watchlist_reason": "Kandidat registry demo untuk cakupan Kota Tangerang.",
+    "last_inspection_date": "2026-05-26",
+    "repeated_issue_categories": [
+      "dokumentasi belum lengkap"
+    ],
+    "coverage_notes": "Cakupan demo terbatas pada Kota Tangerang dan sekolah yang tercantum.",
+    "recommended_action": "Konfirmasi cakupan layanan dan minta dokumen operasional terbaru."
+  },
+  {
+    "id": "vnd-010",
+    "name": "SPPG Tanggamus Pangan Aman",
+    "region": "Lampung",
+    "district": "Kabupaten Tanggamus",
+    "assigned_schools": [
+      "SDN 1 Karang Agung",
+      "SDN Kota Agung 02"
+    ],
+    "daily_meal_volume": 1240,
+    "compliance_status": "Perlu Verifikasi",
+    "risk_score": 46,
+    "risk_trend": [
+      40,
+      42,
+      43,
+      45,
+      46
+    ],
+    "watchlist_status": "Sedang",
+    "watchlist_reason": "Kandidat registry demo; bukan penetapan vendor pada laporan belatung.",
+    "last_inspection_date": "2026-05-24",
+    "repeated_issue_categories": [
+      "dokumentasi belum lengkap"
+    ],
+    "coverage_notes": "Kandidat fiktif dengan cakupan Kabupaten Tanggamus; perlu konfirmasi operator.",
+    "recommended_action": "Konfirmasi identitas penyedia sebelum verifikasi lapangan."
+  },
+  {
+    "id": "vnd-011",
+    "name": "Dapur Lampung Lintas Kabupaten",
+    "region": "Lampung",
+    "district": "Kota Bandar Lampung",
+    "assigned_schools": [
+      "SDN 1 Karang Agung",
+      "SDN Bandar Lampung 03"
+    ],
+    "daily_meal_volume": 1680,
+    "compliance_status": "Perlu Verifikasi",
+    "risk_score": 44,
+    "risk_trend": [
+      39,
+      40,
+      42,
+      43,
+      44
+    ],
+    "watchlist_status": "Sedang",
+    "watchlist_reason": "Kandidat registry demo dengan cakupan lintas kabupaten di Lampung.",
+    "last_inspection_date": "2026-05-23",
+    "repeated_issue_categories": [
+      "keterlambatan distribusi"
+    ],
+    "coverage_notes": "Kandidat fiktif; cakupan Tanggamus harus dikonfirmasi operator.",
+    "recommended_action": "Minta klarifikasi cakupan dan penanggung jawab wilayah."
+  },
+  {
+    "id": "vnd-012",
+    "name": "SPPG Sumsel Palembang Bersama",
+    "region": "Sumatera Selatan",
+    "district": "Kota Palembang",
+    "assigned_schools": [
+      "SDN Palembang 07",
+      "SMPN 18 Palembang"
+    ],
+    "daily_meal_volume": 1720,
+    "compliance_status": "Sesuai",
+    "risk_score": 43,
+    "risk_trend": [
+      40,
+      41,
+      42,
+      42,
+      43
+    ],
+    "watchlist_status": "Rendah",
+    "watchlist_reason": "Pemantauan rutin pada cakupan Kota Palembang.",
+    "last_inspection_date": "2026-05-28",
+    "repeated_issue_categories": [
+      "dokumentasi belum lengkap"
+    ],
+    "coverage_notes": "Cakupan demo terbatas pada Kota Palembang.",
+    "recommended_action": "Lanjutkan pemantauan rutin dan validasi dokumen."
+  },
+  {
+    "id": "vnd-013",
+    "name": "Dapur Kepri Batam Sejahtera",
+    "region": "Kepulauan Riau",
+    "district": "Kota Batam",
+    "assigned_schools": [
+      "SDN Batam 01",
+      "SMPN 7 Batam"
+    ],
+    "daily_meal_volume": 1480,
+    "compliance_status": "Sesuai",
+    "risk_score": 39,
+    "risk_trend": [
+      37,
+      38,
+      38,
+      39,
+      39
+    ],
+    "watchlist_status": "Rendah",
+    "watchlist_reason": "Pemantauan rutin; Kepri adalah provinsi terpisah dari DKI Jakarta.",
+    "last_inspection_date": "2026-05-29",
+    "repeated_issue_categories": [],
+    "coverage_notes": "Cakupan demo terbatas pada Kota Batam, Kepulauan Riau.",
+    "recommended_action": "Lanjutkan pemantauan rutin."
+  }
+];
+
+export const fallbackLocationRegistry: LocationRegistryEntry[] = [
+  {
+    "province": "DKI Jakarta",
+    "districts": [
+      {
+        "name": "Jakarta Pusat",
+        "schools": [
+          "SDN Menteng 01"
+        ],
+        "vendor_ids": []
+      },
+      {
+        "name": "Jakarta Barat",
+        "schools": [
+          "SDN Palmerah 05"
+        ],
+        "vendor_ids": []
+      },
+      {
+        "name": "Jakarta Selatan",
+        "schools": [
+          "SDN Tebet 03"
+        ],
+        "vendor_ids": []
+      },
+      {
+        "name": "Jakarta Timur",
+        "schools": [
+          "SDN Melati 03",
+          "SMPN 182 Jakarta",
+          "SDN Rawamangun 07"
+        ],
+        "vendor_ids": [
+          "vnd-001"
+        ]
+      },
+      {
+        "name": "Jakarta Utara",
+        "schools": [
+          "SDN Kelapa Gading 02"
+        ],
+        "vendor_ids": []
+      },
+      {
+        "name": "Kepulauan Seribu",
+        "schools": [
+          "SDN Pulau Pramuka 01"
+        ],
+        "vendor_ids": []
+      }
+    ]
+  },
+  {
+    "province": "Banten",
+    "districts": [
+      {
+        "name": "Kota Tangerang",
+        "schools": [
+          "SDN Tangerang 01",
+          "SMPN 4 Tangerang"
+        ],
+        "vendor_ids": [
+          "vnd-009"
+        ]
+      }
+    ]
+  },
+  {
+    "province": "Jawa Barat",
+    "districts": [
+      {
+        "name": "Kota Bandung",
+        "schools": [
+          "SDN Sukajadi 05",
+          "SMPN 12 Bandung"
+        ],
+        "vendor_ids": [
+          "vnd-002"
+        ]
+      }
+    ]
+  },
+  {
+    "province": "Jawa Tengah",
+    "districts": [
+      {
+        "name": "Kota Semarang",
+        "schools": [
+          "SDN Tembalang 01",
+          "SMPN 21 Semarang"
+        ],
+        "vendor_ids": [
+          "vnd-003"
+        ]
+      }
+    ]
+  },
+  {
+    "province": "DI Yogyakarta",
+    "districts": [
+      {
+        "name": "Sleman",
+        "schools": [
+          "SDN Condongcatur 02",
+          "SMPN 4 Sleman"
+        ],
+        "vendor_ids": [
+          "vnd-008"
+        ]
+      }
+    ]
+  },
+  {
+    "province": "Jawa Timur",
+    "districts": [
+      {
+        "name": "Surabaya",
+        "schools": [
+          "SDN Rungkut Menanggal",
+          "SMPN 35 Surabaya"
+        ],
+        "vendor_ids": [
+          "vnd-004"
+        ]
+      }
+    ]
+  },
+  {
+    "province": "Bali",
+    "districts": [
+      {
+        "name": "Denpasar",
+        "schools": [
+          "SDN Renon 04",
+          "SMPN 10 Denpasar"
+        ],
+        "vendor_ids": [
+          "vnd-007"
+        ]
+      }
+    ]
+  },
+  {
+    "province": "Lampung",
+    "districts": [
+      {
+        "name": "Kabupaten Tanggamus",
+        "schools": [
+          "SDN 1 Karang Agung",
+          "SDN Kota Agung 02"
+        ],
+        "vendor_ids": [
+          "vnd-010",
+          "vnd-011"
+        ]
+      },
+      {
+        "name": "Kota Bandar Lampung",
+        "schools": [
+          "SDN Bandar Lampung 03"
+        ],
+        "vendor_ids": [
+          "vnd-011"
+        ]
+      }
+    ]
+  },
+  {
+    "province": "Sumatera Utara",
+    "districts": [
+      {
+        "name": "Kota Medan",
+        "schools": [
+          "SDN Medan Johor 09",
+          "SMPN 28 Medan"
+        ],
+        "vendor_ids": [
+          "vnd-005"
+        ]
+      }
+    ]
+  },
+  {
+    "province": "Sumatera Selatan",
+    "districts": [
+      {
+        "name": "Kota Palembang",
+        "schools": [
+          "SDN Palembang 07",
+          "SMPN 18 Palembang"
+        ],
+        "vendor_ids": [
+          "vnd-012"
+        ]
+      }
+    ]
+  },
+  {
+    "province": "Sulawesi Selatan",
+    "districts": [
+      {
+        "name": "Makassar",
+        "schools": [
+          "SDN Panakkukang 02",
+          "SMPN 8 Makassar"
+        ],
+        "vendor_ids": [
+          "vnd-006"
+        ]
+      }
+    ]
+  },
+  {
+    "province": "Kepulauan Riau",
+    "districts": [
+      {
+        "name": "Kota Batam",
+        "schools": [
+          "SDN Batam 01",
+          "SMPN 7 Batam"
+        ],
+        "vendor_ids": [
+          "vnd-013"
+        ]
+      }
+    ]
+  }
+];
+
+export const fallbackInvestigators: AssignmentCandidate[] = [
+  {
+    "id": "inv-operator-dewi",
+    "name": "Operator Dewi",
+    "role": "Operator nasional",
+    "provinces": [],
+    "districts": [],
+    "national": true
+  },
+  {
+    "id": "inv-jakarta-timur",
+    "name": "Tim Verifikasi Lapangan Jakarta Timur",
+    "role": "Verifikasi lapangan",
+    "provinces": [
+      "DKI Jakarta"
+    ],
+    "districts": [
+      "Jakarta Timur"
+    ],
+    "national": false
+  },
+  {
+    "id": "inv-tanggamus",
+    "name": "Operator Pengawasan Tanggamus",
+    "role": "Pengawasan kabupaten",
+    "provinces": [
+      "Lampung"
+    ],
+    "districts": [
+      "Kabupaten Tanggamus"
+    ],
+    "national": false
+  },
+  {
+    "id": "inv-lampung-field",
+    "name": "Tim Verifikasi Lapangan Lampung",
+    "role": "Verifikasi lapangan",
+    "provinces": [
+      "Lampung"
+    ],
+    "districts": [],
+    "national": false
+  },
+  {
+    "id": "inv-lampung-nutrition",
+    "name": "Tim Gizi dan Kepatuhan Lampung",
+    "role": "Gizi dan kepatuhan",
+    "provinces": [
+      "Lampung"
+    ],
+    "districts": [],
+    "national": false
+  },
+  {
+    "id": "inv-vendor",
+    "name": "Unit Pengawasan Vendor",
+    "role": "Pengawasan vendor lintas wilayah",
+    "provinces": [],
+    "districts": [],
+    "national": true
+  },
+  {
+    "id": "inv-nutrition",
+    "name": "Tim Gizi dan Kepatuhan",
+    "role": "Gizi dan kepatuhan lintas wilayah",
+    "provinces": [],
+    "districts": [],
+    "national": true
+  }
+];
+
+export const fallbackUnits: AssignmentCandidate[] = [
+  {
+    "id": "unit-national",
+    "name": "Unit Pengawasan Vendor MBG Nasional",
+    "role": "Koordinasi nasional",
+    "provinces": [],
+    "districts": [],
+    "national": true
+  },
+  {
+    "id": "unit-vendor",
+    "name": "Unit Pengawasan Vendor MBG",
+    "role": "Pengawasan vendor lintas wilayah",
+    "provinces": [],
+    "districts": [],
+    "national": true
+  },
+  {
+    "id": "unit-jakarta-timur",
+    "name": "Dinas Kesehatan Jakarta Timur",
+    "role": "Kesehatan wilayah",
+    "provinces": [
+      "DKI Jakarta"
+    ],
+    "districts": [
+      "Jakarta Timur"
+    ],
+    "national": false
+  },
+  {
+    "id": "unit-tanggamus-health",
+    "name": "Dinas Kesehatan Kabupaten Tanggamus",
+    "role": "Kesehatan kabupaten",
+    "provinces": [
+      "Lampung"
+    ],
+    "districts": [
+      "Kabupaten Tanggamus"
+    ],
+    "national": false
+  },
+  {
+    "id": "unit-lampung-vendor",
+    "name": "Unit Pengawasan Vendor MBG Lampung",
+    "role": "Pengawasan vendor provinsi",
+    "provinces": [
+      "Lampung"
+    ],
+    "districts": [],
+    "national": false
+  },
+  {
+    "id": "unit-lampung-food",
+    "name": "Tim Respons Keamanan Pangan Lampung",
+    "role": "Respons keamanan pangan",
+    "provinces": [
+      "Lampung"
+    ],
+    "districts": [],
+    "national": false
+  },
+  {
+    "id": "unit-nutrition",
+    "name": "Tim Gizi dan Kepatuhan",
+    "role": "Gizi dan kepatuhan lintas wilayah",
+    "provinces": [],
+    "districts": [],
+    "national": true
+  },
+  {
+    "id": "unit-procurement",
+    "name": "Meja Tinjauan Pengadaan",
+    "role": "Tinjauan pengadaan lintas wilayah",
+    "provinces": [],
+    "districts": [],
+    "national": true
+  }
+];
+
+export const fallbackSignals: Signal[] = [
+  {
+    "id": 1,
+    "case_id": "case-001",
+    "source": "Aduan Wali Murid",
+    "source_confidence": 0.64,
+    "urgency": "Tinggi",
+    "status": "Terhubung ke Kasus",
+    "summary": "Porsi lauk kecil dan makanan datang terlambat di SDN Melati 03",
+    "text": "Menu hari ini hanya nasi, sedikit sayur, dan lauk telur sangat kecil. Makanan juga datang terlambat sekitar 45 menit.",
+    "created_at": "2026-06-02T08:15:00+00:00",
+    "vendor_id": "vnd-001",
+    "vendor_name": "SPPG Nusantara Sehat",
+    "region": "DKI Jakarta",
+    "district": "Jakarta Timur",
+    "school": "SDN Melati 03",
+    "issue_category": "porsi protein kurang"
+  },
+  {
+    "id": 2,
+    "case_id": "case-001",
+    "source": "Laporan Pengawas",
+    "source_confidence": 0.72,
+    "urgency": "Tinggi",
+    "status": "Terhubung ke Kasus",
+    "summary": "Pengawas melaporkan pola porsi protein rendah yang berulang di SPPG Nusantara Sehat",
+    "text": "Laporan pengawas: pola keterlambatan dan porsi protein rendah berulang pada distribusi MBG oleh SPPG Nusantara Sehat.",
+    "created_at": "2026-06-03T09:30:00+00:00",
+    "vendor_id": "vnd-001",
+    "vendor_name": "SPPG Nusantara Sehat",
+    "region": "DKI Jakarta",
+    "district": "Jakarta Timur",
+    "school": "SDN Melati 03",
+    "issue_category": "porsi protein kurang"
+  },
+  {
+    "id": 3,
+    "case_id": "case-001",
+    "source": "Laporan Harian Vendor",
+    "source_confidence": 0.7,
+    "urgency": "Sedang",
+    "status": "Terhubung ke Kasus",
+    "summary": "Laporan harian vendor: menu aktual nasi, telur, sayur (tanpa buah/susu)",
+    "text": "Laporan harian vendor mencatat menu aktual nasi, telur kecil, sayur; buah dan susu pada rencana menu tidak tercatat terdistribusi.",
+    "created_at": "2026-06-04T08:00:00+00:00",
+    "vendor_id": "vnd-001",
+    "vendor_name": "SPPG Nusantara Sehat",
+    "region": "DKI Jakarta",
+    "district": "Jakarta Timur",
+    "school": "SDN Melati 03",
+    "issue_category": "porsi protein kurang"
+  },
+  {
+    "id": 4,
+    "case_id": "case-002",
+    "source": "Hotline Sekolah",
+    "source_confidence": 0.81,
+    "urgency": "Tinggi",
+    "status": "Terhubung ke Kasus",
+    "summary": "Beberapa siswa bergejala mual setelah makan siang di SDN Sukajadi 05",
+    "text": "Aduan gejala mual dan pusing pada beberapa siswa setelah distribusi MBG.",
+    "created_at": "2026-06-02T10:15:00+00:00",
+    "vendor_id": "vnd-002",
+    "vendor_name": "Dapur Sehat Bandung Raya",
+    "region": "Jawa Barat",
+    "district": "Kota Bandung",
+    "school": "SDN Sukajadi 05",
+    "issue_category": "indikasi keracunan makanan"
+  },
+  {
+    "id": 5,
+    "case_id": "case-002",
+    "source": "Laporan Komunitas",
+    "source_confidence": 0.66,
+    "urgency": "Tinggi",
+    "status": "Terhubung ke Kasus",
+    "summary": "Sekolah berdekatan melaporkan gejala serupa dalam 48 jam",
+    "text": "Laporan komunitas menyebut gejala serupa di sekolah lain dalam wilayah yang sama.",
+    "created_at": "2026-06-03T08:40:00+00:00",
+    "vendor_id": "vnd-002",
+    "vendor_name": "Dapur Sehat Bandung Raya",
+    "region": "Jawa Barat",
+    "district": "Kota Bandung",
+    "school": "SDN Sukajadi 05",
+    "issue_category": "indikasi keracunan makanan"
+  },
+  {
+    "id": 6,
+    "case_id": "case-003",
+    "source": "Laporan Harian Vendor",
+    "source_confidence": 0.58,
+    "urgency": "Sedang",
+    "status": "Sedang Ditinjau",
+    "summary": "Biaya per porsi di atas patokan pada laporan harian Dapur Mandiri Surabaya Timur",
+    "text": "Laporan harian mencatat biaya per porsi di atas patokan anggaran standar.",
+    "created_at": "2026-06-01T09:20:00+00:00",
+    "vendor_id": "vnd-004",
+    "vendor_name": "Dapur Mandiri Surabaya Timur",
+    "region": "Jawa Timur",
+    "district": "Surabaya",
+    "school": "SDN Rungkut Menanggal",
+    "issue_category": "anomali biaya"
+  },
+  {
+    "id": 7,
+    "case_id": "case-003",
+    "source": "Tinjauan Pengadaan",
+    "source_confidence": 0.74,
+    "urgency": "Tinggi",
+    "status": "Terhubung ke Kasus",
+    "summary": "Tinjauan pengadaan menandai selisih biaya sementara kelengkapan menu menurun",
+    "text": "Tim pengadaan menandai anomali biaya yang perlu klarifikasi vendor.",
+    "created_at": "2026-06-02T11:00:00+00:00",
+    "vendor_id": "vnd-004",
+    "vendor_name": "Dapur Mandiri Surabaya Timur",
+    "region": "Jawa Timur",
+    "district": "Surabaya",
+    "school": "SDN Rungkut Menanggal",
+    "issue_category": "anomali biaya"
+  },
+  {
+    "id": 8,
+    "case_id": "case-004",
+    "source": "Laporan Harian Vendor",
+    "source_confidence": 0.52,
+    "urgency": "Sedang",
+    "status": "Sedang Ditinjau",
+    "summary": "Faktur pada laporan harian Dapur Prima Makassar sulit terbaca (OCR lemah)",
+    "text": "Bidang faktur pada laporan harian terbaca sebagian; total biaya perlu konfirmasi.",
+    "created_at": "2026-06-01T08:40:00+00:00",
+    "vendor_id": "vnd-006",
+    "vendor_name": "Dapur Prima Makassar",
+    "region": "Sulawesi Selatan",
+    "district": "Makassar",
+    "school": "SDN Panakkukang 02",
+    "issue_category": "dokumentasi belum lengkap"
+  },
+  {
+    "id": 9,
+    "case_id": "case-004",
+    "source": "Operator Sekolah",
+    "source_confidence": 0.6,
+    "urgency": "Sedang",
+    "status": "Terhubung ke Kasus",
+    "summary": "Operator sekolah melaporkan checklist distribusi belum lengkap",
+    "text": "Operator sekolah mencatat beberapa item checklist distribusi belum terisi.",
+    "created_at": "2026-06-02T09:10:00+00:00",
+    "vendor_id": "vnd-006",
+    "vendor_name": "Dapur Prima Makassar",
+    "region": "Sulawesi Selatan",
+    "district": "Makassar",
+    "school": "SDN Panakkukang 02",
+    "issue_category": "dokumentasi belum lengkap"
+  },
+  {
+    "id": 10,
+    "case_id": "case-005",
+    "source": "Aduan Wali Murid",
+    "source_confidence": 0.63,
+    "urgency": "Sedang",
+    "status": "Sedang Ditinjau",
+    "summary": "Buah dan susu tidak tersedia beberapa hari di SDN Condongcatur 02",
+    "text": "Wali murid melaporkan buah dan susu tidak tersedia pada beberapa hari distribusi.",
+    "created_at": "2026-06-02T09:05:00+00:00",
+    "vendor_id": "vnd-008",
+    "vendor_name": "Dapur Anak Hebat Yogyakarta",
+    "region": "DI Yogyakarta",
+    "district": "Sleman",
+    "school": "SDN Condongcatur 02",
+    "issue_category": "buah/susu tidak lengkap"
+  },
+  {
+    "id": 11,
+    "case_id": "case-006",
+    "source": "Hotline Sekolah",
+    "source_confidence": 0.59,
+    "urgency": "Sedang",
+    "status": "Sedang Ditinjau",
+    "summary": "Makanan diterima dalam kondisi dingin dan sedikit terlambat di SDN Medan Johor 09",
+    "text": "Aduan makanan dingin dan keterlambatan ringan; tampak isu operasional rute.",
+    "created_at": "2026-06-03T08:10:00+00:00",
+    "vendor_id": "vnd-005",
+    "vendor_name": "SPPG Cerdas Gizi Medan",
+    "region": "Sumatera Utara",
+    "district": "Kota Medan",
+    "school": "SDN Medan Johor 09",
+    "issue_category": "makanan dingin"
+  },
+  {
+    "id": 12,
+    "case_id": "case-007",
+    "source": "Laporan Pengawas",
+    "source_confidence": 0.71,
+    "urgency": "Tinggi",
+    "status": "Terhubung ke Kasus",
+    "summary": "Menu aktual tidak sesuai rencana di SMPN 35 Surabaya",
+    "text": "Pengawas mencatat menu aktual berulang kali tidak sesuai dengan rencana menu.",
+    "created_at": "2026-06-02T07:30:00+00:00",
+    "vendor_id": "vnd-004",
+    "vendor_name": "Dapur Mandiri Surabaya Timur",
+    "region": "Jawa Timur",
+    "district": "Surabaya",
+    "school": "SMPN 35 Surabaya",
+    "issue_category": "ketidaksesuaian menu"
+  },
+  {
+    "id": 13,
+    "case_id": "case-007",
+    "source": "Laporan Harian Vendor",
+    "source_confidence": 0.55,
+    "urgency": "Sedang",
+    "status": "Sedang Ditinjau",
+    "summary": "Foto laporan harian terindikasi mirip dengan hari sebelumnya",
+    "text": "Sistem menandai indikasi kemiripan foto antar hari; perlu peninjauan operator.",
+    "created_at": "2026-06-03T10:00:00+00:00",
+    "vendor_id": "vnd-004",
+    "vendor_name": "Dapur Mandiri Surabaya Timur",
+    "region": "Jawa Timur",
+    "district": "Surabaya",
+    "school": "SMPN 35 Surabaya",
+    "issue_category": "ketidaksesuaian menu"
+  },
+  {
+    "id": 14,
+    "case_id": "case-008",
+    "source": "Laporan Komunitas",
+    "source_confidence": 0.68,
+    "urgency": "Tinggi",
+    "status": "Terhubung ke Kasus",
+    "summary": "Kekhawatiran higiene area dapur di SMPN 12 Bandung",
+    "text": "Laporan komunitas menyebut kondisi higiene dapur perlu diperiksa.",
+    "created_at": "2026-06-03T07:45:00+00:00",
+    "vendor_id": "vnd-002",
+    "vendor_name": "Dapur Sehat Bandung Raya",
+    "region": "Jawa Barat",
+    "district": "Kota Bandung",
+    "school": "SMPN 12 Bandung",
+    "issue_category": "kekhawatiran higiene"
+  },
+  {
+    "id": 15,
+    "case_id": "case-009",
+    "source": "Operator Sekolah",
+    "source_confidence": 0.5,
+    "urgency": "Rendah",
+    "status": "Terhubung ke Kasus",
+    "summary": "Checklist distribusi belum lengkap di SDN Tembalang 01",
+    "text": "Operator sekolah melaporkan checklist distribusi belum sepenuhnya terisi.",
+    "created_at": "2026-06-01T08:00:00+00:00",
+    "vendor_id": "vnd-003",
+    "vendor_name": "SPPG Pangan Aman Semarang",
+    "region": "Jawa Tengah",
+    "district": "Kota Semarang",
+    "school": "SDN Tembalang 01",
+    "issue_category": "dokumentasi belum lengkap"
+  },
+  {
+    "id": 16,
+    "case_id": "case-010",
+    "source": "Aduan Wali Murid",
+    "source_confidence": 0.48,
+    "urgency": "Rendah",
+    "status": "Terhubung ke Kasus",
+    "summary": "Keterlambatan distribusi terisolasi di SDN Renon 04",
+    "text": "Satu laporan keterlambatan distribusi; tidak berulang.",
+    "created_at": "2026-06-01T09:00:00+00:00",
+    "vendor_id": "vnd-007",
+    "vendor_name": "SPPG Sejahtera Denpasar",
+    "region": "Bali",
+    "district": "Denpasar",
+    "school": "SDN Renon 04",
+    "issue_category": "keterlambatan distribusi"
+  },
+  {
+    "id": 17,
+    "case_id": null,
+    "source": "Media Sosial",
+    "source_confidence": 0.41,
+    "urgency": "Rendah",
+    "status": "Belum Dibentuk Kasus",
+    "summary": "Unggahan warganet menyebut porsi kecil di sebuah sekolah (lokasi belum jelas)",
+    "text": "Sinyal publik belum tervalidasi; lokasi dan vendor belum dapat dipastikan.",
+    "vendor_id": null,
+    "vendor_name": "Belum teridentifikasi",
+    "region": "Belum teridentifikasi",
+    "school": "Belum teridentifikasi",
+    "created_at": "2026-06-04T07:20:00+00:00",
+    "district": "Belum teridentifikasi",
+    "issue_category": "belum diklasifikasi"
+  },
+  {
+    "id": 18,
+    "case_id": null,
+    "source": "Formulir Publik",
+    "source_confidence": 0.44,
+    "urgency": "Sedang",
+    "status": "Belum Dibentuk Kasus",
+    "summary": "Aduan rasa makanan kurang enak, tanpa detail vendor/sekolah",
+    "text": "Sinyal publik masuk tanpa detail vendor atau sekolah; perlu triase operator.",
+    "vendor_id": null,
+    "vendor_name": "Belum teridentifikasi",
+    "region": "Belum teridentifikasi",
+    "school": "Belum teridentifikasi",
+    "created_at": "2026-06-04T06:50:00+00:00",
+    "district": "Belum teridentifikasi",
+    "issue_category": "belum diklasifikasi"
+  },
+  {
+    "id": 19,
+    "case_id": null,
+    "source": "Laporan Pengawas",
+    "source_confidence": 0.86,
+    "urgency": "Kritis",
+    "status": "Belum Dibentuk Kasus",
+    "summary": "Laporan pengawas: dugaan kontaminasi belatung pada makanan MBG di SDN 1 Karang Agung",
+    "text": "Laporan resmi pengawas menyebut dugaan kontaminasi belatung pada makanan MBG. Lokasi spesifik teridentifikasi dan disertai lampiran foto.",
+    "vendor_id": null,
+    "vendor_name": "Belum teridentifikasi",
+    "region": "Lampung",
+    "district": "Kabupaten Tanggamus",
+    "school": "SDN 1 Karang Agung",
+    "issue_category": "dugaan keamanan pangan",
+    "attachment_path": "/evidence-media/4.jpg",
+    "attachment_title": "Foto laporan resmi dugaan kontaminasi belatung",
+    "attachment_source": "Laporan Resmi",
+    "attachment_note": "Foto laporan resmi menunjukkan indikasi yang memerlukan verifikasi sanitasi dan pemeriksaan lapangan segera. Foto tidak menjadi keputusan final atau penetapan pelanggaran.",
+    "created_at": "2026-06-04T09:10:00+00:00"
+  },
+  {
+    "id": 20,
+    "case_id": null,
+    "source": "Media Sosial",
+    "source_confidence": 0.38,
+    "urgency": "Sedang",
+    "status": "Belum Dibentuk Kasus",
+    "summary": "Unggahan media sosial menyebut dugaan belatung pada MBG anak SD di Lampung",
+    "text": "di lampung ada belatung di mbg anak sd",
+    "vendor_id": null,
+    "vendor_name": "Belum teridentifikasi",
+    "region": "Lampung",
+    "district": "Belum teridentifikasi",
+    "school": "Belum teridentifikasi",
+    "issue_category": "dugaan keamanan pangan",
+    "attachment_path": "/evidence-media/26.jpg",
+    "attachment_title": "Lampiran unggahan media sosial terkait dugaan keamanan pangan",
+    "attachment_source": "Media Sosial",
+    "attachment_note": "Sinyal pendukung dari wilayah Lampung; hubungan dengan SDN 1 Karang Agung belum terkonfirmasi dan memerlukan verifikasi operator.",
+    "created_at": "2026-06-04T11:40:00+00:00"
+  }
 ];
 
 export const fallbackComplaints: Complaint[] = [
   {
-    id: 1,
-    case_id: "case-001",
-    source: "Parent Form",
-    source_confidence: 0.64,
-    summary: "Low protein portion and late delivery reported near SDN Melati 03",
-    text: "Menu hari ini hanya nasi, sayur sedikit, dan lauk telur sangat kecil. Makanan juga datang terlambat sekitar 45 menit.",
-    issue_category: "low protein portion",
-    sentiment: "negative",
-    severity_score: 86,
-    region: "DKI Jakarta",
-    district: "Jakarta Timur",
-    school: "SDN Melati 03",
-    vendor_id: "vnd-001",
-    vendor_name: "SPPG Nusantara Sehat",
-    status: "Linked to Ticket",
-    anomaly_tag: "Spike",
-    created_at: "2026-06-02T08:15:00Z",
+    "id": 1,
+    "case_id": "case-001",
+    "source": "Aduan Wali Murid",
+    "source_confidence": 0.64,
+    "summary": "Porsi lauk kecil dan makanan datang terlambat di SDN Melati 03",
+    "text": "Menu hari ini hanya nasi, sedikit sayur, dan lauk telur sangat kecil. Makanan juga datang terlambat sekitar 45 menit.",
+    "issue_category": "porsi protein kurang",
+    "sentiment": "negative",
+    "severity_score": 86,
+    "region": "DKI Jakarta",
+    "district": "Jakarta Timur",
+    "school": "SDN Melati 03",
+    "vendor_id": "vnd-001",
+    "vendor_name": "SPPG Nusantara Sehat",
+    "status": "Terhubung ke Kasus",
+    "urgency": "Tinggi",
+    "anomaly_tag": "Lonjakan",
+    "created_at": "2026-06-02T08:15:00+00:00"
   },
   {
-    id: 2,
-    case_id: "case-002",
-    source: "Parent Form",
-    source_confidence: 0.72,
-    summary: "Hygiene concern reported near SDN Sukajadi 05",
-    text: "Fictional demo signal: hygiene concern and illness symptoms.",
-    issue_category: "hygiene concern",
-    sentiment: "negative",
-    severity_score: 91,
-    region: "Jawa Barat",
-    district: "Kota Bandung",
-    school: "SDN Sukajadi 05",
-    vendor_id: "vnd-002",
-    vendor_name: "Dapur Sehat Bandung Raya",
-    status: "Under Review",
-    anomaly_tag: "Spike",
-    created_at: "2026-06-02T10:15:00Z",
+    "id": 2,
+    "case_id": "case-001",
+    "source": "Laporan Pengawas",
+    "source_confidence": 0.72,
+    "summary": "Pengawas melaporkan pola porsi protein rendah yang berulang di SPPG Nusantara Sehat",
+    "text": "Laporan pengawas: pola keterlambatan dan porsi protein rendah berulang pada distribusi MBG oleh SPPG Nusantara Sehat.",
+    "issue_category": "porsi protein kurang",
+    "sentiment": "negative",
+    "severity_score": 86,
+    "region": "DKI Jakarta",
+    "district": "Jakarta Timur",
+    "school": "SDN Melati 03",
+    "vendor_id": "vnd-001",
+    "vendor_name": "SPPG Nusantara Sehat",
+    "status": "Terhubung ke Kasus",
+    "urgency": "Tinggi",
+    "anomaly_tag": "Lonjakan",
+    "created_at": "2026-06-03T09:30:00+00:00"
   },
+  {
+    "id": 3,
+    "case_id": "case-001",
+    "source": "Laporan Harian Vendor",
+    "source_confidence": 0.7,
+    "summary": "Laporan harian vendor: menu aktual nasi, telur, sayur (tanpa buah/susu)",
+    "text": "Laporan harian vendor mencatat menu aktual nasi, telur kecil, sayur; buah dan susu pada rencana menu tidak tercatat terdistribusi.",
+    "issue_category": "porsi protein kurang",
+    "sentiment": "negative",
+    "severity_score": 86,
+    "region": "DKI Jakarta",
+    "district": "Jakarta Timur",
+    "school": "SDN Melati 03",
+    "vendor_id": "vnd-001",
+    "vendor_name": "SPPG Nusantara Sehat",
+    "status": "Terhubung ke Kasus",
+    "urgency": "Sedang",
+    "anomaly_tag": "Lonjakan",
+    "created_at": "2026-06-04T08:00:00+00:00"
+  },
+  {
+    "id": 4,
+    "case_id": "case-002",
+    "source": "Hotline Sekolah",
+    "source_confidence": 0.81,
+    "summary": "Beberapa siswa bergejala mual setelah makan siang di SDN Sukajadi 05",
+    "text": "Aduan gejala mual dan pusing pada beberapa siswa setelah distribusi MBG.",
+    "issue_category": "indikasi keracunan makanan",
+    "sentiment": "negative",
+    "severity_score": 88,
+    "region": "Jawa Barat",
+    "district": "Kota Bandung",
+    "school": "SDN Sukajadi 05",
+    "vendor_id": "vnd-002",
+    "vendor_name": "Dapur Sehat Bandung Raya",
+    "status": "Terhubung ke Kasus",
+    "urgency": "Tinggi",
+    "anomaly_tag": "Lonjakan",
+    "created_at": "2026-06-02T10:15:00+00:00"
+  },
+  {
+    "id": 5,
+    "case_id": "case-002",
+    "source": "Laporan Komunitas",
+    "source_confidence": 0.66,
+    "summary": "Sekolah berdekatan melaporkan gejala serupa dalam 48 jam",
+    "text": "Laporan komunitas menyebut gejala serupa di sekolah lain dalam wilayah yang sama.",
+    "issue_category": "indikasi keracunan makanan",
+    "sentiment": "negative",
+    "severity_score": 88,
+    "region": "Jawa Barat",
+    "district": "Kota Bandung",
+    "school": "SDN Sukajadi 05",
+    "vendor_id": "vnd-002",
+    "vendor_name": "Dapur Sehat Bandung Raya",
+    "status": "Terhubung ke Kasus",
+    "urgency": "Tinggi",
+    "anomaly_tag": "Lonjakan",
+    "created_at": "2026-06-03T08:40:00+00:00"
+  },
+  {
+    "id": 6,
+    "case_id": "case-003",
+    "source": "Laporan Harian Vendor",
+    "source_confidence": 0.58,
+    "summary": "Biaya per porsi di atas patokan pada laporan harian Dapur Mandiri Surabaya Timur",
+    "text": "Laporan harian mencatat biaya per porsi di atas patokan anggaran standar.",
+    "issue_category": "anomali biaya",
+    "sentiment": "negative",
+    "severity_score": 88,
+    "region": "Jawa Timur",
+    "district": "Surabaya",
+    "school": "SDN Rungkut Menanggal",
+    "vendor_id": "vnd-004",
+    "vendor_name": "Dapur Mandiri Surabaya Timur",
+    "status": "Sedang Ditinjau",
+    "urgency": "Sedang",
+    "anomaly_tag": null,
+    "created_at": "2026-06-01T09:20:00+00:00"
+  },
+  {
+    "id": 7,
+    "case_id": "case-003",
+    "source": "Tinjauan Pengadaan",
+    "source_confidence": 0.74,
+    "summary": "Tinjauan pengadaan menandai selisih biaya sementara kelengkapan menu menurun",
+    "text": "Tim pengadaan menandai anomali biaya yang perlu klarifikasi vendor.",
+    "issue_category": "anomali biaya",
+    "sentiment": "negative",
+    "severity_score": 88,
+    "region": "Jawa Timur",
+    "district": "Surabaya",
+    "school": "SDN Rungkut Menanggal",
+    "vendor_id": "vnd-004",
+    "vendor_name": "Dapur Mandiri Surabaya Timur",
+    "status": "Terhubung ke Kasus",
+    "urgency": "Tinggi",
+    "anomaly_tag": null,
+    "created_at": "2026-06-02T11:00:00+00:00"
+  },
+  {
+    "id": 8,
+    "case_id": "case-004",
+    "source": "Laporan Harian Vendor",
+    "source_confidence": 0.52,
+    "summary": "Faktur pada laporan harian Dapur Prima Makassar sulit terbaca (OCR lemah)",
+    "text": "Bidang faktur pada laporan harian terbaca sebagian; total biaya perlu konfirmasi.",
+    "issue_category": "dokumentasi belum lengkap",
+    "sentiment": "negative",
+    "severity_score": 78,
+    "region": "Sulawesi Selatan",
+    "district": "Makassar",
+    "school": "SDN Panakkukang 02",
+    "vendor_id": "vnd-006",
+    "vendor_name": "Dapur Prima Makassar",
+    "status": "Sedang Ditinjau",
+    "urgency": "Sedang",
+    "anomaly_tag": null,
+    "created_at": "2026-06-01T08:40:00+00:00"
+  },
+  {
+    "id": 9,
+    "case_id": "case-004",
+    "source": "Operator Sekolah",
+    "source_confidence": 0.6,
+    "summary": "Operator sekolah melaporkan checklist distribusi belum lengkap",
+    "text": "Operator sekolah mencatat beberapa item checklist distribusi belum terisi.",
+    "issue_category": "dokumentasi belum lengkap",
+    "sentiment": "negative",
+    "severity_score": 78,
+    "region": "Sulawesi Selatan",
+    "district": "Makassar",
+    "school": "SDN Panakkukang 02",
+    "vendor_id": "vnd-006",
+    "vendor_name": "Dapur Prima Makassar",
+    "status": "Terhubung ke Kasus",
+    "urgency": "Sedang",
+    "anomaly_tag": null,
+    "created_at": "2026-06-02T09:10:00+00:00"
+  },
+  {
+    "id": 10,
+    "case_id": "case-005",
+    "source": "Aduan Wali Murid",
+    "source_confidence": 0.63,
+    "summary": "Buah dan susu tidak tersedia beberapa hari di SDN Condongcatur 02",
+    "text": "Wali murid melaporkan buah dan susu tidak tersedia pada beberapa hari distribusi.",
+    "issue_category": "buah/susu tidak lengkap",
+    "sentiment": "negative",
+    "severity_score": 58,
+    "region": "DI Yogyakarta",
+    "district": "Sleman",
+    "school": "SDN Condongcatur 02",
+    "vendor_id": "vnd-008",
+    "vendor_name": "Dapur Anak Hebat Yogyakarta",
+    "status": "Sedang Ditinjau",
+    "urgency": "Sedang",
+    "anomaly_tag": null,
+    "created_at": "2026-06-02T09:05:00+00:00"
+  },
+  {
+    "id": 11,
+    "case_id": "case-006",
+    "source": "Hotline Sekolah",
+    "source_confidence": 0.59,
+    "summary": "Makanan diterima dalam kondisi dingin dan sedikit terlambat di SDN Medan Johor 09",
+    "text": "Aduan makanan dingin dan keterlambatan ringan; tampak isu operasional rute.",
+    "issue_category": "makanan dingin",
+    "sentiment": "negative",
+    "severity_score": 58,
+    "region": "Sumatera Utara",
+    "district": "Kota Medan",
+    "school": "SDN Medan Johor 09",
+    "vendor_id": "vnd-005",
+    "vendor_name": "SPPG Cerdas Gizi Medan",
+    "status": "Sedang Ditinjau",
+    "urgency": "Sedang",
+    "anomaly_tag": null,
+    "created_at": "2026-06-03T08:10:00+00:00"
+  },
+  {
+    "id": 12,
+    "case_id": "case-007",
+    "source": "Laporan Pengawas",
+    "source_confidence": 0.71,
+    "summary": "Menu aktual tidak sesuai rencana di SMPN 35 Surabaya",
+    "text": "Pengawas mencatat menu aktual berulang kali tidak sesuai dengan rencana menu.",
+    "issue_category": "ketidaksesuaian menu",
+    "sentiment": "negative",
+    "severity_score": 78,
+    "region": "Jawa Timur",
+    "district": "Surabaya",
+    "school": "SMPN 35 Surabaya",
+    "vendor_id": "vnd-004",
+    "vendor_name": "Dapur Mandiri Surabaya Timur",
+    "status": "Terhubung ke Kasus",
+    "urgency": "Tinggi",
+    "anomaly_tag": null,
+    "created_at": "2026-06-02T07:30:00+00:00"
+  },
+  {
+    "id": 13,
+    "case_id": "case-007",
+    "source": "Laporan Harian Vendor",
+    "source_confidence": 0.55,
+    "summary": "Foto laporan harian terindikasi mirip dengan hari sebelumnya",
+    "text": "Sistem menandai indikasi kemiripan foto antar hari; perlu peninjauan operator.",
+    "issue_category": "ketidaksesuaian menu",
+    "sentiment": "negative",
+    "severity_score": 78,
+    "region": "Jawa Timur",
+    "district": "Surabaya",
+    "school": "SMPN 35 Surabaya",
+    "vendor_id": "vnd-004",
+    "vendor_name": "Dapur Mandiri Surabaya Timur",
+    "status": "Sedang Ditinjau",
+    "urgency": "Sedang",
+    "anomaly_tag": null,
+    "created_at": "2026-06-03T10:00:00+00:00"
+  },
+  {
+    "id": 14,
+    "case_id": "case-008",
+    "source": "Laporan Komunitas",
+    "source_confidence": 0.68,
+    "summary": "Kekhawatiran higiene area dapur di SMPN 12 Bandung",
+    "text": "Laporan komunitas menyebut kondisi higiene dapur perlu diperiksa.",
+    "issue_category": "kekhawatiran higiene",
+    "sentiment": "negative",
+    "severity_score": 78,
+    "region": "Jawa Barat",
+    "district": "Kota Bandung",
+    "school": "SMPN 12 Bandung",
+    "vendor_id": "vnd-002",
+    "vendor_name": "Dapur Sehat Bandung Raya",
+    "status": "Terhubung ke Kasus",
+    "urgency": "Tinggi",
+    "anomaly_tag": null,
+    "created_at": "2026-06-03T07:45:00+00:00"
+  },
+  {
+    "id": 15,
+    "case_id": "case-009",
+    "source": "Operator Sekolah",
+    "source_confidence": 0.5,
+    "summary": "Checklist distribusi belum lengkap di SDN Tembalang 01",
+    "text": "Operator sekolah melaporkan checklist distribusi belum sepenuhnya terisi.",
+    "issue_category": "dokumentasi belum lengkap",
+    "sentiment": "negative",
+    "severity_score": 38,
+    "region": "Jawa Tengah",
+    "district": "Kota Semarang",
+    "school": "SDN Tembalang 01",
+    "vendor_id": "vnd-003",
+    "vendor_name": "SPPG Pangan Aman Semarang",
+    "status": "Terhubung ke Kasus",
+    "urgency": "Rendah",
+    "anomaly_tag": null,
+    "created_at": "2026-06-01T08:00:00+00:00"
+  },
+  {
+    "id": 16,
+    "case_id": "case-010",
+    "source": "Aduan Wali Murid",
+    "source_confidence": 0.48,
+    "summary": "Keterlambatan distribusi terisolasi di SDN Renon 04",
+    "text": "Satu laporan keterlambatan distribusi; tidak berulang.",
+    "issue_category": "keterlambatan distribusi",
+    "sentiment": "negative",
+    "severity_score": 38,
+    "region": "Bali",
+    "district": "Denpasar",
+    "school": "SDN Renon 04",
+    "vendor_id": "vnd-007",
+    "vendor_name": "SPPG Sejahtera Denpasar",
+    "status": "Terhubung ke Kasus",
+    "urgency": "Rendah",
+    "anomaly_tag": null,
+    "created_at": "2026-06-01T09:00:00+00:00"
+  },
+  {
+    "id": 17,
+    "case_id": null,
+    "source": "Media Sosial",
+    "source_confidence": 0.41,
+    "summary": "Unggahan warganet menyebut porsi kecil di sebuah sekolah (lokasi belum jelas)",
+    "text": "Sinyal publik belum tervalidasi; lokasi dan vendor belum dapat dipastikan.",
+    "issue_category": "belum diklasifikasi",
+    "sentiment": "negative",
+    "severity_score": 40,
+    "region": "Belum teridentifikasi",
+    "district": "Belum teridentifikasi",
+    "school": "Belum teridentifikasi",
+    "vendor_id": null,
+    "vendor_name": "Belum teridentifikasi",
+    "status": "Belum Dibentuk Kasus",
+    "urgency": "Rendah",
+    "anomaly_tag": null,
+    "created_at": "2026-06-04T07:20:00+00:00"
+  },
+  {
+    "id": 18,
+    "case_id": null,
+    "source": "Formulir Publik",
+    "source_confidence": 0.44,
+    "summary": "Aduan rasa makanan kurang enak, tanpa detail vendor/sekolah",
+    "text": "Sinyal publik masuk tanpa detail vendor atau sekolah; perlu triase operator.",
+    "issue_category": "belum diklasifikasi",
+    "sentiment": "negative",
+    "severity_score": 40,
+    "region": "Belum teridentifikasi",
+    "district": "Belum teridentifikasi",
+    "school": "Belum teridentifikasi",
+    "vendor_id": null,
+    "vendor_name": "Belum teridentifikasi",
+    "status": "Belum Dibentuk Kasus",
+    "urgency": "Sedang",
+    "anomaly_tag": null,
+    "created_at": "2026-06-04T06:50:00+00:00"
+  },
+  {
+    "id": 19,
+    "case_id": null,
+    "source": "Laporan Pengawas",
+    "source_confidence": 0.86,
+    "summary": "Laporan pengawas: dugaan kontaminasi belatung pada makanan MBG di SDN 1 Karang Agung",
+    "text": "Laporan resmi pengawas menyebut dugaan kontaminasi belatung pada makanan MBG. Lokasi spesifik teridentifikasi dan disertai lampiran foto.",
+    "issue_category": "dugaan keamanan pangan",
+    "sentiment": "negative",
+    "severity_score": 40,
+    "region": "Lampung",
+    "district": "Kabupaten Tanggamus",
+    "school": "SDN 1 Karang Agung",
+    "vendor_id": null,
+    "vendor_name": "Belum teridentifikasi",
+    "status": "Belum Dibentuk Kasus",
+    "urgency": "Kritis",
+    "anomaly_tag": null,
+    "created_at": "2026-06-04T09:10:00+00:00"
+  },
+  {
+    "id": 20,
+    "case_id": null,
+    "source": "Media Sosial",
+    "source_confidence": 0.38,
+    "summary": "Unggahan media sosial menyebut dugaan belatung pada MBG anak SD di Lampung",
+    "text": "di lampung ada belatung di mbg anak sd",
+    "issue_category": "dugaan keamanan pangan",
+    "sentiment": "negative",
+    "severity_score": 40,
+    "region": "Lampung",
+    "district": "Belum teridentifikasi",
+    "school": "Belum teridentifikasi",
+    "vendor_id": null,
+    "vendor_name": "Belum teridentifikasi",
+    "status": "Belum Dibentuk Kasus",
+    "urgency": "Sedang",
+    "anomaly_tag": null,
+    "created_at": "2026-06-04T11:40:00+00:00"
+  }
 ];
 
-export const fallbackReports: Report[] = fallbackVendors.map((vendor, index) => ({
-  id: index + 1,
-  case_id: `case-00${index + 1}`,
-  report_code: `RPT-MBG-2026-00${index + 1}`,
-  reporter_type: index === 0 ? "School Operator" : "District Supervisor",
-  school: vendor.assigned_schools[0],
-  region: vendor.region,
-  district: vendor.district,
-  vendor_id: vendor.id,
-  vendor_name: vendor.name,
-  submitted_at: "2026-06-04T09:20:00Z",
-  summary: `Official report package for ${vendor.name}.`,
-  evidence_count: 4,
-  status: vendor.compliance_status,
-  completeness_score: 78 - index * 8,
-  linked_ticket_id: `tkt-00${index + 1}`,
-  linked_risk_score: vendor.risk_score,
-}));
+export const fallbackReports: Report[] = [
+  {
+    "id": 1,
+    "case_id": "case-001",
+    "report_code": "RPT-MBG-2026-001",
+    "reporter_type": "Operator Sekolah",
+    "school": "SDN Melati 03",
+    "region": "DKI Jakarta",
+    "district": "Jakarta Timur",
+    "vendor_id": "vnd-001",
+    "vendor_name": "SPPG Nusantara Sehat",
+    "submitted_at": "2026-06-02T08:15:00+00:00",
+    "summary": "Paket laporan resmi untuk SPPG Nusantara Sehat mencakup distribusi menu dan tinjauan bukti.",
+    "evidence_count": 3,
+    "status": "Sedang Ditinjau",
+    "completeness_score": 88,
+    "linked_ticket_id": "tkt-001",
+    "linked_risk_score": 88
+  },
+  {
+    "id": 2,
+    "case_id": "case-002",
+    "report_code": "RPT-MBG-2026-002",
+    "reporter_type": "Pengawas Distrik",
+    "school": "SDN Sukajadi 05",
+    "region": "Jawa Barat",
+    "district": "Kota Bandung",
+    "vendor_id": "vnd-002",
+    "vendor_name": "Dapur Sehat Bandung Raya",
+    "submitted_at": "2026-06-02T10:15:00+00:00",
+    "summary": "Paket laporan resmi untuk Dapur Sehat Bandung Raya mencakup distribusi menu dan tinjauan bukti.",
+    "evidence_count": 2,
+    "status": "Verifikasi Lapangan Terjadwal",
+    "completeness_score": 84,
+    "linked_ticket_id": "tkt-002",
+    "linked_risk_score": 79
+  },
+  {
+    "id": 3,
+    "case_id": "case-003",
+    "report_code": "RPT-MBG-2026-003",
+    "reporter_type": "Operator Sekolah",
+    "school": "SDN Rungkut Menanggal",
+    "region": "Jawa Timur",
+    "district": "Surabaya",
+    "vendor_id": "vnd-004",
+    "vendor_name": "Dapur Mandiri Surabaya Timur",
+    "submitted_at": "2026-06-01T09:20:00+00:00",
+    "summary": "Paket laporan resmi untuk Dapur Mandiri Surabaya Timur mencakup distribusi menu dan tinjauan bukti.",
+    "evidence_count": 3,
+    "status": "Menunggu Klarifikasi Vendor",
+    "completeness_score": 80,
+    "linked_ticket_id": "tkt-003",
+    "linked_risk_score": 83
+  },
+  {
+    "id": 4,
+    "case_id": "case-004",
+    "report_code": "RPT-MBG-2026-004",
+    "reporter_type": "Pengawas Distrik",
+    "school": "SDN Panakkukang 02",
+    "region": "Sulawesi Selatan",
+    "district": "Makassar",
+    "vendor_id": "vnd-006",
+    "vendor_name": "Dapur Prima Makassar",
+    "submitted_at": "2026-06-01T08:40:00+00:00",
+    "summary": "Paket laporan resmi untuk Dapur Prima Makassar mencakup distribusi menu dan tinjauan bukti.",
+    "evidence_count": 2,
+    "status": "Menunggu Klarifikasi Vendor",
+    "completeness_score": 76,
+    "linked_ticket_id": "tkt-004",
+    "linked_risk_score": 67
+  },
+  {
+    "id": 5,
+    "case_id": "case-005",
+    "report_code": "RPT-MBG-2026-005",
+    "reporter_type": "Operator Sekolah",
+    "school": "SDN Condongcatur 02",
+    "region": "DI Yogyakarta",
+    "district": "Sleman",
+    "vendor_id": "vnd-008",
+    "vendor_name": "Dapur Anak Hebat Yogyakarta",
+    "submitted_at": "2026-06-02T09:05:00+00:00",
+    "summary": "Paket laporan resmi untuk Dapur Anak Hebat Yogyakarta mencakup distribusi menu dan tinjauan bukti.",
+    "evidence_count": 3,
+    "status": "Sedang Ditinjau",
+    "completeness_score": 72,
+    "linked_ticket_id": "tkt-005",
+    "linked_risk_score": 58
+  },
+  {
+    "id": 6,
+    "case_id": "case-006",
+    "report_code": "RPT-MBG-2026-006",
+    "reporter_type": "Pengawas Distrik",
+    "school": "SDN Medan Johor 09",
+    "region": "Sumatera Utara",
+    "district": "Kota Medan",
+    "vendor_id": "vnd-005",
+    "vendor_name": "SPPG Cerdas Gizi Medan",
+    "submitted_at": "2026-06-03T08:10:00+00:00",
+    "summary": "Paket laporan resmi untuk SPPG Cerdas Gizi Medan mencakup distribusi menu dan tinjauan bukti.",
+    "evidence_count": 2,
+    "status": "Sedang Ditinjau",
+    "completeness_score": 68,
+    "linked_ticket_id": "tkt-006",
+    "linked_risk_score": 41
+  },
+  {
+    "id": 7,
+    "case_id": "case-007",
+    "report_code": "RPT-MBG-2026-007",
+    "reporter_type": "Operator Sekolah",
+    "school": "SMPN 35 Surabaya",
+    "region": "Jawa Timur",
+    "district": "Surabaya",
+    "vendor_id": "vnd-004",
+    "vendor_name": "Dapur Mandiri Surabaya Timur",
+    "submitted_at": "2026-06-02T07:30:00+00:00",
+    "summary": "Paket laporan resmi untuk Dapur Mandiri Surabaya Timur mencakup distribusi menu dan tinjauan bukti.",
+    "evidence_count": 3,
+    "status": "Menunggu Klarifikasi Vendor",
+    "completeness_score": 64,
+    "linked_ticket_id": "tkt-007",
+    "linked_risk_score": 83
+  },
+  {
+    "id": 8,
+    "case_id": "case-008",
+    "report_code": "RPT-MBG-2026-008",
+    "reporter_type": "Pengawas Distrik",
+    "school": "SMPN 12 Bandung",
+    "region": "Jawa Barat",
+    "district": "Kota Bandung",
+    "vendor_id": "vnd-002",
+    "vendor_name": "Dapur Sehat Bandung Raya",
+    "submitted_at": "2026-06-03T07:45:00+00:00",
+    "summary": "Paket laporan resmi untuk Dapur Sehat Bandung Raya mencakup distribusi menu dan tinjauan bukti.",
+    "evidence_count": 2,
+    "status": "Verifikasi Lapangan Terjadwal",
+    "completeness_score": 60,
+    "linked_ticket_id": "tkt-008",
+    "linked_risk_score": 79
+  },
+  {
+    "id": 9,
+    "case_id": "case-009",
+    "report_code": "RPT-MBG-2026-009",
+    "reporter_type": "Operator Sekolah",
+    "school": "SDN Tembalang 01",
+    "region": "Jawa Tengah",
+    "district": "Kota Semarang",
+    "vendor_id": "vnd-003",
+    "vendor_name": "SPPG Pangan Aman Semarang",
+    "submitted_at": "2026-06-01T08:00:00+00:00",
+    "summary": "Paket laporan resmi untuk SPPG Pangan Aman Semarang mencakup distribusi menu dan tinjauan bukti.",
+    "evidence_count": 2,
+    "status": "Selesai",
+    "completeness_score": 56,
+    "linked_ticket_id": "tkt-009",
+    "linked_risk_score": 34
+  },
+  {
+    "id": 10,
+    "case_id": "case-010",
+    "report_code": "RPT-MBG-2026-010",
+    "reporter_type": "Pengawas Distrik",
+    "school": "SDN Renon 04",
+    "region": "Bali",
+    "district": "Denpasar",
+    "vendor_id": "vnd-007",
+    "vendor_name": "SPPG Sejahtera Denpasar",
+    "submitted_at": "2026-06-01T09:00:00+00:00",
+    "summary": "Paket laporan resmi untuk SPPG Sejahtera Denpasar mencakup distribusi menu dan tinjauan bukti.",
+    "evidence_count": 2,
+    "status": "Selesai",
+    "completeness_score": 52,
+    "linked_ticket_id": "tkt-010",
+    "linked_risk_score": 28
+  }
+];
 
-export const fallbackDailyReports: DailyReport[] = fallbackVendors.map((vendor, index) => ({
-  id: index + 1,
-  case_id: `case-00${index + 1}`,
-  vendor_id: vendor.id,
-  vendor_name: vendor.name,
-  school: vendor.assigned_schools[0],
-  region: vendor.region,
-  planned_menu: "Nasi, ayam, sayur, buah, susu",
-  actual_menu: index === 0 ? "Nasi, telur, sayur" : "Nasi, ayam, sayur, buah",
-  delivery_timestamp: "2026-06-04T10:35:00Z",
-  expected_timestamp: "2026-06-04T09:30:00Z",
-  portion_count: Math.round(vendor.daily_meal_volume / vendor.assigned_schools.length),
-  photo_evidence_count: 3,
-  document_complete: index !== 1,
-  photo_verification: index === 0 ? "Duplicate Suspected" : "Needs Verification",
-  verification_status: index === 0 ? "Flagged" : "Under Review",
-  duplicate_indicator: index === 0,
-  mismatch_indicator: index !== 2,
-  nutrition_estimate: { calories: 480 + index * 40, protein_g: 12 + index * 2, carbs_g: 60, fat_g: 12 },
-  cost_estimate: { cost_per_portion: 16400 + index * 1300, standard_budget: 15000, cost_anomaly_flag: index === 2 },
-  recommended_follow_up: vendor.recommended_action,
-}));
+export const fallbackDailyReports: DailyReport[] = [
+  {
+    "id": 1,
+    "case_id": "case-001",
+    "vendor_id": "vnd-001",
+    "vendor_name": "SPPG Nusantara Sehat",
+    "school": "SDN Melati 03",
+    "region": "DKI Jakarta",
+    "planned_menu": "Nasi, ayam, sayur, buah, susu",
+    "actual_menu": "Nasi, telur kecil, sayur",
+    "delivery_timestamp": "2026-06-02T08:15:00+00:00",
+    "expected_timestamp": "2026-06-02T08:15:00+00:00",
+    "portion_count": 1093,
+    "photo_evidence_count": 1,
+    "document_complete": true,
+    "photo_verification": "Ketidaksesuaian Menu",
+    "verification_status": "Ditandai",
+    "duplicate_indicator": false,
+    "mismatch_indicator": true,
+    "nutrition_estimate": {
+      "calories": 505,
+      "protein_g": 11,
+      "carbs_g": 64,
+      "fat_g": 11
+    },
+    "cost_estimate": {
+      "cost_per_portion": 15800,
+      "standard_budget": 15000,
+      "cost_anomaly_flag": true
+    },
+    "recommended_follow_up": "Minta klarifikasi vendor dan jadwalkan verifikasi lapangan."
+  },
+  {
+    "id": 2,
+    "case_id": "case-002",
+    "vendor_id": "vnd-002",
+    "vendor_name": "Dapur Sehat Bandung Raya",
+    "school": "SDN Sukajadi 05",
+    "region": "Jawa Barat",
+    "planned_menu": "Nasi, ayam, sayur, buah, susu",
+    "actual_menu": "Nasi, ayam, sayur, buah",
+    "delivery_timestamp": "2026-06-02T10:15:00+00:00",
+    "expected_timestamp": "2026-06-02T10:15:00+00:00",
+    "portion_count": 1205,
+    "photo_evidence_count": 1,
+    "document_complete": true,
+    "photo_verification": "Perlu Verifikasi",
+    "verification_status": "Sedang Ditinjau",
+    "duplicate_indicator": false,
+    "mismatch_indicator": false,
+    "nutrition_estimate": {
+      "calories": 540,
+      "protein_g": 16,
+      "carbs_g": 64,
+      "fat_g": 11
+    },
+    "cost_estimate": {
+      "cost_per_portion": 13600,
+      "standard_budget": 15000,
+      "cost_anomaly_flag": false
+    },
+    "recommended_follow_up": "Koordinasikan inspeksi dinas kesehatan dan tingkatkan sampling sementara."
+  },
+  {
+    "id": 3,
+    "case_id": "case-003",
+    "vendor_id": "vnd-004",
+    "vendor_name": "Dapur Mandiri Surabaya Timur",
+    "school": "SDN Rungkut Menanggal",
+    "region": "Jawa Timur",
+    "planned_menu": "Nasi, ayam, sayur, buah, susu",
+    "actual_menu": "Nasi, ayam, sayur, buah",
+    "delivery_timestamp": "2026-06-01T09:20:00+00:00",
+    "expected_timestamp": "2026-06-01T09:20:00+00:00",
+    "portion_count": 1437,
+    "photo_evidence_count": 1,
+    "document_complete": true,
+    "photo_verification": "Perlu Verifikasi",
+    "verification_status": "Ditandai",
+    "duplicate_indicator": false,
+    "mismatch_indicator": false,
+    "nutrition_estimate": {
+      "calories": 540,
+      "protein_g": 16,
+      "carbs_g": 64,
+      "fat_g": 11
+    },
+    "cost_estimate": {
+      "cost_per_portion": 15800,
+      "standard_budget": 15000,
+      "cost_anomaly_flag": true
+    },
+    "recommended_follow_up": "Eskalasikan ke tinjauan pengadaan dan lakukan verifikasi menu."
+  },
+  {
+    "id": 4,
+    "case_id": "case-004",
+    "vendor_id": "vnd-006",
+    "vendor_name": "Dapur Prima Makassar",
+    "school": "SDN Panakkukang 02",
+    "region": "Sulawesi Selatan",
+    "planned_menu": "Nasi, ayam, sayur, buah, susu",
+    "actual_menu": "Nasi, ayam, sayur, buah",
+    "delivery_timestamp": "2026-06-01T08:40:00+00:00",
+    "expected_timestamp": "2026-06-01T08:40:00+00:00",
+    "portion_count": 1067,
+    "photo_evidence_count": 1,
+    "document_complete": false,
+    "photo_verification": "Perlu Verifikasi",
+    "verification_status": "Sedang Ditinjau",
+    "duplicate_indicator": false,
+    "mismatch_indicator": false,
+    "nutrition_estimate": {
+      "calories": 540,
+      "protein_g": 16,
+      "carbs_g": 64,
+      "fat_g": 11
+    },
+    "cost_estimate": {
+      "cost_per_portion": 13600,
+      "standard_budget": 15000,
+      "cost_anomaly_flag": false
+    },
+    "recommended_follow_up": "Minta faktur perbaikan dan tinjauan operator atas bukti."
+  },
+  {
+    "id": 5,
+    "case_id": "case-005",
+    "vendor_id": "vnd-008",
+    "vendor_name": "Dapur Anak Hebat Yogyakarta",
+    "school": "SDN Condongcatur 02",
+    "region": "DI Yogyakarta",
+    "planned_menu": "Nasi, ayam, sayur, buah, susu",
+    "actual_menu": "Nasi, ayam, sayur, buah",
+    "delivery_timestamp": "2026-06-02T09:05:00+00:00",
+    "expected_timestamp": "2026-06-02T09:05:00+00:00",
+    "portion_count": 782,
+    "photo_evidence_count": 1,
+    "document_complete": true,
+    "photo_verification": "Ketidaksesuaian Menu",
+    "verification_status": "Ditandai",
+    "duplicate_indicator": false,
+    "mismatch_indicator": true,
+    "nutrition_estimate": {
+      "calories": 540,
+      "protein_g": 16,
+      "carbs_g": 64,
+      "fat_g": 11
+    },
+    "cost_estimate": {
+      "cost_per_portion": 13600,
+      "standard_budget": 15000,
+      "cost_anomaly_flag": false
+    },
+    "recommended_follow_up": "Tinjau tiga laporan harian berikutnya dan konfirmasi substitusi menu."
+  },
+  {
+    "id": 6,
+    "case_id": "case-006",
+    "vendor_id": "vnd-005",
+    "vendor_name": "SPPG Cerdas Gizi Medan",
+    "school": "SDN Medan Johor 09",
+    "region": "Sumatera Utara",
+    "planned_menu": "Nasi, ayam, sayur, buah, susu",
+    "actual_menu": "Nasi, ayam, sayur, buah",
+    "delivery_timestamp": "2026-06-03T08:10:00+00:00",
+    "expected_timestamp": "2026-06-03T08:10:00+00:00",
+    "portion_count": 870,
+    "photo_evidence_count": 1,
+    "document_complete": true,
+    "photo_verification": "Perlu Verifikasi",
+    "verification_status": "Sedang Ditinjau",
+    "duplicate_indicator": false,
+    "mismatch_indicator": false,
+    "nutrition_estimate": {
+      "calories": 540,
+      "protein_g": 16,
+      "carbs_g": 64,
+      "fat_g": 11
+    },
+    "cost_estimate": {
+      "cost_per_portion": 13600,
+      "standard_budget": 15000,
+      "cost_anomaly_flag": false
+    },
+    "recommended_follow_up": "Pantau waktu rute distribusi selama satu pekan."
+  },
+  {
+    "id": 7,
+    "case_id": "case-007",
+    "vendor_id": "vnd-004",
+    "vendor_name": "Dapur Mandiri Surabaya Timur",
+    "school": "SMPN 35 Surabaya",
+    "region": "Jawa Timur",
+    "planned_menu": "Nasi, ayam, sayur, buah, susu",
+    "actual_menu": "Nasi, ayam, sayur, buah",
+    "delivery_timestamp": "2026-06-02T07:30:00+00:00",
+    "expected_timestamp": "2026-06-02T07:30:00+00:00",
+    "portion_count": 1437,
+    "photo_evidence_count": 1,
+    "document_complete": true,
+    "photo_verification": "Ketidaksesuaian Menu",
+    "verification_status": "Ditandai",
+    "duplicate_indicator": false,
+    "mismatch_indicator": true,
+    "nutrition_estimate": {
+      "calories": 540,
+      "protein_g": 16,
+      "carbs_g": 64,
+      "fat_g": 11
+    },
+    "cost_estimate": {
+      "cost_per_portion": 13600,
+      "standard_budget": 15000,
+      "cost_anomaly_flag": false
+    },
+    "recommended_follow_up": "Eskalasikan ke tinjauan pengadaan dan lakukan verifikasi menu."
+  },
+  {
+    "id": 8,
+    "case_id": "case-008",
+    "vendor_id": "vnd-002",
+    "vendor_name": "Dapur Sehat Bandung Raya",
+    "school": "SMPN 12 Bandung",
+    "region": "Jawa Barat",
+    "planned_menu": "Nasi, ayam, sayur, buah, susu",
+    "actual_menu": "Nasi, ayam, sayur, buah",
+    "delivery_timestamp": "2026-06-03T07:45:00+00:00",
+    "expected_timestamp": "2026-06-03T07:45:00+00:00",
+    "portion_count": 1205,
+    "photo_evidence_count": 1,
+    "document_complete": true,
+    "photo_verification": "Perlu Verifikasi",
+    "verification_status": "Sedang Ditinjau",
+    "duplicate_indicator": false,
+    "mismatch_indicator": false,
+    "nutrition_estimate": {
+      "calories": 540,
+      "protein_g": 16,
+      "carbs_g": 64,
+      "fat_g": 11
+    },
+    "cost_estimate": {
+      "cost_per_portion": 13600,
+      "standard_budget": 15000,
+      "cost_anomaly_flag": false
+    },
+    "recommended_follow_up": "Koordinasikan inspeksi dinas kesehatan dan tingkatkan sampling sementara."
+  },
+  {
+    "id": 9,
+    "case_id": "case-009",
+    "vendor_id": "vnd-003",
+    "vendor_name": "SPPG Pangan Aman Semarang",
+    "school": "SDN Tembalang 01",
+    "region": "Jawa Tengah",
+    "planned_menu": "Nasi, ayam, sayur, buah, susu",
+    "actual_menu": "Nasi, ayam, sayur, buah",
+    "delivery_timestamp": "2026-06-01T08:00:00+00:00",
+    "expected_timestamp": "2026-06-01T08:00:00+00:00",
+    "portion_count": 990,
+    "photo_evidence_count": 1,
+    "document_complete": false,
+    "photo_verification": "Perlu Verifikasi",
+    "verification_status": "Sedang Ditinjau",
+    "duplicate_indicator": false,
+    "mismatch_indicator": false,
+    "nutrition_estimate": {
+      "calories": 540,
+      "protein_g": 16,
+      "carbs_g": 64,
+      "fat_g": 11
+    },
+    "cost_estimate": {
+      "cost_per_portion": 13600,
+      "standard_budget": 15000,
+      "cost_anomaly_flag": false
+    },
+    "recommended_follow_up": "Minta pelengkapan checklist distribusi pada laporan harian berikutnya."
+  },
+  {
+    "id": 10,
+    "case_id": "case-010",
+    "vendor_id": "vnd-007",
+    "vendor_name": "SPPG Sejahtera Denpasar",
+    "school": "SDN Renon 04",
+    "region": "Bali",
+    "planned_menu": "Nasi, ayam, sayur, buah, susu",
+    "actual_menu": "Nasi, ayam, sayur, buah",
+    "delivery_timestamp": "2026-06-01T09:00:00+00:00",
+    "expected_timestamp": "2026-06-01T09:00:00+00:00",
+    "portion_count": 660,
+    "photo_evidence_count": 1,
+    "document_complete": true,
+    "photo_verification": "Perlu Verifikasi",
+    "verification_status": "Sedang Ditinjau",
+    "duplicate_indicator": false,
+    "mismatch_indicator": false,
+    "nutrition_estimate": {
+      "calories": 540,
+      "protein_g": 16,
+      "carbs_g": 64,
+      "fat_g": 11
+    },
+    "cost_estimate": {
+      "cost_per_portion": 13600,
+      "standard_budget": 15000,
+      "cost_anomaly_flag": false
+    },
+    "recommended_follow_up": "Lanjutkan pemantauan rutin."
+  }
+];
 
 export const fallbackEvidence: Evidence[] = [
   {
-    id: 1,
-    case_id: "case-001",
-    report_id: 1,
-    type: "photo",
-    title: "Lunch plate photo evidence",
-    linked_entity: "RPT-MBG-2026-001",
-    image_text_match_score: 0.46,
-    duplicate_score: 0.72,
-    confidence_score: 0.62,
-    ai_signal: "AI-assisted pre-verification",
-    reviewer_note: "Menu text and image need human review.",
-    created_at: "2026-06-04T08:05:00Z",
+    "id": 1,
+    "case_id": "case-001",
+    "signal_id": 1,
+    "type": "photo",
+    "title": "Foto porsi makan siang — SDN Melati 03",
+    "file_path": "/evidence-media/1.jpg",
+    "linked_entity": "MBG-001",
+    "source": "Distribusi lapangan",
+    "ocr_result": null,
+    "image_text_match_score": 0.44,
+    "duplicate_score": 0.18,
+    "confidence_score": 0.58,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto porsi makan siang — indikasi awal, perlu perbandingan dengan menu dan standar porsi. Bukan bukti pelanggaran; wajib ditinjau operator.",
+    "created_at": "2026-06-02T08:15:00+00:00"
   },
   {
-    id: 2,
-    case_id: "case-001",
-    report_id: 1,
-    type: "document",
-    title: "Invoice OCR simulation",
-    linked_entity: "RPT-MBG-2026-001",
-    ocr_result: "Simulated OCR: total and portion count extracted with medium confidence.",
-    confidence_score: 0.7,
-    ai_signal: "AI-assisted pre-verification",
-    reviewer_note: "Invoice total needs operator confirmation.",
-    created_at: "2026-06-04T08:25:00Z",
+    "id": 2,
+    "case_id": "case-001",
+    "signal_id": 2,
+    "type": "document",
+    "title": "Laporan harian & menu (simulasi OCR) — SDN Melati 03",
+    "file_path": "/evidence-media/2.jpg",
+    "linked_entity": "MBG-001",
+    "source": "Laporan harian vendor",
+    "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+    "image_text_match_score": null,
+    "duplicate_score": null,
+    "confidence_score": 0.64,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto document untuk SPPG Nusantara Sehat: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+    "created_at": "2026-06-02T08:15:00+00:00"
   },
+  {
+    "id": 3,
+    "case_id": "case-001",
+    "signal_id": 3,
+    "type": "metadata",
+    "title": "Metadata waktu distribusi — SDN Melati 03",
+    "file_path": "/evidence-media/3.jpg",
+    "linked_entity": "MBG-001",
+    "source": "Laporan harian vendor",
+    "ocr_result": null,
+    "image_text_match_score": null,
+    "duplicate_score": null,
+    "confidence_score": 0.7,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto metadata untuk SPPG Nusantara Sehat: catatan waktu distribusi vs jadwal; perlu validasi lapangan.",
+    "created_at": "2026-06-02T08:15:00+00:00"
+  },
+  {
+    "id": 4,
+    "case_id": "case-002",
+    "signal_id": 4,
+    "type": "photo",
+    "title": "Foto porsi makan siang — SDN Sukajadi 05",
+    "file_path": "/evidence-media/5.jpg",
+    "linked_entity": "MBG-002",
+    "source": "Distribusi lapangan",
+    "ocr_result": null,
+    "image_text_match_score": 0.44,
+    "duplicate_score": 0.18,
+    "confidence_score": 0.58,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto photo untuk Dapur Sehat Bandung Raya: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+    "created_at": "2026-06-02T10:15:00+00:00"
+  },
+  {
+    "id": 5,
+    "case_id": "case-002",
+    "signal_id": 5,
+    "type": "document",
+    "title": "Laporan harian & menu (simulasi OCR) — SDN Sukajadi 05",
+    "file_path": "/evidence-media/6.jpg",
+    "linked_entity": "MBG-002",
+    "source": "Laporan harian vendor",
+    "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+    "image_text_match_score": null,
+    "duplicate_score": null,
+    "confidence_score": 0.64,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto document untuk Dapur Sehat Bandung Raya: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+    "created_at": "2026-06-02T10:15:00+00:00"
+  },
+  {
+    "id": 6,
+    "case_id": "case-003",
+    "signal_id": 6,
+    "type": "photo",
+    "title": "Foto porsi makan siang — SDN Rungkut Menanggal",
+    "file_path": "/evidence-media/7.jpg",
+    "linked_entity": "MBG-003",
+    "source": "Distribusi lapangan",
+    "ocr_result": null,
+    "image_text_match_score": 0.44,
+    "duplicate_score": 0.18,
+    "confidence_score": 0.58,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto photo untuk Dapur Mandiri Surabaya Timur: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+    "created_at": "2026-06-01T09:20:00+00:00"
+  },
+  {
+    "id": 7,
+    "case_id": "case-003",
+    "signal_id": 7,
+    "type": "document",
+    "title": "Laporan harian & menu (simulasi OCR) — SDN Rungkut Menanggal",
+    "file_path": "/evidence-media/8.jpg",
+    "linked_entity": "MBG-003",
+    "source": "Laporan harian vendor",
+    "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+    "image_text_match_score": null,
+    "duplicate_score": null,
+    "confidence_score": 0.64,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto document untuk Dapur Mandiri Surabaya Timur: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+    "created_at": "2026-06-01T09:20:00+00:00"
+  },
+  {
+    "id": 8,
+    "case_id": "case-003",
+    "signal_id": 6,
+    "type": "metadata",
+    "title": "Metadata waktu distribusi — SDN Rungkut Menanggal",
+    "file_path": "/evidence-media/9.jpg",
+    "linked_entity": "MBG-003",
+    "source": "Laporan harian vendor",
+    "ocr_result": null,
+    "image_text_match_score": null,
+    "duplicate_score": null,
+    "confidence_score": 0.7,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto metadata untuk Dapur Mandiri Surabaya Timur: catatan waktu distribusi vs jadwal; perlu validasi lapangan.",
+    "created_at": "2026-06-01T09:20:00+00:00"
+  },
+  {
+    "id": 9,
+    "case_id": "case-004",
+    "signal_id": 8,
+    "type": "photo",
+    "title": "Foto porsi makan siang — SDN Panakkukang 02",
+    "file_path": "/evidence-media/10.jpg",
+    "linked_entity": "MBG-004",
+    "source": "Distribusi lapangan",
+    "ocr_result": null,
+    "image_text_match_score": 0.44,
+    "duplicate_score": 0.18,
+    "confidence_score": 0.58,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto photo untuk Dapur Prima Makassar: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+    "created_at": "2026-06-01T08:40:00+00:00"
+  },
+  {
+    "id": 10,
+    "case_id": "case-004",
+    "signal_id": 9,
+    "type": "document",
+    "title": "Laporan harian & menu (simulasi OCR) — SDN Panakkukang 02",
+    "file_path": "/evidence-media/11.jpg",
+    "linked_entity": "MBG-004",
+    "source": "Laporan harian vendor",
+    "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+    "image_text_match_score": null,
+    "duplicate_score": null,
+    "confidence_score": 0.64,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto document untuk Dapur Prima Makassar: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+    "created_at": "2026-06-01T08:40:00+00:00"
+  },
+  {
+    "id": 11,
+    "case_id": "case-005",
+    "signal_id": 10,
+    "type": "photo",
+    "title": "Foto porsi makan siang — SDN Condongcatur 02",
+    "file_path": "/evidence-media/12.jpg",
+    "linked_entity": "MBG-005",
+    "source": "Distribusi lapangan",
+    "ocr_result": null,
+    "image_text_match_score": 0.44,
+    "duplicate_score": 0.18,
+    "confidence_score": 0.58,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto photo untuk Dapur Anak Hebat Yogyakarta: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+    "created_at": "2026-06-02T09:05:00+00:00"
+  },
+  {
+    "id": 12,
+    "case_id": "case-005",
+    "signal_id": 10,
+    "type": "document",
+    "title": "Laporan harian & menu (simulasi OCR) — SDN Condongcatur 02",
+    "file_path": "/evidence-media/13.jpg",
+    "linked_entity": "MBG-005",
+    "source": "Laporan harian vendor",
+    "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+    "image_text_match_score": null,
+    "duplicate_score": null,
+    "confidence_score": 0.64,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto document untuk Dapur Anak Hebat Yogyakarta: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+    "created_at": "2026-06-02T09:05:00+00:00"
+  },
+  {
+    "id": 13,
+    "case_id": "case-005",
+    "signal_id": 10,
+    "type": "metadata",
+    "title": "Metadata waktu distribusi — SDN Condongcatur 02",
+    "file_path": "/evidence-media/14.jpg",
+    "linked_entity": "MBG-005",
+    "source": "Laporan harian vendor",
+    "ocr_result": null,
+    "image_text_match_score": null,
+    "duplicate_score": null,
+    "confidence_score": 0.7,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto metadata untuk Dapur Anak Hebat Yogyakarta: catatan waktu distribusi vs jadwal; perlu validasi lapangan.",
+    "created_at": "2026-06-02T09:05:00+00:00"
+  },
+  {
+    "id": 14,
+    "case_id": "case-006",
+    "signal_id": 11,
+    "type": "photo",
+    "title": "Foto porsi makan siang — SDN Medan Johor 09",
+    "file_path": "/evidence-media/15.jpg",
+    "linked_entity": "MBG-006",
+    "source": "Distribusi lapangan",
+    "ocr_result": null,
+    "image_text_match_score": 0.44,
+    "duplicate_score": 0.18,
+    "confidence_score": 0.58,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto photo untuk SPPG Cerdas Gizi Medan: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+    "created_at": "2026-06-03T08:10:00+00:00"
+  },
+  {
+    "id": 15,
+    "case_id": "case-006",
+    "signal_id": 11,
+    "type": "document",
+    "title": "Laporan harian & menu (simulasi OCR) — SDN Medan Johor 09",
+    "file_path": "/evidence-media/16.jpg",
+    "linked_entity": "MBG-006",
+    "source": "Laporan harian vendor",
+    "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+    "image_text_match_score": null,
+    "duplicate_score": null,
+    "confidence_score": 0.64,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto document untuk SPPG Cerdas Gizi Medan: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+    "created_at": "2026-06-03T08:10:00+00:00"
+  },
+  {
+    "id": 16,
+    "case_id": "case-007",
+    "signal_id": 12,
+    "type": "photo",
+    "title": "Foto porsi makan siang — SMPN 35 Surabaya",
+    "file_path": "/evidence-media/17.jpg",
+    "linked_entity": "MBG-007",
+    "source": "Distribusi lapangan",
+    "ocr_result": null,
+    "image_text_match_score": 0.44,
+    "duplicate_score": 0.18,
+    "confidence_score": 0.58,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto photo untuk Dapur Mandiri Surabaya Timur: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+    "created_at": "2026-06-02T07:30:00+00:00"
+  },
+  {
+    "id": 17,
+    "case_id": "case-007",
+    "signal_id": 13,
+    "type": "document",
+    "title": "Laporan harian & menu (simulasi OCR) — SMPN 35 Surabaya",
+    "file_path": "/evidence-media/18.jpg",
+    "linked_entity": "MBG-007",
+    "source": "Laporan harian vendor",
+    "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+    "image_text_match_score": null,
+    "duplicate_score": null,
+    "confidence_score": 0.64,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto document untuk Dapur Mandiri Surabaya Timur: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+    "created_at": "2026-06-02T07:30:00+00:00"
+  },
+  {
+    "id": 18,
+    "case_id": "case-007",
+    "signal_id": 12,
+    "type": "metadata",
+    "title": "Metadata waktu distribusi — SMPN 35 Surabaya",
+    "file_path": "/evidence-media/19.jpg",
+    "linked_entity": "MBG-007",
+    "source": "Laporan harian vendor",
+    "ocr_result": null,
+    "image_text_match_score": null,
+    "duplicate_score": null,
+    "confidence_score": 0.7,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto metadata untuk Dapur Mandiri Surabaya Timur: catatan waktu distribusi vs jadwal; perlu validasi lapangan.",
+    "created_at": "2026-06-02T07:30:00+00:00"
+  },
+  {
+    "id": 19,
+    "case_id": "case-008",
+    "signal_id": 14,
+    "type": "photo",
+    "title": "Foto porsi makan siang — SMPN 12 Bandung",
+    "file_path": "/evidence-media/20.jpg",
+    "linked_entity": "MBG-008",
+    "source": "Distribusi lapangan",
+    "ocr_result": null,
+    "image_text_match_score": 0.44,
+    "duplicate_score": 0.18,
+    "confidence_score": 0.58,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto photo untuk Dapur Sehat Bandung Raya: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+    "created_at": "2026-06-03T07:45:00+00:00"
+  },
+  {
+    "id": 20,
+    "case_id": "case-008",
+    "signal_id": 14,
+    "type": "document",
+    "title": "Laporan harian & menu (simulasi OCR) — SMPN 12 Bandung",
+    "file_path": "/evidence-media/21.jpg",
+    "linked_entity": "MBG-008",
+    "source": "Laporan harian vendor",
+    "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+    "image_text_match_score": null,
+    "duplicate_score": null,
+    "confidence_score": 0.64,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto document untuk Dapur Sehat Bandung Raya: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+    "created_at": "2026-06-03T07:45:00+00:00"
+  },
+  {
+    "id": 21,
+    "case_id": "case-009",
+    "signal_id": 15,
+    "type": "photo",
+    "title": "Foto porsi makan siang — SDN Tembalang 01",
+    "file_path": "/evidence-media/22.jpg",
+    "linked_entity": "MBG-009",
+    "source": "Distribusi lapangan",
+    "ocr_result": null,
+    "image_text_match_score": 0.44,
+    "duplicate_score": 0.18,
+    "confidence_score": 0.58,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto photo untuk SPPG Pangan Aman Semarang: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+    "created_at": "2026-06-01T08:00:00+00:00"
+  },
+  {
+    "id": 22,
+    "case_id": "case-009",
+    "signal_id": 15,
+    "type": "document",
+    "title": "Laporan harian & menu (simulasi OCR) — SDN Tembalang 01",
+    "file_path": "/evidence-media/23.jpg",
+    "linked_entity": "MBG-009",
+    "source": "Laporan harian vendor",
+    "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+    "image_text_match_score": null,
+    "duplicate_score": null,
+    "confidence_score": 0.64,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto document untuk SPPG Pangan Aman Semarang: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+    "created_at": "2026-06-01T08:00:00+00:00"
+  },
+  {
+    "id": 23,
+    "case_id": "case-010",
+    "signal_id": 16,
+    "type": "photo",
+    "title": "Foto porsi makan siang — SDN Renon 04",
+    "file_path": "/evidence-media/24.jpg",
+    "linked_entity": "MBG-010",
+    "source": "Distribusi lapangan",
+    "ocr_result": null,
+    "image_text_match_score": 0.44,
+    "duplicate_score": 0.18,
+    "confidence_score": 0.58,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto photo untuk SPPG Sejahtera Denpasar: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+    "created_at": "2026-06-01T09:00:00+00:00"
+  },
+  {
+    "id": 24,
+    "case_id": "case-010",
+    "signal_id": 16,
+    "type": "document",
+    "title": "Laporan harian & menu (simulasi OCR) — SDN Renon 04",
+    "file_path": "/evidence-media/25.jpg",
+    "linked_entity": "MBG-010",
+    "source": "Laporan harian vendor",
+    "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+    "image_text_match_score": null,
+    "duplicate_score": null,
+    "confidence_score": 0.64,
+    "review_status": "Perlu Ditinjau",
+    "reviewer_note": "Foto document untuk SPPG Sejahtera Denpasar: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+    "created_at": "2026-06-01T09:00:00+00:00"
+  }
 ];
 
-export const fallbackScores: ScoreResult[] = fallbackVendors.map((vendor, index) => ({
-  id: index + 1,
-  case_id: `case-00${index + 1}`,
-  report_id: index + 1,
-  vendor_id: vendor.id,
-  vendor_name: vendor.name,
-  region: vendor.region,
-  severity_score: index === 0 ? 86 : vendor.risk_score,
-  confidence_score: index === 0 ? 78 : 72 - index * 4,
-  nutrition_concern_score: index === 0 ? 82 : 78 - index * 7,
-  cost_anomaly_score: index === 0 ? 64 : 65 + index * 6,
-  anomaly_score: index === 0 ? 73 : 82 - index * 5,
-  final_priority_score: index === 0 ? 86 : vendor.risk_score,
-  priority_label: index === 0 ? "High" : vendor.risk_score >= 80 ? "Critical" : "High",
-  explanation:
-    index === 0
-      ? "High priority because repeated complaints, a late delivery pattern, low protein estimate, and daily report mismatch converge. Confidence is elevated by multiple independent signals, but operator review is required due to partial image-text match and incomplete vendor clarification."
-      : `${vendor.name} is prioritized because of ${vendor.watchlist_reason}`,
-  recommended_action: vendor.recommended_action,
-  computed_at: "2026-06-04T13:00:00Z",
-  ai_notice: demoNotice,
-}));
+export const fallbackScores: ScoreResult[] = [
+  {
+    "id": 1,
+    "case_id": "case-001",
+    "vendor_id": "vnd-001",
+    "vendor_name": "SPPG Nusantara Sehat",
+    "region": "DKI Jakarta",
+    "severity_score": 86,
+    "confidence_score": 78,
+    "nutrition_concern_score": 82,
+    "cost_anomaly_score": 64,
+    "anomaly_score": 73,
+    "final_priority_score": 86,
+    "priority_label": "Tinggi",
+    "explanation": "Prioritas tinggi karena aduan berulang, pola keterlambatan distribusi, estimasi protein rendah, dan ketidaksesuaian laporan harian saling menguatkan. Keyakinan meningkat oleh beberapa sinyal independen, namun peninjauan operator tetap diperlukan karena kecocokan gambar-teks parsial dan klarifikasi vendor belum lengkap.",
+    "recommended_action": "Minta klarifikasi vendor dan jadwalkan verifikasi lapangan.",
+    "computed_at": "2026-06-04T13:05:00+00:00",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": 2,
+    "case_id": "case-002",
+    "vendor_id": "vnd-002",
+    "vendor_name": "Dapur Sehat Bandung Raya",
+    "region": "Jawa Barat",
+    "severity_score": 88,
+    "confidence_score": 76,
+    "nutrition_concern_score": 52,
+    "cost_anomaly_score": 51,
+    "anomaly_score": 54,
+    "final_priority_score": 88,
+    "priority_label": "Kritis",
+    "explanation": "Prioritas kritis karena Dapur Sehat Bandung Raya menggabungkan risiko vendor 79, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "recommended_action": "Koordinasikan inspeksi dinas kesehatan dan tingkatkan sampling sementara.",
+    "computed_at": "2026-06-04T13:02:00+00:00",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": 3,
+    "case_id": "case-003",
+    "vendor_id": "vnd-004",
+    "vendor_name": "Dapur Mandiri Surabaya Timur",
+    "region": "Jawa Timur",
+    "severity_score": 88,
+    "confidence_score": 73,
+    "nutrition_concern_score": 63,
+    "cost_anomaly_score": 64,
+    "anomaly_score": 71,
+    "final_priority_score": 88,
+    "priority_label": "Kritis",
+    "explanation": "Prioritas kritis karena Dapur Mandiri Surabaya Timur menggabungkan risiko vendor 83, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "recommended_action": "Eskalasikan ke tinjauan pengadaan dan lakukan verifikasi menu.",
+    "computed_at": "2026-06-04T13:03:00+00:00",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": 4,
+    "case_id": "case-004",
+    "vendor_id": "vnd-006",
+    "vendor_name": "Dapur Prima Makassar",
+    "region": "Sulawesi Selatan",
+    "severity_score": 78,
+    "confidence_score": 70,
+    "nutrition_concern_score": 74,
+    "cost_anomaly_score": 77,
+    "anomaly_score": 23,
+    "final_priority_score": 78,
+    "priority_label": "Tinggi",
+    "explanation": "Prioritas tinggi karena Dapur Prima Makassar menggabungkan risiko vendor 67, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "recommended_action": "Minta faktur perbaikan dan tinjauan operator atas bukti.",
+    "computed_at": "2026-06-04T13:04:00+00:00",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": 5,
+    "case_id": "case-005",
+    "vendor_id": "vnd-008",
+    "vendor_name": "Dapur Anak Hebat Yogyakarta",
+    "region": "DI Yogyakarta",
+    "severity_score": 58,
+    "confidence_score": 67,
+    "nutrition_concern_score": 30,
+    "cost_anomaly_score": 30,
+    "anomaly_score": 40,
+    "final_priority_score": 58,
+    "priority_label": "Sedang",
+    "explanation": "Prioritas sedang karena Dapur Anak Hebat Yogyakarta menggabungkan risiko vendor 58, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "recommended_action": "Tinjau tiga laporan harian berikutnya dan konfirmasi substitusi menu.",
+    "computed_at": "2026-06-04T13:05:00+00:00",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": 6,
+    "case_id": "case-006",
+    "vendor_id": "vnd-005",
+    "vendor_name": "SPPG Cerdas Gizi Medan",
+    "region": "Sumatera Utara",
+    "severity_score": 58,
+    "confidence_score": 64,
+    "nutrition_concern_score": 41,
+    "cost_anomaly_score": 43,
+    "anomaly_score": 57,
+    "final_priority_score": 58,
+    "priority_label": "Sedang",
+    "explanation": "Prioritas sedang karena SPPG Cerdas Gizi Medan menggabungkan risiko vendor 41, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "recommended_action": "Pantau waktu rute distribusi selama satu pekan.",
+    "computed_at": "2026-06-04T13:06:00+00:00",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": 7,
+    "case_id": "case-007",
+    "vendor_id": "vnd-004",
+    "vendor_name": "Dapur Mandiri Surabaya Timur",
+    "region": "Jawa Timur",
+    "severity_score": 78,
+    "confidence_score": 61,
+    "nutrition_concern_score": 52,
+    "cost_anomaly_score": 56,
+    "anomaly_score": 74,
+    "final_priority_score": 78,
+    "priority_label": "Tinggi",
+    "explanation": "Prioritas tinggi karena Dapur Mandiri Surabaya Timur menggabungkan risiko vendor 83, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "recommended_action": "Eskalasikan ke tinjauan pengadaan dan lakukan verifikasi menu.",
+    "computed_at": "2026-06-04T13:07:00+00:00",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": 8,
+    "case_id": "case-008",
+    "vendor_id": "vnd-002",
+    "vendor_name": "Dapur Sehat Bandung Raya",
+    "region": "Jawa Barat",
+    "severity_score": 78,
+    "confidence_score": 58,
+    "nutrition_concern_score": 63,
+    "cost_anomaly_score": 69,
+    "anomaly_score": 26,
+    "final_priority_score": 78,
+    "priority_label": "Tinggi",
+    "explanation": "Prioritas tinggi karena Dapur Sehat Bandung Raya menggabungkan risiko vendor 79, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "recommended_action": "Koordinasikan inspeksi dinas kesehatan dan tingkatkan sampling sementara.",
+    "computed_at": "2026-06-04T13:08:00+00:00",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": 9,
+    "case_id": "case-009",
+    "vendor_id": "vnd-003",
+    "vendor_name": "SPPG Pangan Aman Semarang",
+    "region": "Jawa Tengah",
+    "severity_score": 38,
+    "confidence_score": 55,
+    "nutrition_concern_score": 74,
+    "cost_anomaly_score": 82,
+    "anomaly_score": 43,
+    "final_priority_score": 38,
+    "priority_label": "Rendah",
+    "explanation": "Prioritas rendah karena SPPG Pangan Aman Semarang menggabungkan risiko vendor 34, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "recommended_action": "Minta pelengkapan checklist distribusi pada laporan harian berikutnya.",
+    "computed_at": "2026-06-04T13:09:00+00:00",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": 10,
+    "case_id": "case-010",
+    "vendor_id": "vnd-007",
+    "vendor_name": "SPPG Sejahtera Denpasar",
+    "region": "Bali",
+    "severity_score": 38,
+    "confidence_score": 52,
+    "nutrition_concern_score": 30,
+    "cost_anomaly_score": 35,
+    "anomaly_score": 60,
+    "final_priority_score": 38,
+    "priority_label": "Rendah",
+    "explanation": "Prioritas rendah karena SPPG Sejahtera Denpasar menggabungkan risiko vendor 28, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "recommended_action": "Lanjutkan pemantauan rutin.",
+    "computed_at": "2026-06-04T13:10:00+00:00",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  }
+];
 
-export const fallbackTickets: Ticket[] = fallbackScores.map((score, index) => ({
-  id: `tkt-00${index + 1}`,
-  case_id: score.case_id,
-  title: `${score.priority_label} review: ${score.vendor_name}`,
-  status: index === 0 ? "New" : "Under Review",
-  sla: "24h",
-  assigned_unit: index === 0 ? "Dinas Kesehatan Jakarta Timur" : index === 2 ? "Procurement Review Desk" : "MBG Vendor Supervision Unit",
-  escalation_level: index === 0 ? "Regional Supervisor" : score.priority_label,
-  linked_vendor_id: score.vendor_id,
-  linked_vendor_name: score.vendor_name,
-  linked_region: score.region,
-  priority: score.final_priority_score,
-  recommended_action: score.recommended_action,
-  linked_evidence_ids: [1, 2],
-  audit_preview: "Ticket created from evidence fusion and queued for human review.",
-  created_at: "2026-06-04T14:00:00Z",
-  updated_at: "2026-06-04T15:00:00Z",
-}));
-
-export const fallbackAudit: AuditTrailEvent[] = fallbackTickets.map((ticket, index) => ({
-  id: index + 1,
-  case_id: ticket.case_id,
-  ticket_id: ticket.id,
-  event_type: index === 0 ? "escalation_triggered" : "ticket_created",
-  actor: index === 0 ? "Supervisor Bima" : "Demo AI Service",
-  role: index === 0 ? "Supervisor" : "AI Assistant",
-  description: `${ticket.title} audit event. Human-in-the-loop review remains required.`,
-  timestamp: ticket.updated_at,
-}));
-
-export const fallbackCases: OversightCase[] = fallbackScores.map((score, index) => {
-  const vendor = fallbackVendors.find((item) => item.id === score.vendor_id) ?? fallbackVendors[0];
-  const complaints = fallbackComplaints.filter((item) => item.case_id === score.case_id);
-  const reports = fallbackReports.filter((item) => item.case_id === score.case_id);
-  const daily_reports = fallbackDailyReports.filter((item) => item.case_id === score.case_id);
-  const evidence = fallbackEvidence.filter((item) => item.case_id === score.case_id);
-  const ticket = fallbackTickets.find((item) => item.case_id === score.case_id) ?? null;
-  const audit_events = fallbackAudit.filter((item) => item.case_id === score.case_id);
-  const issue = complaints[0]?.issue_category ?? vendor.repeated_issue_categories[0] ?? "routine monitoring";
-  const school = reports[0]?.school ?? daily_reports[0]?.school ?? vendor.assigned_schools[0];
-  return {
-    id: score.case_id,
-    case_id: score.case_id,
-    title: `${issue.charAt(0).toUpperCase()}${issue.slice(1)} investigation at ${school}`,
-    priority_label: score.priority_label,
-    status: ticket?.status ?? vendor.compliance_status,
-    vendor_id: vendor.id,
-    vendor_name: vendor.name,
-    region: vendor.region,
-    district: vendor.district,
-    school,
-    issue_category: issue,
-    sla_status: ticket ? `${ticket.sla} SLA` : "72h SLA",
-    assigned_unit: ticket?.assigned_unit ?? "MBG Vendor Supervision Unit",
-    recommended_action: score.recommended_action,
-    summary: `MonitorMBG grouped public signals, official reports, daily vendor evidence, and scoring signals for ${vendor.name}.`,
-    what_happened: `Signals for ${vendor.name} were grouped into ${score.case_id} after intake records showed ${issue}.`,
-    why_it_matters: `The case affects ${school} in ${vendor.district}, ${vendor.region} and may indicate a recurring vendor risk pattern.`,
-    risk_explanation: score.explanation,
-    signals_count: complaints.length + reports.length + daily_reports.length,
-    evidence_count: evidence.length,
-    ticket_id: ticket?.id ?? null,
-    created_at: reports[0]?.submitted_at ?? daily_reports[0]?.delivery_timestamp ?? score.computed_at,
-    updated_at: ticket?.updated_at ?? score.computed_at,
-    vendor,
-    complaints,
-    reports,
-    daily_reports,
-    evidence,
-    score,
-    ticket,
-    copilot_sources: [
-      { label: "Case", source_type: "case", source_id: score.case_id, title: score.case_id },
-      { label: "Vendor", source_type: "vendor", source_id: vendor.id, title: vendor.name },
-      { label: "Score", source_type: "score", source_id: score.id, title: `${score.case_id} score` },
+export const fallbackTickets: Ticket[] = [
+  {
+    "id": "tkt-001",
+    "case_id": "case-001",
+    "title": "Tinjauan tinggi: SPPG Nusantara Sehat",
+    "status": "Baru",
+    "sla": "24h",
+    "assigned_unit": "Dinas Kesehatan Jakarta Timur",
+    "escalation_level": "Tinggi",
+    "linked_vendor_id": "vnd-001",
+    "linked_vendor_name": "SPPG Nusantara Sehat",
+    "linked_region": "DKI Jakarta",
+    "priority": 86,
+    "recommended_action": "Jadwalkan verifikasi lapangan dan minta klarifikasi vendor.",
+    "linked_evidence_ids": [
+      1,
+      2,
+      3
     ],
-    audit_events,
-    ai_notice: demoNotice,
-  };
-}).sort((a, b) => b.score.final_priority_score - a.score.final_priority_score);
+    "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+    "created_at": "2026-06-02T08:15:00+00:00",
+    "updated_at": "2026-06-04T15:30:00+00:00"
+  },
+  {
+    "id": "tkt-002",
+    "case_id": "case-002",
+    "title": "Tinjauan kritis: Dapur Sehat Bandung Raya",
+    "status": "Verifikasi Lapangan",
+    "sla": "24h",
+    "assigned_unit": "Dinas Kesehatan Kota Bandung",
+    "escalation_level": "Kritis",
+    "linked_vendor_id": "vnd-002",
+    "linked_vendor_name": "Dapur Sehat Bandung Raya",
+    "linked_region": "Jawa Barat",
+    "priority": 88,
+    "recommended_action": "Verifikasi Lapangan",
+    "linked_evidence_ids": [
+      4,
+      5
+    ],
+    "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+    "created_at": "2026-06-02T10:15:00+00:00",
+    "updated_at": "2026-06-04T12:00:00+00:00"
+  },
+  {
+    "id": "tkt-003",
+    "case_id": "case-003",
+    "title": "Tinjauan kritis: Dapur Mandiri Surabaya Timur",
+    "status": "Menunggu Klarifikasi Vendor",
+    "sla": "48h",
+    "assigned_unit": "Meja Tinjauan Pengadaan",
+    "escalation_level": "Kritis",
+    "linked_vendor_id": "vnd-004",
+    "linked_vendor_name": "Dapur Mandiri Surabaya Timur",
+    "linked_region": "Jawa Timur",
+    "priority": 88,
+    "recommended_action": "Klarifikasi menu & biaya",
+    "linked_evidence_ids": [
+      6,
+      7,
+      8
+    ],
+    "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+    "created_at": "2026-06-01T09:20:00+00:00",
+    "updated_at": "2026-06-04T11:00:00+00:00"
+  },
+  {
+    "id": "tkt-004",
+    "case_id": "case-004",
+    "title": "Tinjauan tinggi: Dapur Prima Makassar",
+    "status": "Menunggu Klarifikasi Vendor",
+    "sla": "48h",
+    "assigned_unit": "Unit Pengawasan Vendor MBG",
+    "escalation_level": "Tinggi",
+    "linked_vendor_id": "vnd-006",
+    "linked_vendor_name": "Dapur Prima Makassar",
+    "linked_region": "Sulawesi Selatan",
+    "priority": 78,
+    "recommended_action": "Perbaikan faktur & dokumen",
+    "linked_evidence_ids": [
+      9,
+      10
+    ],
+    "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+    "created_at": "2026-06-01T08:40:00+00:00",
+    "updated_at": "2026-06-03T16:00:00+00:00"
+  },
+  {
+    "id": "tkt-005",
+    "case_id": "case-005",
+    "title": "Tinjauan sedang: Dapur Anak Hebat Yogyakarta",
+    "status": "Sedang Ditinjau",
+    "sla": "72h",
+    "assigned_unit": "Tim Kepatuhan Gizi",
+    "escalation_level": "Sedang",
+    "linked_vendor_id": "vnd-008",
+    "linked_vendor_name": "Dapur Anak Hebat Yogyakarta",
+    "linked_region": "DI Yogyakarta",
+    "priority": 58,
+    "recommended_action": "Konfirmasi substitusi menu",
+    "linked_evidence_ids": [
+      11,
+      12,
+      13
+    ],
+    "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+    "created_at": "2026-06-02T09:05:00+00:00",
+    "updated_at": "2026-06-03T14:00:00+00:00"
+  },
+  {
+    "id": "tkt-006",
+    "case_id": "case-006",
+    "title": "Tinjauan sedang: SPPG Cerdas Gizi Medan",
+    "status": "Sedang Ditinjau",
+    "sla": "72h",
+    "assigned_unit": "Unit Pengawasan Vendor MBG",
+    "escalation_level": "Sedang",
+    "linked_vendor_id": "vnd-005",
+    "linked_vendor_name": "SPPG Cerdas Gizi Medan",
+    "linked_region": "Sumatera Utara",
+    "priority": 58,
+    "recommended_action": "Pantau rute distribusi",
+    "linked_evidence_ids": [
+      14,
+      15
+    ],
+    "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+    "created_at": "2026-06-03T08:10:00+00:00",
+    "updated_at": "2026-06-03T13:00:00+00:00"
+  },
+  {
+    "id": "tkt-007",
+    "case_id": "case-007",
+    "title": "Tinjauan tinggi: Dapur Mandiri Surabaya Timur",
+    "status": "Menunggu Klarifikasi Vendor",
+    "sla": "48h",
+    "assigned_unit": "Tim Kepatuhan Gizi",
+    "escalation_level": "Tinggi",
+    "linked_vendor_id": "vnd-004",
+    "linked_vendor_name": "Dapur Mandiri Surabaya Timur",
+    "linked_region": "Jawa Timur",
+    "priority": 78,
+    "recommended_action": "Verifikasi menu aktual",
+    "linked_evidence_ids": [
+      16,
+      17,
+      18
+    ],
+    "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+    "created_at": "2026-06-02T07:30:00+00:00",
+    "updated_at": "2026-06-04T09:00:00+00:00"
+  },
+  {
+    "id": "tkt-008",
+    "case_id": "case-008",
+    "title": "Tinjauan tinggi: Dapur Sehat Bandung Raya",
+    "status": "Verifikasi Lapangan",
+    "sla": "24h",
+    "assigned_unit": "Dinas Kesehatan Kota Bandung",
+    "escalation_level": "Tinggi",
+    "linked_vendor_id": "vnd-002",
+    "linked_vendor_name": "Dapur Sehat Bandung Raya",
+    "linked_region": "Jawa Barat",
+    "priority": 78,
+    "recommended_action": "Inspeksi higiene dapur",
+    "linked_evidence_ids": [
+      19,
+      20
+    ],
+    "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+    "created_at": "2026-06-03T07:45:00+00:00",
+    "updated_at": "2026-06-04T10:00:00+00:00"
+  },
+  {
+    "id": "tkt-009",
+    "case_id": "case-009",
+    "title": "Tinjauan rendah: SPPG Pangan Aman Semarang",
+    "status": "Selesai",
+    "sla": "72h",
+    "assigned_unit": "Unit Pengawasan Vendor MBG",
+    "escalation_level": "Rendah",
+    "linked_vendor_id": "vnd-003",
+    "linked_vendor_name": "SPPG Pangan Aman Semarang",
+    "linked_region": "Jawa Tengah",
+    "priority": 38,
+    "recommended_action": "Checklist telah dilengkapi",
+    "linked_evidence_ids": [
+      21,
+      22
+    ],
+    "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+    "created_at": "2026-06-01T08:00:00+00:00",
+    "updated_at": "2026-06-04T17:00:00+00:00"
+  },
+  {
+    "id": "tkt-010",
+    "case_id": "case-010",
+    "title": "Tinjauan rendah: SPPG Sejahtera Denpasar",
+    "status": "Selesai",
+    "sla": "72h",
+    "assigned_unit": "Unit Pengawasan Vendor MBG",
+    "escalation_level": "Rendah",
+    "linked_vendor_id": "vnd-007",
+    "linked_vendor_name": "SPPG Sejahtera Denpasar",
+    "linked_region": "Bali",
+    "priority": 38,
+    "recommended_action": "Isu operasional teratasi",
+    "linked_evidence_ids": [
+      23,
+      24
+    ],
+    "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+    "created_at": "2026-06-01T09:00:00+00:00",
+    "updated_at": "2026-06-03T12:00:00+00:00"
+  }
+];
 
-export const fallbackHeatmap: HeatmapRegion[] = fallbackVendors.map((vendor) => ({
-  region: vendor.region,
-  district: vendor.district,
-  risk_score: vendor.risk_score,
-  complaint_count: vendor.id === "vnd-001" ? 6 : 3,
-  high_priority_cases: vendor.risk_score >= 75 ? 2 : 1,
-  latitude: -6.2,
-  longitude: 106.8,
-}));
+export const fallbackAudit: AuditTrailEvent[] = [
+  {
+    "id": 1,
+    "case_id": "case-001",
+    "ticket_id": "tkt-001",
+    "event_type": "signal_received",
+    "actor": "Sistem Intake",
+    "role": "Sistem",
+    "description": "Signal intake diterima dan dikelompokkan.",
+    "timestamp": "2026-06-02T08:01:00+00:00"
+  },
+  {
+    "id": 2,
+    "case_id": "case-001",
+    "ticket_id": "tkt-001",
+    "event_type": "case_formed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Kasus MBG-001 dibentuk dari sinyal terhubung.",
+    "timestamp": "2026-06-02T09:02:00+00:00"
+  },
+  {
+    "id": 3,
+    "case_id": "case-001",
+    "ticket_id": "tkt-001",
+    "event_type": "evidence_reviewed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+    "timestamp": "2026-06-03T10:03:00+00:00"
+  },
+  {
+    "id": 4,
+    "case_id": "case-001",
+    "ticket_id": "tkt-001",
+    "event_type": "risk_computed",
+    "actor": "Layanan Penilaian",
+    "role": "Sistem",
+    "description": "Penilaian risiko dihitung: Tinggi.",
+    "timestamp": "2026-06-03T11:04:00+00:00"
+  },
+  {
+    "id": 5,
+    "case_id": "case-001",
+    "ticket_id": "tkt-001",
+    "event_type": "ticket_created",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Tiket tkt-001 dibuat untuk tindak lanjut.",
+    "timestamp": "2026-06-04T12:05:00+00:00"
+  },
+  {
+    "id": 6,
+    "case_id": "case-002",
+    "ticket_id": "tkt-002",
+    "event_type": "signal_received",
+    "actor": "Sistem Intake",
+    "role": "Sistem",
+    "description": "Signal intake diterima dan dikelompokkan.",
+    "timestamp": "2026-06-02T08:06:00+00:00"
+  },
+  {
+    "id": 7,
+    "case_id": "case-002",
+    "ticket_id": "tkt-002",
+    "event_type": "case_formed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Kasus MBG-002 dibentuk dari sinyal terhubung.",
+    "timestamp": "2026-06-02T09:07:00+00:00"
+  },
+  {
+    "id": 8,
+    "case_id": "case-002",
+    "ticket_id": "tkt-002",
+    "event_type": "evidence_reviewed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+    "timestamp": "2026-06-03T10:08:00+00:00"
+  },
+  {
+    "id": 9,
+    "case_id": "case-002",
+    "ticket_id": "tkt-002",
+    "event_type": "risk_computed",
+    "actor": "Layanan Penilaian",
+    "role": "Sistem",
+    "description": "Penilaian risiko dihitung: Kritis.",
+    "timestamp": "2026-06-03T11:09:00+00:00"
+  },
+  {
+    "id": 10,
+    "case_id": "case-002",
+    "ticket_id": "tkt-002",
+    "event_type": "ticket_created",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Tiket tkt-002 dibuat untuk tindak lanjut.",
+    "timestamp": "2026-06-04T12:10:00+00:00"
+  },
+  {
+    "id": 11,
+    "case_id": "case-003",
+    "ticket_id": "tkt-003",
+    "event_type": "signal_received",
+    "actor": "Sistem Intake",
+    "role": "Sistem",
+    "description": "Signal intake diterima dan dikelompokkan.",
+    "timestamp": "2026-06-01T08:11:00+00:00"
+  },
+  {
+    "id": 12,
+    "case_id": "case-003",
+    "ticket_id": "tkt-003",
+    "event_type": "case_formed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Kasus MBG-003 dibentuk dari sinyal terhubung.",
+    "timestamp": "2026-06-01T09:12:00+00:00"
+  },
+  {
+    "id": 13,
+    "case_id": "case-003",
+    "ticket_id": "tkt-003",
+    "event_type": "evidence_reviewed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+    "timestamp": "2026-06-02T10:13:00+00:00"
+  },
+  {
+    "id": 14,
+    "case_id": "case-003",
+    "ticket_id": "tkt-003",
+    "event_type": "risk_computed",
+    "actor": "Layanan Penilaian",
+    "role": "Sistem",
+    "description": "Penilaian risiko dihitung: Kritis.",
+    "timestamp": "2026-06-02T11:14:00+00:00"
+  },
+  {
+    "id": 15,
+    "case_id": "case-003",
+    "ticket_id": "tkt-003",
+    "event_type": "ticket_created",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Tiket tkt-003 dibuat untuk tindak lanjut.",
+    "timestamp": "2026-06-03T12:15:00+00:00"
+  },
+  {
+    "id": 16,
+    "case_id": "case-004",
+    "ticket_id": "tkt-004",
+    "event_type": "signal_received",
+    "actor": "Sistem Intake",
+    "role": "Sistem",
+    "description": "Signal intake diterima dan dikelompokkan.",
+    "timestamp": "2026-06-01T08:16:00+00:00"
+  },
+  {
+    "id": 17,
+    "case_id": "case-004",
+    "ticket_id": "tkt-004",
+    "event_type": "case_formed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Kasus MBG-004 dibentuk dari sinyal terhubung.",
+    "timestamp": "2026-06-01T09:17:00+00:00"
+  },
+  {
+    "id": 18,
+    "case_id": "case-004",
+    "ticket_id": "tkt-004",
+    "event_type": "evidence_reviewed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+    "timestamp": "2026-06-02T10:18:00+00:00"
+  },
+  {
+    "id": 19,
+    "case_id": "case-004",
+    "ticket_id": "tkt-004",
+    "event_type": "risk_computed",
+    "actor": "Layanan Penilaian",
+    "role": "Sistem",
+    "description": "Penilaian risiko dihitung: Tinggi.",
+    "timestamp": "2026-06-02T11:19:00+00:00"
+  },
+  {
+    "id": 20,
+    "case_id": "case-004",
+    "ticket_id": "tkt-004",
+    "event_type": "ticket_created",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Tiket tkt-004 dibuat untuk tindak lanjut.",
+    "timestamp": "2026-06-03T12:20:00+00:00"
+  },
+  {
+    "id": 21,
+    "case_id": "case-005",
+    "ticket_id": "tkt-005",
+    "event_type": "signal_received",
+    "actor": "Sistem Intake",
+    "role": "Sistem",
+    "description": "Signal intake diterima dan dikelompokkan.",
+    "timestamp": "2026-06-02T08:21:00+00:00"
+  },
+  {
+    "id": 22,
+    "case_id": "case-005",
+    "ticket_id": "tkt-005",
+    "event_type": "case_formed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Kasus MBG-005 dibentuk dari sinyal terhubung.",
+    "timestamp": "2026-06-02T09:22:00+00:00"
+  },
+  {
+    "id": 23,
+    "case_id": "case-005",
+    "ticket_id": "tkt-005",
+    "event_type": "evidence_reviewed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+    "timestamp": "2026-06-03T10:23:00+00:00"
+  },
+  {
+    "id": 24,
+    "case_id": "case-005",
+    "ticket_id": "tkt-005",
+    "event_type": "risk_computed",
+    "actor": "Layanan Penilaian",
+    "role": "Sistem",
+    "description": "Penilaian risiko dihitung: Sedang.",
+    "timestamp": "2026-06-03T11:24:00+00:00"
+  },
+  {
+    "id": 25,
+    "case_id": "case-005",
+    "ticket_id": "tkt-005",
+    "event_type": "ticket_created",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Tiket tkt-005 dibuat untuk tindak lanjut.",
+    "timestamp": "2026-06-04T12:25:00+00:00"
+  },
+  {
+    "id": 26,
+    "case_id": "case-006",
+    "ticket_id": "tkt-006",
+    "event_type": "signal_received",
+    "actor": "Sistem Intake",
+    "role": "Sistem",
+    "description": "Signal intake diterima dan dikelompokkan.",
+    "timestamp": "2026-06-03T08:26:00+00:00"
+  },
+  {
+    "id": 27,
+    "case_id": "case-006",
+    "ticket_id": "tkt-006",
+    "event_type": "case_formed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Kasus MBG-006 dibentuk dari sinyal terhubung.",
+    "timestamp": "2026-06-03T09:27:00+00:00"
+  },
+  {
+    "id": 28,
+    "case_id": "case-006",
+    "ticket_id": "tkt-006",
+    "event_type": "evidence_reviewed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+    "timestamp": "2026-06-04T10:28:00+00:00"
+  },
+  {
+    "id": 29,
+    "case_id": "case-006",
+    "ticket_id": "tkt-006",
+    "event_type": "risk_computed",
+    "actor": "Layanan Penilaian",
+    "role": "Sistem",
+    "description": "Penilaian risiko dihitung: Sedang.",
+    "timestamp": "2026-06-04T11:29:00+00:00"
+  },
+  {
+    "id": 30,
+    "case_id": "case-006",
+    "ticket_id": "tkt-006",
+    "event_type": "ticket_created",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Tiket tkt-006 dibuat untuk tindak lanjut.",
+    "timestamp": "2026-06-04T12:30:00+00:00"
+  },
+  {
+    "id": 31,
+    "case_id": "case-007",
+    "ticket_id": "tkt-007",
+    "event_type": "signal_received",
+    "actor": "Sistem Intake",
+    "role": "Sistem",
+    "description": "Signal intake diterima dan dikelompokkan.",
+    "timestamp": "2026-06-02T08:31:00+00:00"
+  },
+  {
+    "id": 32,
+    "case_id": "case-007",
+    "ticket_id": "tkt-007",
+    "event_type": "case_formed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Kasus MBG-007 dibentuk dari sinyal terhubung.",
+    "timestamp": "2026-06-02T09:32:00+00:00"
+  },
+  {
+    "id": 33,
+    "case_id": "case-007",
+    "ticket_id": "tkt-007",
+    "event_type": "evidence_reviewed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+    "timestamp": "2026-06-03T10:33:00+00:00"
+  },
+  {
+    "id": 34,
+    "case_id": "case-007",
+    "ticket_id": "tkt-007",
+    "event_type": "risk_computed",
+    "actor": "Layanan Penilaian",
+    "role": "Sistem",
+    "description": "Penilaian risiko dihitung: Tinggi.",
+    "timestamp": "2026-06-03T11:34:00+00:00"
+  },
+  {
+    "id": 35,
+    "case_id": "case-007",
+    "ticket_id": "tkt-007",
+    "event_type": "ticket_created",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Tiket tkt-007 dibuat untuk tindak lanjut.",
+    "timestamp": "2026-06-04T12:35:00+00:00"
+  },
+  {
+    "id": 36,
+    "case_id": "case-008",
+    "ticket_id": "tkt-008",
+    "event_type": "signal_received",
+    "actor": "Sistem Intake",
+    "role": "Sistem",
+    "description": "Signal intake diterima dan dikelompokkan.",
+    "timestamp": "2026-06-03T08:36:00+00:00"
+  },
+  {
+    "id": 37,
+    "case_id": "case-008",
+    "ticket_id": "tkt-008",
+    "event_type": "case_formed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Kasus MBG-008 dibentuk dari sinyal terhubung.",
+    "timestamp": "2026-06-03T09:37:00+00:00"
+  },
+  {
+    "id": 38,
+    "case_id": "case-008",
+    "ticket_id": "tkt-008",
+    "event_type": "evidence_reviewed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+    "timestamp": "2026-06-04T10:38:00+00:00"
+  },
+  {
+    "id": 39,
+    "case_id": "case-008",
+    "ticket_id": "tkt-008",
+    "event_type": "risk_computed",
+    "actor": "Layanan Penilaian",
+    "role": "Sistem",
+    "description": "Penilaian risiko dihitung: Tinggi.",
+    "timestamp": "2026-06-04T11:39:00+00:00"
+  },
+  {
+    "id": 40,
+    "case_id": "case-008",
+    "ticket_id": "tkt-008",
+    "event_type": "ticket_created",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Tiket tkt-008 dibuat untuk tindak lanjut.",
+    "timestamp": "2026-06-04T12:40:00+00:00"
+  },
+  {
+    "id": 41,
+    "case_id": "case-009",
+    "ticket_id": "tkt-009",
+    "event_type": "signal_received",
+    "actor": "Sistem Intake",
+    "role": "Sistem",
+    "description": "Signal intake diterima dan dikelompokkan.",
+    "timestamp": "2026-06-01T08:41:00+00:00"
+  },
+  {
+    "id": 42,
+    "case_id": "case-009",
+    "ticket_id": "tkt-009",
+    "event_type": "case_formed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Kasus MBG-009 dibentuk dari sinyal terhubung.",
+    "timestamp": "2026-06-01T09:42:00+00:00"
+  },
+  {
+    "id": 43,
+    "case_id": "case-009",
+    "ticket_id": "tkt-009",
+    "event_type": "evidence_reviewed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+    "timestamp": "2026-06-02T10:43:00+00:00"
+  },
+  {
+    "id": 44,
+    "case_id": "case-009",
+    "ticket_id": "tkt-009",
+    "event_type": "risk_computed",
+    "actor": "Layanan Penilaian",
+    "role": "Sistem",
+    "description": "Penilaian risiko dihitung: Rendah.",
+    "timestamp": "2026-06-02T11:44:00+00:00"
+  },
+  {
+    "id": 45,
+    "case_id": "case-009",
+    "ticket_id": "tkt-009",
+    "event_type": "ticket_created",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Tiket tkt-009 dibuat untuk tindak lanjut.",
+    "timestamp": "2026-06-03T12:45:00+00:00"
+  },
+  {
+    "id": 46,
+    "case_id": "case-009",
+    "ticket_id": "tkt-009",
+    "event_type": "status_changed",
+    "actor": "Supervisor Bima",
+    "role": "Supervisor",
+    "description": "Kasus ditandai selesai setelah tindak lanjut operator.",
+    "timestamp": "2026-06-04T17:00:00+00:00"
+  },
+  {
+    "id": 47,
+    "case_id": "case-010",
+    "ticket_id": "tkt-010",
+    "event_type": "signal_received",
+    "actor": "Sistem Intake",
+    "role": "Sistem",
+    "description": "Signal intake diterima dan dikelompokkan.",
+    "timestamp": "2026-06-01T08:47:00+00:00"
+  },
+  {
+    "id": 48,
+    "case_id": "case-010",
+    "ticket_id": "tkt-010",
+    "event_type": "case_formed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Kasus MBG-010 dibentuk dari sinyal terhubung.",
+    "timestamp": "2026-06-01T09:48:00+00:00"
+  },
+  {
+    "id": 49,
+    "case_id": "case-010",
+    "ticket_id": "tkt-010",
+    "event_type": "evidence_reviewed",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+    "timestamp": "2026-06-02T10:49:00+00:00"
+  },
+  {
+    "id": 50,
+    "case_id": "case-010",
+    "ticket_id": "tkt-010",
+    "event_type": "risk_computed",
+    "actor": "Layanan Penilaian",
+    "role": "Sistem",
+    "description": "Penilaian risiko dihitung: Rendah.",
+    "timestamp": "2026-06-02T11:50:00+00:00"
+  },
+  {
+    "id": 51,
+    "case_id": "case-010",
+    "ticket_id": "tkt-010",
+    "event_type": "ticket_created",
+    "actor": "Operator Dewi",
+    "role": "Operator Distrik",
+    "description": "Tiket tkt-010 dibuat untuk tindak lanjut.",
+    "timestamp": "2026-06-03T12:51:00+00:00"
+  },
+  {
+    "id": 52,
+    "case_id": "case-010",
+    "ticket_id": "tkt-010",
+    "event_type": "status_changed",
+    "actor": "Supervisor Bima",
+    "role": "Supervisor",
+    "description": "Kasus ditandai selesai setelah tindak lanjut operator.",
+    "timestamp": "2026-06-03T12:00:00+00:00"
+  }
+];
+
+export const fallbackCases: OversightCase[] = [
+  {
+    "id": "case-002",
+    "case_id": "case-002",
+    "case_number": "MBG-002",
+    "title": "Indikasi keracunan makanan di SDN Sukajadi 05",
+    "priority_label": "Kritis",
+    "status": "Verifikasi Lapangan Terjadwal",
+    "vendor_id": "vnd-002",
+    "vendor_name": "Dapur Sehat Bandung Raya",
+    "vendor_source_note": null,
+    "region": "Jawa Barat",
+    "district": "Kota Bandung",
+    "school": "SDN Sukajadi 05",
+    "issue_category": "indikasi keracunan makanan",
+    "sla_status": "SLA 24h",
+    "assigned_unit": "Dinas Kesehatan Kota Bandung",
+    "assigned_investigator": null,
+    "recommended_action": "Koordinasikan inspeksi dinas kesehatan dan tingkatkan sampling sementara.",
+    "summary": "MonitorMBG mengelompokkan 2 sinyal intake untuk Dapur Sehat Bandung Raya ke dalam MBG-002. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "what_happened": "MonitorMBG mengelompokkan 2 sinyal intake untuk Dapur Sehat Bandung Raya ke dalam MBG-002. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "why_it_matters": "Kasus ini menyangkut SDN Sukajadi 05 di Kota Bandung, Jawa Barat dan dapat mengindikasikan indikasi keracunan makanan terkait vendor dengan skor risiko 79.",
+    "risk_explanation": "Prioritas kritis karena Dapur Sehat Bandung Raya menggabungkan risiko vendor 79, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "signals_count": 2,
+    "evidence_count": 2,
+    "ticket_id": "tkt-002",
+    "created_at": "2026-06-02T10:15:00+00:00",
+    "updated_at": "2026-06-04T12:00:00+00:00",
+    "vendor": {
+      "id": "vnd-002",
+      "name": "Dapur Sehat Bandung Raya",
+      "region": "Jawa Barat",
+      "district": "Kota Bandung",
+      "assigned_schools": [
+        "SDN Sukajadi 05",
+        "SMPN 12 Bandung"
+      ],
+      "daily_meal_volume": 2410,
+      "compliance_status": "Perlu Verifikasi",
+      "risk_score": 79,
+      "risk_trend": [
+        52,
+        56,
+        63,
+        72,
+        79
+      ],
+      "watchlist_status": "Tinggi",
+      "watchlist_reason": "Kekhawatiran higiene dan indikasi gejala keracunan dari dua kanal independen.",
+      "last_inspection_date": "2026-05-25",
+      "repeated_issue_categories": [
+        "kekhawatiran higiene",
+        "indikasi keracunan makanan",
+        "makanan dingin"
+      ],
+      "coverage_notes": "Dua sekolah berdekatan melaporkan gejala serupa dalam 48 jam.",
+      "recommended_action": "Koordinasikan inspeksi dinas kesehatan dan tingkatkan sampling sementara."
+    },
+    "signals": [
+      {
+        "id": 4,
+        "case_id": "case-002",
+        "source": "Hotline Sekolah",
+        "source_confidence": 0.81,
+        "urgency": "Tinggi",
+        "status": "Terhubung ke Kasus",
+        "summary": "Beberapa siswa bergejala mual setelah makan siang di SDN Sukajadi 05",
+        "text": "Aduan gejala mual dan pusing pada beberapa siswa setelah distribusi MBG.",
+        "created_at": "2026-06-02T10:15:00+00:00",
+        "vendor_id": "vnd-002",
+        "vendor_name": "Dapur Sehat Bandung Raya",
+        "region": "Jawa Barat",
+        "district": "Kota Bandung",
+        "school": "SDN Sukajadi 05",
+        "issue_category": "indikasi keracunan makanan"
+      },
+      {
+        "id": 5,
+        "case_id": "case-002",
+        "source": "Laporan Komunitas",
+        "source_confidence": 0.66,
+        "urgency": "Tinggi",
+        "status": "Terhubung ke Kasus",
+        "summary": "Sekolah berdekatan melaporkan gejala serupa dalam 48 jam",
+        "text": "Laporan komunitas menyebut gejala serupa di sekolah lain dalam wilayah yang sama.",
+        "created_at": "2026-06-03T08:40:00+00:00",
+        "vendor_id": "vnd-002",
+        "vendor_name": "Dapur Sehat Bandung Raya",
+        "region": "Jawa Barat",
+        "district": "Kota Bandung",
+        "school": "SDN Sukajadi 05",
+        "issue_category": "indikasi keracunan makanan"
+      }
+    ],
+    "complaints": [
+      {
+        "id": 4,
+        "case_id": "case-002",
+        "source": "Hotline Sekolah",
+        "source_confidence": 0.81,
+        "summary": "Beberapa siswa bergejala mual setelah makan siang di SDN Sukajadi 05",
+        "text": "Aduan gejala mual dan pusing pada beberapa siswa setelah distribusi MBG.",
+        "issue_category": "indikasi keracunan makanan",
+        "sentiment": "negative",
+        "severity_score": 88,
+        "region": "Jawa Barat",
+        "district": "Kota Bandung",
+        "school": "SDN Sukajadi 05",
+        "vendor_id": "vnd-002",
+        "vendor_name": "Dapur Sehat Bandung Raya",
+        "status": "Terhubung ke Kasus",
+        "urgency": "Tinggi",
+        "anomaly_tag": "Lonjakan",
+        "created_at": "2026-06-02T10:15:00+00:00"
+      },
+      {
+        "id": 5,
+        "case_id": "case-002",
+        "source": "Laporan Komunitas",
+        "source_confidence": 0.66,
+        "summary": "Sekolah berdekatan melaporkan gejala serupa dalam 48 jam",
+        "text": "Laporan komunitas menyebut gejala serupa di sekolah lain dalam wilayah yang sama.",
+        "issue_category": "indikasi keracunan makanan",
+        "sentiment": "negative",
+        "severity_score": 88,
+        "region": "Jawa Barat",
+        "district": "Kota Bandung",
+        "school": "SDN Sukajadi 05",
+        "vendor_id": "vnd-002",
+        "vendor_name": "Dapur Sehat Bandung Raya",
+        "status": "Terhubung ke Kasus",
+        "urgency": "Tinggi",
+        "anomaly_tag": "Lonjakan",
+        "created_at": "2026-06-03T08:40:00+00:00"
+      }
+    ],
+    "reports": [
+      {
+        "id": 2,
+        "case_id": "case-002",
+        "report_code": "RPT-MBG-2026-002",
+        "reporter_type": "Pengawas Distrik",
+        "school": "SDN Sukajadi 05",
+        "region": "Jawa Barat",
+        "district": "Kota Bandung",
+        "vendor_id": "vnd-002",
+        "vendor_name": "Dapur Sehat Bandung Raya",
+        "submitted_at": "2026-06-02T10:15:00+00:00",
+        "summary": "Paket laporan resmi untuk Dapur Sehat Bandung Raya mencakup distribusi menu dan tinjauan bukti.",
+        "evidence_count": 2,
+        "status": "Verifikasi Lapangan Terjadwal",
+        "completeness_score": 84,
+        "linked_ticket_id": "tkt-002",
+        "linked_risk_score": 79
+      }
+    ],
+    "daily_reports": [
+      {
+        "id": 2,
+        "case_id": "case-002",
+        "vendor_id": "vnd-002",
+        "vendor_name": "Dapur Sehat Bandung Raya",
+        "school": "SDN Sukajadi 05",
+        "region": "Jawa Barat",
+        "planned_menu": "Nasi, ayam, sayur, buah, susu",
+        "actual_menu": "Nasi, ayam, sayur, buah",
+        "delivery_timestamp": "2026-06-02T10:15:00+00:00",
+        "expected_timestamp": "2026-06-02T10:15:00+00:00",
+        "portion_count": 1205,
+        "photo_evidence_count": 1,
+        "document_complete": true,
+        "photo_verification": "Perlu Verifikasi",
+        "verification_status": "Sedang Ditinjau",
+        "duplicate_indicator": false,
+        "mismatch_indicator": false,
+        "nutrition_estimate": {
+          "calories": 540,
+          "protein_g": 16,
+          "carbs_g": 64,
+          "fat_g": 11
+        },
+        "cost_estimate": {
+          "cost_per_portion": 13600,
+          "standard_budget": 15000,
+          "cost_anomaly_flag": false
+        },
+        "recommended_follow_up": "Koordinasikan inspeksi dinas kesehatan dan tingkatkan sampling sementara."
+      }
+    ],
+    "evidence": [
+      {
+        "id": 4,
+        "case_id": "case-002",
+        "signal_id": 4,
+        "type": "photo",
+        "title": "Foto porsi makan siang — SDN Sukajadi 05",
+        "file_path": "/evidence-media/5.jpg",
+        "linked_entity": "MBG-002",
+        "source": "Distribusi lapangan",
+        "ocr_result": null,
+        "image_text_match_score": 0.44,
+        "duplicate_score": 0.18,
+        "confidence_score": 0.58,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto photo untuk Dapur Sehat Bandung Raya: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+        "created_at": "2026-06-02T10:15:00+00:00"
+      },
+      {
+        "id": 5,
+        "case_id": "case-002",
+        "signal_id": 5,
+        "type": "document",
+        "title": "Laporan harian & menu (simulasi OCR) — SDN Sukajadi 05",
+        "file_path": "/evidence-media/6.jpg",
+        "linked_entity": "MBG-002",
+        "source": "Laporan harian vendor",
+        "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+        "image_text_match_score": null,
+        "duplicate_score": null,
+        "confidence_score": 0.64,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto document untuk Dapur Sehat Bandung Raya: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+        "created_at": "2026-06-02T10:15:00+00:00"
+      }
+    ],
+    "score": {
+      "id": 2,
+      "case_id": "case-002",
+      "vendor_id": "vnd-002",
+      "vendor_name": "Dapur Sehat Bandung Raya",
+      "region": "Jawa Barat",
+      "severity_score": 88,
+      "confidence_score": 76,
+      "nutrition_concern_score": 52,
+      "cost_anomaly_score": 51,
+      "anomaly_score": 54,
+      "final_priority_score": 88,
+      "priority_label": "Kritis",
+      "explanation": "Prioritas kritis karena Dapur Sehat Bandung Raya menggabungkan risiko vendor 79, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+      "recommended_action": "Koordinasikan inspeksi dinas kesehatan dan tingkatkan sampling sementara.",
+      "computed_at": "2026-06-04T13:02:00+00:00",
+      "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+    },
+    "ticket": {
+      "id": "tkt-002",
+      "case_id": "case-002",
+      "title": "Tinjauan kritis: Dapur Sehat Bandung Raya",
+      "status": "Verifikasi Lapangan",
+      "sla": "24h",
+      "assigned_unit": "Dinas Kesehatan Kota Bandung",
+      "escalation_level": "Kritis",
+      "linked_vendor_id": "vnd-002",
+      "linked_vendor_name": "Dapur Sehat Bandung Raya",
+      "linked_region": "Jawa Barat",
+      "priority": 88,
+      "recommended_action": "Verifikasi Lapangan",
+      "linked_evidence_ids": [
+        4,
+        5
+      ],
+      "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+      "created_at": "2026-06-02T10:15:00+00:00",
+      "updated_at": "2026-06-04T12:00:00+00:00"
+    },
+    "copilot_sources": [
+      {
+        "label": "Kasus",
+        "source_type": "case",
+        "source_id": "case-002",
+        "title": "MBG-002"
+      },
+      {
+        "label": "Vendor",
+        "source_type": "vendor",
+        "source_id": "vnd-002",
+        "title": "Dapur Sehat Bandung Raya"
+      },
+      {
+        "label": "Skor",
+        "source_type": "score",
+        "source_id": 2,
+        "title": "Skor MBG-002"
+      }
+    ],
+    "audit_events": [
+      {
+        "id": 6,
+        "case_id": "case-002",
+        "ticket_id": "tkt-002",
+        "event_type": "signal_received",
+        "actor": "Sistem Intake",
+        "role": "Sistem",
+        "description": "Signal intake diterima dan dikelompokkan.",
+        "timestamp": "2026-06-02T08:06:00+00:00"
+      },
+      {
+        "id": 7,
+        "case_id": "case-002",
+        "ticket_id": "tkt-002",
+        "event_type": "case_formed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Kasus MBG-002 dibentuk dari sinyal terhubung.",
+        "timestamp": "2026-06-02T09:07:00+00:00"
+      },
+      {
+        "id": 8,
+        "case_id": "case-002",
+        "ticket_id": "tkt-002",
+        "event_type": "evidence_reviewed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+        "timestamp": "2026-06-03T10:08:00+00:00"
+      },
+      {
+        "id": 9,
+        "case_id": "case-002",
+        "ticket_id": "tkt-002",
+        "event_type": "risk_computed",
+        "actor": "Layanan Penilaian",
+        "role": "Sistem",
+        "description": "Penilaian risiko dihitung: Kritis.",
+        "timestamp": "2026-06-03T11:09:00+00:00"
+      },
+      {
+        "id": 10,
+        "case_id": "case-002",
+        "ticket_id": "tkt-002",
+        "event_type": "ticket_created",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Tiket tkt-002 dibuat untuk tindak lanjut.",
+        "timestamp": "2026-06-04T12:10:00+00:00"
+      }
+    ],
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": "case-003",
+    "case_id": "case-003",
+    "case_number": "MBG-003",
+    "title": "Anomali biaya per porsi di SDN Rungkut Menanggal",
+    "priority_label": "Kritis",
+    "status": "Menunggu Klarifikasi Vendor",
+    "vendor_id": "vnd-004",
+    "vendor_name": "Dapur Mandiri Surabaya Timur",
+    "vendor_source_note": null,
+    "region": "Jawa Timur",
+    "district": "Surabaya",
+    "school": "SDN Rungkut Menanggal",
+    "issue_category": "anomali biaya",
+    "sla_status": "SLA 48h",
+    "assigned_unit": "Meja Tinjauan Pengadaan",
+    "assigned_investigator": null,
+    "recommended_action": "Eskalasikan ke tinjauan pengadaan dan lakukan verifikasi menu.",
+    "summary": "MonitorMBG mengelompokkan 2 sinyal intake untuk Dapur Mandiri Surabaya Timur ke dalam MBG-003. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "what_happened": "MonitorMBG mengelompokkan 2 sinyal intake untuk Dapur Mandiri Surabaya Timur ke dalam MBG-003. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "why_it_matters": "Kasus ini menyangkut SDN Rungkut Menanggal di Surabaya, Jawa Timur dan dapat mengindikasikan anomali biaya terkait vendor dengan skor risiko 83.",
+    "risk_explanation": "Prioritas kritis karena Dapur Mandiri Surabaya Timur menggabungkan risiko vendor 83, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "signals_count": 2,
+    "evidence_count": 3,
+    "ticket_id": "tkt-003",
+    "created_at": "2026-06-01T09:20:00+00:00",
+    "updated_at": "2026-06-04T11:00:00+00:00",
+    "vendor": {
+      "id": "vnd-004",
+      "name": "Dapur Mandiri Surabaya Timur",
+      "region": "Jawa Timur",
+      "district": "Surabaya",
+      "assigned_schools": [
+        "SDN Rungkut Menanggal",
+        "SMPN 35 Surabaya"
+      ],
+      "daily_meal_volume": 2875,
+      "compliance_status": "Dieskalasi",
+      "risk_score": 83,
+      "risk_trend": [
+        55,
+        61,
+        70,
+        77,
+        83
+      ],
+      "watchlist_status": "Kritis",
+      "watchlist_reason": "Anomali biaya, buah/susu tidak lengkap, dan ketidaksesuaian menu berulang.",
+      "last_inspection_date": "2026-05-22",
+      "repeated_issue_categories": [
+        "anomali biaya",
+        "buah/susu tidak lengkap",
+        "ketidaksesuaian menu"
+      ],
+      "coverage_notes": "Biaya per porsi dilaporkan di atas patokan sementara kelengkapan menu menurun.",
+      "recommended_action": "Eskalasikan ke tinjauan pengadaan dan lakukan verifikasi menu."
+    },
+    "signals": [
+      {
+        "id": 6,
+        "case_id": "case-003",
+        "source": "Laporan Harian Vendor",
+        "source_confidence": 0.58,
+        "urgency": "Sedang",
+        "status": "Sedang Ditinjau",
+        "summary": "Biaya per porsi di atas patokan pada laporan harian Dapur Mandiri Surabaya Timur",
+        "text": "Laporan harian mencatat biaya per porsi di atas patokan anggaran standar.",
+        "created_at": "2026-06-01T09:20:00+00:00",
+        "vendor_id": "vnd-004",
+        "vendor_name": "Dapur Mandiri Surabaya Timur",
+        "region": "Jawa Timur",
+        "district": "Surabaya",
+        "school": "SDN Rungkut Menanggal",
+        "issue_category": "anomali biaya"
+      },
+      {
+        "id": 7,
+        "case_id": "case-003",
+        "source": "Tinjauan Pengadaan",
+        "source_confidence": 0.74,
+        "urgency": "Tinggi",
+        "status": "Terhubung ke Kasus",
+        "summary": "Tinjauan pengadaan menandai selisih biaya sementara kelengkapan menu menurun",
+        "text": "Tim pengadaan menandai anomali biaya yang perlu klarifikasi vendor.",
+        "created_at": "2026-06-02T11:00:00+00:00",
+        "vendor_id": "vnd-004",
+        "vendor_name": "Dapur Mandiri Surabaya Timur",
+        "region": "Jawa Timur",
+        "district": "Surabaya",
+        "school": "SDN Rungkut Menanggal",
+        "issue_category": "anomali biaya"
+      }
+    ],
+    "complaints": [
+      {
+        "id": 6,
+        "case_id": "case-003",
+        "source": "Laporan Harian Vendor",
+        "source_confidence": 0.58,
+        "summary": "Biaya per porsi di atas patokan pada laporan harian Dapur Mandiri Surabaya Timur",
+        "text": "Laporan harian mencatat biaya per porsi di atas patokan anggaran standar.",
+        "issue_category": "anomali biaya",
+        "sentiment": "negative",
+        "severity_score": 88,
+        "region": "Jawa Timur",
+        "district": "Surabaya",
+        "school": "SDN Rungkut Menanggal",
+        "vendor_id": "vnd-004",
+        "vendor_name": "Dapur Mandiri Surabaya Timur",
+        "status": "Sedang Ditinjau",
+        "urgency": "Sedang",
+        "anomaly_tag": null,
+        "created_at": "2026-06-01T09:20:00+00:00"
+      },
+      {
+        "id": 7,
+        "case_id": "case-003",
+        "source": "Tinjauan Pengadaan",
+        "source_confidence": 0.74,
+        "summary": "Tinjauan pengadaan menandai selisih biaya sementara kelengkapan menu menurun",
+        "text": "Tim pengadaan menandai anomali biaya yang perlu klarifikasi vendor.",
+        "issue_category": "anomali biaya",
+        "sentiment": "negative",
+        "severity_score": 88,
+        "region": "Jawa Timur",
+        "district": "Surabaya",
+        "school": "SDN Rungkut Menanggal",
+        "vendor_id": "vnd-004",
+        "vendor_name": "Dapur Mandiri Surabaya Timur",
+        "status": "Terhubung ke Kasus",
+        "urgency": "Tinggi",
+        "anomaly_tag": null,
+        "created_at": "2026-06-02T11:00:00+00:00"
+      }
+    ],
+    "reports": [
+      {
+        "id": 3,
+        "case_id": "case-003",
+        "report_code": "RPT-MBG-2026-003",
+        "reporter_type": "Operator Sekolah",
+        "school": "SDN Rungkut Menanggal",
+        "region": "Jawa Timur",
+        "district": "Surabaya",
+        "vendor_id": "vnd-004",
+        "vendor_name": "Dapur Mandiri Surabaya Timur",
+        "submitted_at": "2026-06-01T09:20:00+00:00",
+        "summary": "Paket laporan resmi untuk Dapur Mandiri Surabaya Timur mencakup distribusi menu dan tinjauan bukti.",
+        "evidence_count": 3,
+        "status": "Menunggu Klarifikasi Vendor",
+        "completeness_score": 80,
+        "linked_ticket_id": "tkt-003",
+        "linked_risk_score": 83
+      }
+    ],
+    "daily_reports": [
+      {
+        "id": 3,
+        "case_id": "case-003",
+        "vendor_id": "vnd-004",
+        "vendor_name": "Dapur Mandiri Surabaya Timur",
+        "school": "SDN Rungkut Menanggal",
+        "region": "Jawa Timur",
+        "planned_menu": "Nasi, ayam, sayur, buah, susu",
+        "actual_menu": "Nasi, ayam, sayur, buah",
+        "delivery_timestamp": "2026-06-01T09:20:00+00:00",
+        "expected_timestamp": "2026-06-01T09:20:00+00:00",
+        "portion_count": 1437,
+        "photo_evidence_count": 1,
+        "document_complete": true,
+        "photo_verification": "Perlu Verifikasi",
+        "verification_status": "Ditandai",
+        "duplicate_indicator": false,
+        "mismatch_indicator": false,
+        "nutrition_estimate": {
+          "calories": 540,
+          "protein_g": 16,
+          "carbs_g": 64,
+          "fat_g": 11
+        },
+        "cost_estimate": {
+          "cost_per_portion": 15800,
+          "standard_budget": 15000,
+          "cost_anomaly_flag": true
+        },
+        "recommended_follow_up": "Eskalasikan ke tinjauan pengadaan dan lakukan verifikasi menu."
+      }
+    ],
+    "evidence": [
+      {
+        "id": 6,
+        "case_id": "case-003",
+        "signal_id": 6,
+        "type": "photo",
+        "title": "Foto porsi makan siang — SDN Rungkut Menanggal",
+        "file_path": "/evidence-media/7.jpg",
+        "linked_entity": "MBG-003",
+        "source": "Distribusi lapangan",
+        "ocr_result": null,
+        "image_text_match_score": 0.44,
+        "duplicate_score": 0.18,
+        "confidence_score": 0.58,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto photo untuk Dapur Mandiri Surabaya Timur: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+        "created_at": "2026-06-01T09:20:00+00:00"
+      },
+      {
+        "id": 7,
+        "case_id": "case-003",
+        "signal_id": 7,
+        "type": "document",
+        "title": "Laporan harian & menu (simulasi OCR) — SDN Rungkut Menanggal",
+        "file_path": "/evidence-media/8.jpg",
+        "linked_entity": "MBG-003",
+        "source": "Laporan harian vendor",
+        "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+        "image_text_match_score": null,
+        "duplicate_score": null,
+        "confidence_score": 0.64,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto document untuk Dapur Mandiri Surabaya Timur: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+        "created_at": "2026-06-01T09:20:00+00:00"
+      },
+      {
+        "id": 8,
+        "case_id": "case-003",
+        "signal_id": 6,
+        "type": "metadata",
+        "title": "Metadata waktu distribusi — SDN Rungkut Menanggal",
+        "file_path": "/evidence-media/9.jpg",
+        "linked_entity": "MBG-003",
+        "source": "Laporan harian vendor",
+        "ocr_result": null,
+        "image_text_match_score": null,
+        "duplicate_score": null,
+        "confidence_score": 0.7,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto metadata untuk Dapur Mandiri Surabaya Timur: catatan waktu distribusi vs jadwal; perlu validasi lapangan.",
+        "created_at": "2026-06-01T09:20:00+00:00"
+      }
+    ],
+    "score": {
+      "id": 3,
+      "case_id": "case-003",
+      "vendor_id": "vnd-004",
+      "vendor_name": "Dapur Mandiri Surabaya Timur",
+      "region": "Jawa Timur",
+      "severity_score": 88,
+      "confidence_score": 73,
+      "nutrition_concern_score": 63,
+      "cost_anomaly_score": 64,
+      "anomaly_score": 71,
+      "final_priority_score": 88,
+      "priority_label": "Kritis",
+      "explanation": "Prioritas kritis karena Dapur Mandiri Surabaya Timur menggabungkan risiko vendor 83, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+      "recommended_action": "Eskalasikan ke tinjauan pengadaan dan lakukan verifikasi menu.",
+      "computed_at": "2026-06-04T13:03:00+00:00",
+      "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+    },
+    "ticket": {
+      "id": "tkt-003",
+      "case_id": "case-003",
+      "title": "Tinjauan kritis: Dapur Mandiri Surabaya Timur",
+      "status": "Menunggu Klarifikasi Vendor",
+      "sla": "48h",
+      "assigned_unit": "Meja Tinjauan Pengadaan",
+      "escalation_level": "Kritis",
+      "linked_vendor_id": "vnd-004",
+      "linked_vendor_name": "Dapur Mandiri Surabaya Timur",
+      "linked_region": "Jawa Timur",
+      "priority": 88,
+      "recommended_action": "Klarifikasi menu & biaya",
+      "linked_evidence_ids": [
+        6,
+        7,
+        8
+      ],
+      "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+      "created_at": "2026-06-01T09:20:00+00:00",
+      "updated_at": "2026-06-04T11:00:00+00:00"
+    },
+    "copilot_sources": [
+      {
+        "label": "Kasus",
+        "source_type": "case",
+        "source_id": "case-003",
+        "title": "MBG-003"
+      },
+      {
+        "label": "Vendor",
+        "source_type": "vendor",
+        "source_id": "vnd-004",
+        "title": "Dapur Mandiri Surabaya Timur"
+      },
+      {
+        "label": "Skor",
+        "source_type": "score",
+        "source_id": 3,
+        "title": "Skor MBG-003"
+      }
+    ],
+    "audit_events": [
+      {
+        "id": 11,
+        "case_id": "case-003",
+        "ticket_id": "tkt-003",
+        "event_type": "signal_received",
+        "actor": "Sistem Intake",
+        "role": "Sistem",
+        "description": "Signal intake diterima dan dikelompokkan.",
+        "timestamp": "2026-06-01T08:11:00+00:00"
+      },
+      {
+        "id": 12,
+        "case_id": "case-003",
+        "ticket_id": "tkt-003",
+        "event_type": "case_formed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Kasus MBG-003 dibentuk dari sinyal terhubung.",
+        "timestamp": "2026-06-01T09:12:00+00:00"
+      },
+      {
+        "id": 13,
+        "case_id": "case-003",
+        "ticket_id": "tkt-003",
+        "event_type": "evidence_reviewed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+        "timestamp": "2026-06-02T10:13:00+00:00"
+      },
+      {
+        "id": 14,
+        "case_id": "case-003",
+        "ticket_id": "tkt-003",
+        "event_type": "risk_computed",
+        "actor": "Layanan Penilaian",
+        "role": "Sistem",
+        "description": "Penilaian risiko dihitung: Kritis.",
+        "timestamp": "2026-06-02T11:14:00+00:00"
+      },
+      {
+        "id": 15,
+        "case_id": "case-003",
+        "ticket_id": "tkt-003",
+        "event_type": "ticket_created",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Tiket tkt-003 dibuat untuk tindak lanjut.",
+        "timestamp": "2026-06-03T12:15:00+00:00"
+      }
+    ],
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": "case-001",
+    "case_id": "case-001",
+    "case_number": "MBG-001",
+    "title": "Indikasi porsi protein kurang dan keterlambatan distribusi di SDN Melati 03",
+    "priority_label": "Tinggi",
+    "status": "Sedang Ditinjau",
+    "vendor_id": "vnd-001",
+    "vendor_name": "SPPG Nusantara Sehat",
+    "vendor_source_note": null,
+    "region": "DKI Jakarta",
+    "district": "Jakarta Timur",
+    "school": "SDN Melati 03",
+    "issue_category": "porsi protein kurang",
+    "sla_status": "SLA 24h",
+    "assigned_unit": "Dinas Kesehatan Jakarta Timur",
+    "assigned_investigator": null,
+    "recommended_action": "Minta klarifikasi vendor dan jadwalkan verifikasi lapangan.",
+    "summary": "MonitorMBG mengelompokkan 3 sinyal intake untuk SPPG Nusantara Sehat ke dalam MBG-001. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "what_happened": "MonitorMBG mengelompokkan 3 sinyal intake untuk SPPG Nusantara Sehat ke dalam MBG-001. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "why_it_matters": "Kasus ini menyangkut SDN Melati 03 di Jakarta Timur, DKI Jakarta dan dapat mengindikasikan porsi protein kurang terkait vendor dengan skor risiko 88.",
+    "risk_explanation": "Prioritas tinggi karena aduan berulang, pola keterlambatan distribusi, estimasi protein rendah, dan ketidaksesuaian laporan harian saling menguatkan. Keyakinan meningkat oleh beberapa sinyal independen, namun peninjauan operator tetap diperlukan karena kecocokan gambar-teks parsial dan klarifikasi vendor belum lengkap.",
+    "signals_count": 3,
+    "evidence_count": 3,
+    "ticket_id": "tkt-001",
+    "created_at": "2026-06-02T08:15:00+00:00",
+    "updated_at": "2026-06-04T15:30:00+00:00",
+    "vendor": {
+      "id": "vnd-001",
+      "name": "SPPG Nusantara Sehat",
+      "region": "DKI Jakarta",
+      "district": "Jakarta Timur",
+      "assigned_schools": [
+        "SDN Melati 03",
+        "SMPN 182 Jakarta",
+        "SDN Rawamangun 07"
+      ],
+      "daily_meal_volume": 3280,
+      "compliance_status": "Sedang Ditinjau",
+      "risk_score": 88,
+      "risk_trend": [
+        62,
+        68,
+        74,
+        81,
+        88
+      ],
+      "watchlist_status": "Kritis",
+      "watchlist_reason": "Aduan porsi protein rendah berulang, keterlambatan distribusi, dan indikasi foto duplikat.",
+      "last_inspection_date": "2026-05-29",
+      "repeated_issue_categories": [
+        "porsi protein kurang",
+        "keterlambatan distribusi",
+        "indikasi foto duplikat"
+      ],
+      "coverage_notes": "Klaster tiga sekolah di Jakarta Timur; kepadatan sinyal publik tinggi pekan ini.",
+      "recommended_action": "Minta klarifikasi vendor dan jadwalkan verifikasi lapangan."
+    },
+    "signals": [
+      {
+        "id": 1,
+        "case_id": "case-001",
+        "source": "Aduan Wali Murid",
+        "source_confidence": 0.64,
+        "urgency": "Tinggi",
+        "status": "Terhubung ke Kasus",
+        "summary": "Porsi lauk kecil dan makanan datang terlambat di SDN Melati 03",
+        "text": "Menu hari ini hanya nasi, sedikit sayur, dan lauk telur sangat kecil. Makanan juga datang terlambat sekitar 45 menit.",
+        "created_at": "2026-06-02T08:15:00+00:00",
+        "vendor_id": "vnd-001",
+        "vendor_name": "SPPG Nusantara Sehat",
+        "region": "DKI Jakarta",
+        "district": "Jakarta Timur",
+        "school": "SDN Melati 03",
+        "issue_category": "porsi protein kurang"
+      },
+      {
+        "id": 2,
+        "case_id": "case-001",
+        "source": "Laporan Pengawas",
+        "source_confidence": 0.72,
+        "urgency": "Tinggi",
+        "status": "Terhubung ke Kasus",
+        "summary": "Pengawas melaporkan pola porsi protein rendah yang berulang di SPPG Nusantara Sehat",
+        "text": "Laporan pengawas: pola keterlambatan dan porsi protein rendah berulang pada distribusi MBG oleh SPPG Nusantara Sehat.",
+        "created_at": "2026-06-03T09:30:00+00:00",
+        "vendor_id": "vnd-001",
+        "vendor_name": "SPPG Nusantara Sehat",
+        "region": "DKI Jakarta",
+        "district": "Jakarta Timur",
+        "school": "SDN Melati 03",
+        "issue_category": "porsi protein kurang"
+      },
+      {
+        "id": 3,
+        "case_id": "case-001",
+        "source": "Laporan Harian Vendor",
+        "source_confidence": 0.7,
+        "urgency": "Sedang",
+        "status": "Terhubung ke Kasus",
+        "summary": "Laporan harian vendor: menu aktual nasi, telur, sayur (tanpa buah/susu)",
+        "text": "Laporan harian vendor mencatat menu aktual nasi, telur kecil, sayur; buah dan susu pada rencana menu tidak tercatat terdistribusi.",
+        "created_at": "2026-06-04T08:00:00+00:00",
+        "vendor_id": "vnd-001",
+        "vendor_name": "SPPG Nusantara Sehat",
+        "region": "DKI Jakarta",
+        "district": "Jakarta Timur",
+        "school": "SDN Melati 03",
+        "issue_category": "porsi protein kurang"
+      }
+    ],
+    "complaints": [
+      {
+        "id": 1,
+        "case_id": "case-001",
+        "source": "Aduan Wali Murid",
+        "source_confidence": 0.64,
+        "summary": "Porsi lauk kecil dan makanan datang terlambat di SDN Melati 03",
+        "text": "Menu hari ini hanya nasi, sedikit sayur, dan lauk telur sangat kecil. Makanan juga datang terlambat sekitar 45 menit.",
+        "issue_category": "porsi protein kurang",
+        "sentiment": "negative",
+        "severity_score": 86,
+        "region": "DKI Jakarta",
+        "district": "Jakarta Timur",
+        "school": "SDN Melati 03",
+        "vendor_id": "vnd-001",
+        "vendor_name": "SPPG Nusantara Sehat",
+        "status": "Terhubung ke Kasus",
+        "urgency": "Tinggi",
+        "anomaly_tag": "Lonjakan",
+        "created_at": "2026-06-02T08:15:00+00:00"
+      },
+      {
+        "id": 2,
+        "case_id": "case-001",
+        "source": "Laporan Pengawas",
+        "source_confidence": 0.72,
+        "summary": "Pengawas melaporkan pola porsi protein rendah yang berulang di SPPG Nusantara Sehat",
+        "text": "Laporan pengawas: pola keterlambatan dan porsi protein rendah berulang pada distribusi MBG oleh SPPG Nusantara Sehat.",
+        "issue_category": "porsi protein kurang",
+        "sentiment": "negative",
+        "severity_score": 86,
+        "region": "DKI Jakarta",
+        "district": "Jakarta Timur",
+        "school": "SDN Melati 03",
+        "vendor_id": "vnd-001",
+        "vendor_name": "SPPG Nusantara Sehat",
+        "status": "Terhubung ke Kasus",
+        "urgency": "Tinggi",
+        "anomaly_tag": "Lonjakan",
+        "created_at": "2026-06-03T09:30:00+00:00"
+      },
+      {
+        "id": 3,
+        "case_id": "case-001",
+        "source": "Laporan Harian Vendor",
+        "source_confidence": 0.7,
+        "summary": "Laporan harian vendor: menu aktual nasi, telur, sayur (tanpa buah/susu)",
+        "text": "Laporan harian vendor mencatat menu aktual nasi, telur kecil, sayur; buah dan susu pada rencana menu tidak tercatat terdistribusi.",
+        "issue_category": "porsi protein kurang",
+        "sentiment": "negative",
+        "severity_score": 86,
+        "region": "DKI Jakarta",
+        "district": "Jakarta Timur",
+        "school": "SDN Melati 03",
+        "vendor_id": "vnd-001",
+        "vendor_name": "SPPG Nusantara Sehat",
+        "status": "Terhubung ke Kasus",
+        "urgency": "Sedang",
+        "anomaly_tag": "Lonjakan",
+        "created_at": "2026-06-04T08:00:00+00:00"
+      }
+    ],
+    "reports": [
+      {
+        "id": 1,
+        "case_id": "case-001",
+        "report_code": "RPT-MBG-2026-001",
+        "reporter_type": "Operator Sekolah",
+        "school": "SDN Melati 03",
+        "region": "DKI Jakarta",
+        "district": "Jakarta Timur",
+        "vendor_id": "vnd-001",
+        "vendor_name": "SPPG Nusantara Sehat",
+        "submitted_at": "2026-06-02T08:15:00+00:00",
+        "summary": "Paket laporan resmi untuk SPPG Nusantara Sehat mencakup distribusi menu dan tinjauan bukti.",
+        "evidence_count": 3,
+        "status": "Sedang Ditinjau",
+        "completeness_score": 88,
+        "linked_ticket_id": "tkt-001",
+        "linked_risk_score": 88
+      }
+    ],
+    "daily_reports": [
+      {
+        "id": 1,
+        "case_id": "case-001",
+        "vendor_id": "vnd-001",
+        "vendor_name": "SPPG Nusantara Sehat",
+        "school": "SDN Melati 03",
+        "region": "DKI Jakarta",
+        "planned_menu": "Nasi, ayam, sayur, buah, susu",
+        "actual_menu": "Nasi, telur kecil, sayur",
+        "delivery_timestamp": "2026-06-02T08:15:00+00:00",
+        "expected_timestamp": "2026-06-02T08:15:00+00:00",
+        "portion_count": 1093,
+        "photo_evidence_count": 1,
+        "document_complete": true,
+        "photo_verification": "Ketidaksesuaian Menu",
+        "verification_status": "Ditandai",
+        "duplicate_indicator": false,
+        "mismatch_indicator": true,
+        "nutrition_estimate": {
+          "calories": 505,
+          "protein_g": 11,
+          "carbs_g": 64,
+          "fat_g": 11
+        },
+        "cost_estimate": {
+          "cost_per_portion": 15800,
+          "standard_budget": 15000,
+          "cost_anomaly_flag": true
+        },
+        "recommended_follow_up": "Minta klarifikasi vendor dan jadwalkan verifikasi lapangan."
+      }
+    ],
+    "evidence": [
+      {
+        "id": 1,
+        "case_id": "case-001",
+        "signal_id": 1,
+        "type": "photo",
+        "title": "Foto porsi makan siang — SDN Melati 03",
+        "file_path": "/evidence-media/1.jpg",
+        "linked_entity": "MBG-001",
+        "source": "Distribusi lapangan",
+        "ocr_result": null,
+        "image_text_match_score": 0.44,
+        "duplicate_score": 0.18,
+        "confidence_score": 0.58,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto porsi makan siang — indikasi awal, perlu perbandingan dengan menu dan standar porsi. Bukan bukti pelanggaran; wajib ditinjau operator.",
+        "created_at": "2026-06-02T08:15:00+00:00"
+      },
+      {
+        "id": 2,
+        "case_id": "case-001",
+        "signal_id": 2,
+        "type": "document",
+        "title": "Laporan harian & menu (simulasi OCR) — SDN Melati 03",
+        "file_path": "/evidence-media/2.jpg",
+        "linked_entity": "MBG-001",
+        "source": "Laporan harian vendor",
+        "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+        "image_text_match_score": null,
+        "duplicate_score": null,
+        "confidence_score": 0.64,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto document untuk SPPG Nusantara Sehat: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+        "created_at": "2026-06-02T08:15:00+00:00"
+      },
+      {
+        "id": 3,
+        "case_id": "case-001",
+        "signal_id": 3,
+        "type": "metadata",
+        "title": "Metadata waktu distribusi — SDN Melati 03",
+        "file_path": "/evidence-media/3.jpg",
+        "linked_entity": "MBG-001",
+        "source": "Laporan harian vendor",
+        "ocr_result": null,
+        "image_text_match_score": null,
+        "duplicate_score": null,
+        "confidence_score": 0.7,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto metadata untuk SPPG Nusantara Sehat: catatan waktu distribusi vs jadwal; perlu validasi lapangan.",
+        "created_at": "2026-06-02T08:15:00+00:00"
+      }
+    ],
+    "score": {
+      "id": 1,
+      "case_id": "case-001",
+      "vendor_id": "vnd-001",
+      "vendor_name": "SPPG Nusantara Sehat",
+      "region": "DKI Jakarta",
+      "severity_score": 86,
+      "confidence_score": 78,
+      "nutrition_concern_score": 82,
+      "cost_anomaly_score": 64,
+      "anomaly_score": 73,
+      "final_priority_score": 86,
+      "priority_label": "Tinggi",
+      "explanation": "Prioritas tinggi karena aduan berulang, pola keterlambatan distribusi, estimasi protein rendah, dan ketidaksesuaian laporan harian saling menguatkan. Keyakinan meningkat oleh beberapa sinyal independen, namun peninjauan operator tetap diperlukan karena kecocokan gambar-teks parsial dan klarifikasi vendor belum lengkap.",
+      "recommended_action": "Minta klarifikasi vendor dan jadwalkan verifikasi lapangan.",
+      "computed_at": "2026-06-04T13:05:00+00:00",
+      "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+    },
+    "ticket": {
+      "id": "tkt-001",
+      "case_id": "case-001",
+      "title": "Tinjauan tinggi: SPPG Nusantara Sehat",
+      "status": "Baru",
+      "sla": "24h",
+      "assigned_unit": "Dinas Kesehatan Jakarta Timur",
+      "escalation_level": "Tinggi",
+      "linked_vendor_id": "vnd-001",
+      "linked_vendor_name": "SPPG Nusantara Sehat",
+      "linked_region": "DKI Jakarta",
+      "priority": 86,
+      "recommended_action": "Jadwalkan verifikasi lapangan dan minta klarifikasi vendor.",
+      "linked_evidence_ids": [
+        1,
+        2,
+        3
+      ],
+      "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+      "created_at": "2026-06-02T08:15:00+00:00",
+      "updated_at": "2026-06-04T15:30:00+00:00"
+    },
+    "copilot_sources": [
+      {
+        "label": "Kasus",
+        "source_type": "case",
+        "source_id": "case-001",
+        "title": "MBG-001"
+      },
+      {
+        "label": "Vendor",
+        "source_type": "vendor",
+        "source_id": "vnd-001",
+        "title": "SPPG Nusantara Sehat"
+      },
+      {
+        "label": "Skor",
+        "source_type": "score",
+        "source_id": 1,
+        "title": "Skor MBG-001"
+      }
+    ],
+    "audit_events": [
+      {
+        "id": 1,
+        "case_id": "case-001",
+        "ticket_id": "tkt-001",
+        "event_type": "signal_received",
+        "actor": "Sistem Intake",
+        "role": "Sistem",
+        "description": "Signal intake diterima dan dikelompokkan.",
+        "timestamp": "2026-06-02T08:01:00+00:00"
+      },
+      {
+        "id": 2,
+        "case_id": "case-001",
+        "ticket_id": "tkt-001",
+        "event_type": "case_formed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Kasus MBG-001 dibentuk dari sinyal terhubung.",
+        "timestamp": "2026-06-02T09:02:00+00:00"
+      },
+      {
+        "id": 3,
+        "case_id": "case-001",
+        "ticket_id": "tkt-001",
+        "event_type": "evidence_reviewed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+        "timestamp": "2026-06-03T10:03:00+00:00"
+      },
+      {
+        "id": 4,
+        "case_id": "case-001",
+        "ticket_id": "tkt-001",
+        "event_type": "risk_computed",
+        "actor": "Layanan Penilaian",
+        "role": "Sistem",
+        "description": "Penilaian risiko dihitung: Tinggi.",
+        "timestamp": "2026-06-03T11:04:00+00:00"
+      },
+      {
+        "id": 5,
+        "case_id": "case-001",
+        "ticket_id": "tkt-001",
+        "event_type": "ticket_created",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Tiket tkt-001 dibuat untuk tindak lanjut.",
+        "timestamp": "2026-06-04T12:05:00+00:00"
+      }
+    ],
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": "case-004",
+    "case_id": "case-004",
+    "case_number": "MBG-004",
+    "title": "Dokumentasi dan faktur belum lengkap di SDN Panakkukang 02",
+    "priority_label": "Tinggi",
+    "status": "Menunggu Klarifikasi Vendor",
+    "vendor_id": "vnd-006",
+    "vendor_name": "Dapur Prima Makassar",
+    "vendor_source_note": null,
+    "region": "Sulawesi Selatan",
+    "district": "Makassar",
+    "school": "SDN Panakkukang 02",
+    "issue_category": "dokumentasi belum lengkap",
+    "sla_status": "SLA 48h",
+    "assigned_unit": "Unit Pengawasan Vendor MBG",
+    "assigned_investigator": null,
+    "recommended_action": "Minta faktur perbaikan dan tinjauan operator atas bukti.",
+    "summary": "MonitorMBG mengelompokkan 2 sinyal intake untuk Dapur Prima Makassar ke dalam MBG-004. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "what_happened": "MonitorMBG mengelompokkan 2 sinyal intake untuk Dapur Prima Makassar ke dalam MBG-004. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "why_it_matters": "Kasus ini menyangkut SDN Panakkukang 02 di Makassar, Sulawesi Selatan dan dapat mengindikasikan dokumentasi belum lengkap terkait vendor dengan skor risiko 67.",
+    "risk_explanation": "Prioritas tinggi karena Dapur Prima Makassar menggabungkan risiko vendor 67, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "signals_count": 2,
+    "evidence_count": 2,
+    "ticket_id": "tkt-004",
+    "created_at": "2026-06-01T08:40:00+00:00",
+    "updated_at": "2026-06-03T16:00:00+00:00",
+    "vendor": {
+      "id": "vnd-006",
+      "name": "Dapur Prima Makassar",
+      "region": "Sulawesi Selatan",
+      "district": "Makassar",
+      "assigned_schools": [
+        "SDN Panakkukang 02",
+        "SMPN 8 Makassar"
+      ],
+      "daily_meal_volume": 2135,
+      "compliance_status": "Perlu Verifikasi",
+      "risk_score": 67,
+      "risk_trend": [
+        45,
+        51,
+        56,
+        63,
+        67
+      ],
+      "watchlist_status": "Tinggi",
+      "watchlist_reason": "Dokumentasi belum lengkap dan paket bukti berkeyakinan rendah.",
+      "last_inspection_date": "2026-05-27",
+      "repeated_issue_categories": [
+        "dokumentasi belum lengkap",
+        "ketidaksesuaian menu"
+      ],
+      "coverage_notes": "Foto laporan harian lengkap tetapi hasil OCR faktur lemah.",
+      "recommended_action": "Minta faktur perbaikan dan tinjauan operator atas bukti."
+    },
+    "signals": [
+      {
+        "id": 8,
+        "case_id": "case-004",
+        "source": "Laporan Harian Vendor",
+        "source_confidence": 0.52,
+        "urgency": "Sedang",
+        "status": "Sedang Ditinjau",
+        "summary": "Faktur pada laporan harian Dapur Prima Makassar sulit terbaca (OCR lemah)",
+        "text": "Bidang faktur pada laporan harian terbaca sebagian; total biaya perlu konfirmasi.",
+        "created_at": "2026-06-01T08:40:00+00:00",
+        "vendor_id": "vnd-006",
+        "vendor_name": "Dapur Prima Makassar",
+        "region": "Sulawesi Selatan",
+        "district": "Makassar",
+        "school": "SDN Panakkukang 02",
+        "issue_category": "dokumentasi belum lengkap"
+      },
+      {
+        "id": 9,
+        "case_id": "case-004",
+        "source": "Operator Sekolah",
+        "source_confidence": 0.6,
+        "urgency": "Sedang",
+        "status": "Terhubung ke Kasus",
+        "summary": "Operator sekolah melaporkan checklist distribusi belum lengkap",
+        "text": "Operator sekolah mencatat beberapa item checklist distribusi belum terisi.",
+        "created_at": "2026-06-02T09:10:00+00:00",
+        "vendor_id": "vnd-006",
+        "vendor_name": "Dapur Prima Makassar",
+        "region": "Sulawesi Selatan",
+        "district": "Makassar",
+        "school": "SDN Panakkukang 02",
+        "issue_category": "dokumentasi belum lengkap"
+      }
+    ],
+    "complaints": [
+      {
+        "id": 8,
+        "case_id": "case-004",
+        "source": "Laporan Harian Vendor",
+        "source_confidence": 0.52,
+        "summary": "Faktur pada laporan harian Dapur Prima Makassar sulit terbaca (OCR lemah)",
+        "text": "Bidang faktur pada laporan harian terbaca sebagian; total biaya perlu konfirmasi.",
+        "issue_category": "dokumentasi belum lengkap",
+        "sentiment": "negative",
+        "severity_score": 78,
+        "region": "Sulawesi Selatan",
+        "district": "Makassar",
+        "school": "SDN Panakkukang 02",
+        "vendor_id": "vnd-006",
+        "vendor_name": "Dapur Prima Makassar",
+        "status": "Sedang Ditinjau",
+        "urgency": "Sedang",
+        "anomaly_tag": null,
+        "created_at": "2026-06-01T08:40:00+00:00"
+      },
+      {
+        "id": 9,
+        "case_id": "case-004",
+        "source": "Operator Sekolah",
+        "source_confidence": 0.6,
+        "summary": "Operator sekolah melaporkan checklist distribusi belum lengkap",
+        "text": "Operator sekolah mencatat beberapa item checklist distribusi belum terisi.",
+        "issue_category": "dokumentasi belum lengkap",
+        "sentiment": "negative",
+        "severity_score": 78,
+        "region": "Sulawesi Selatan",
+        "district": "Makassar",
+        "school": "SDN Panakkukang 02",
+        "vendor_id": "vnd-006",
+        "vendor_name": "Dapur Prima Makassar",
+        "status": "Terhubung ke Kasus",
+        "urgency": "Sedang",
+        "anomaly_tag": null,
+        "created_at": "2026-06-02T09:10:00+00:00"
+      }
+    ],
+    "reports": [
+      {
+        "id": 4,
+        "case_id": "case-004",
+        "report_code": "RPT-MBG-2026-004",
+        "reporter_type": "Pengawas Distrik",
+        "school": "SDN Panakkukang 02",
+        "region": "Sulawesi Selatan",
+        "district": "Makassar",
+        "vendor_id": "vnd-006",
+        "vendor_name": "Dapur Prima Makassar",
+        "submitted_at": "2026-06-01T08:40:00+00:00",
+        "summary": "Paket laporan resmi untuk Dapur Prima Makassar mencakup distribusi menu dan tinjauan bukti.",
+        "evidence_count": 2,
+        "status": "Menunggu Klarifikasi Vendor",
+        "completeness_score": 76,
+        "linked_ticket_id": "tkt-004",
+        "linked_risk_score": 67
+      }
+    ],
+    "daily_reports": [
+      {
+        "id": 4,
+        "case_id": "case-004",
+        "vendor_id": "vnd-006",
+        "vendor_name": "Dapur Prima Makassar",
+        "school": "SDN Panakkukang 02",
+        "region": "Sulawesi Selatan",
+        "planned_menu": "Nasi, ayam, sayur, buah, susu",
+        "actual_menu": "Nasi, ayam, sayur, buah",
+        "delivery_timestamp": "2026-06-01T08:40:00+00:00",
+        "expected_timestamp": "2026-06-01T08:40:00+00:00",
+        "portion_count": 1067,
+        "photo_evidence_count": 1,
+        "document_complete": false,
+        "photo_verification": "Perlu Verifikasi",
+        "verification_status": "Sedang Ditinjau",
+        "duplicate_indicator": false,
+        "mismatch_indicator": false,
+        "nutrition_estimate": {
+          "calories": 540,
+          "protein_g": 16,
+          "carbs_g": 64,
+          "fat_g": 11
+        },
+        "cost_estimate": {
+          "cost_per_portion": 13600,
+          "standard_budget": 15000,
+          "cost_anomaly_flag": false
+        },
+        "recommended_follow_up": "Minta faktur perbaikan dan tinjauan operator atas bukti."
+      }
+    ],
+    "evidence": [
+      {
+        "id": 9,
+        "case_id": "case-004",
+        "signal_id": 8,
+        "type": "photo",
+        "title": "Foto porsi makan siang — SDN Panakkukang 02",
+        "file_path": "/evidence-media/10.jpg",
+        "linked_entity": "MBG-004",
+        "source": "Distribusi lapangan",
+        "ocr_result": null,
+        "image_text_match_score": 0.44,
+        "duplicate_score": 0.18,
+        "confidence_score": 0.58,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto photo untuk Dapur Prima Makassar: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+        "created_at": "2026-06-01T08:40:00+00:00"
+      },
+      {
+        "id": 10,
+        "case_id": "case-004",
+        "signal_id": 9,
+        "type": "document",
+        "title": "Laporan harian & menu (simulasi OCR) — SDN Panakkukang 02",
+        "file_path": "/evidence-media/11.jpg",
+        "linked_entity": "MBG-004",
+        "source": "Laporan harian vendor",
+        "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+        "image_text_match_score": null,
+        "duplicate_score": null,
+        "confidence_score": 0.64,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto document untuk Dapur Prima Makassar: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+        "created_at": "2026-06-01T08:40:00+00:00"
+      }
+    ],
+    "score": {
+      "id": 4,
+      "case_id": "case-004",
+      "vendor_id": "vnd-006",
+      "vendor_name": "Dapur Prima Makassar",
+      "region": "Sulawesi Selatan",
+      "severity_score": 78,
+      "confidence_score": 70,
+      "nutrition_concern_score": 74,
+      "cost_anomaly_score": 77,
+      "anomaly_score": 23,
+      "final_priority_score": 78,
+      "priority_label": "Tinggi",
+      "explanation": "Prioritas tinggi karena Dapur Prima Makassar menggabungkan risiko vendor 67, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+      "recommended_action": "Minta faktur perbaikan dan tinjauan operator atas bukti.",
+      "computed_at": "2026-06-04T13:04:00+00:00",
+      "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+    },
+    "ticket": {
+      "id": "tkt-004",
+      "case_id": "case-004",
+      "title": "Tinjauan tinggi: Dapur Prima Makassar",
+      "status": "Menunggu Klarifikasi Vendor",
+      "sla": "48h",
+      "assigned_unit": "Unit Pengawasan Vendor MBG",
+      "escalation_level": "Tinggi",
+      "linked_vendor_id": "vnd-006",
+      "linked_vendor_name": "Dapur Prima Makassar",
+      "linked_region": "Sulawesi Selatan",
+      "priority": 78,
+      "recommended_action": "Perbaikan faktur & dokumen",
+      "linked_evidence_ids": [
+        9,
+        10
+      ],
+      "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+      "created_at": "2026-06-01T08:40:00+00:00",
+      "updated_at": "2026-06-03T16:00:00+00:00"
+    },
+    "copilot_sources": [
+      {
+        "label": "Kasus",
+        "source_type": "case",
+        "source_id": "case-004",
+        "title": "MBG-004"
+      },
+      {
+        "label": "Vendor",
+        "source_type": "vendor",
+        "source_id": "vnd-006",
+        "title": "Dapur Prima Makassar"
+      },
+      {
+        "label": "Skor",
+        "source_type": "score",
+        "source_id": 4,
+        "title": "Skor MBG-004"
+      }
+    ],
+    "audit_events": [
+      {
+        "id": 16,
+        "case_id": "case-004",
+        "ticket_id": "tkt-004",
+        "event_type": "signal_received",
+        "actor": "Sistem Intake",
+        "role": "Sistem",
+        "description": "Signal intake diterima dan dikelompokkan.",
+        "timestamp": "2026-06-01T08:16:00+00:00"
+      },
+      {
+        "id": 17,
+        "case_id": "case-004",
+        "ticket_id": "tkt-004",
+        "event_type": "case_formed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Kasus MBG-004 dibentuk dari sinyal terhubung.",
+        "timestamp": "2026-06-01T09:17:00+00:00"
+      },
+      {
+        "id": 18,
+        "case_id": "case-004",
+        "ticket_id": "tkt-004",
+        "event_type": "evidence_reviewed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+        "timestamp": "2026-06-02T10:18:00+00:00"
+      },
+      {
+        "id": 19,
+        "case_id": "case-004",
+        "ticket_id": "tkt-004",
+        "event_type": "risk_computed",
+        "actor": "Layanan Penilaian",
+        "role": "Sistem",
+        "description": "Penilaian risiko dihitung: Tinggi.",
+        "timestamp": "2026-06-02T11:19:00+00:00"
+      },
+      {
+        "id": 20,
+        "case_id": "case-004",
+        "ticket_id": "tkt-004",
+        "event_type": "ticket_created",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Tiket tkt-004 dibuat untuk tindak lanjut.",
+        "timestamp": "2026-06-03T12:20:00+00:00"
+      }
+    ],
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": "case-007",
+    "case_id": "case-007",
+    "case_number": "MBG-007",
+    "title": "Ketidaksesuaian menu aktual dengan rencana di SMPN 35 Surabaya",
+    "priority_label": "Tinggi",
+    "status": "Menunggu Klarifikasi Vendor",
+    "vendor_id": "vnd-004",
+    "vendor_name": "Dapur Mandiri Surabaya Timur",
+    "vendor_source_note": null,
+    "region": "Jawa Timur",
+    "district": "Surabaya",
+    "school": "SMPN 35 Surabaya",
+    "issue_category": "ketidaksesuaian menu",
+    "sla_status": "SLA 48h",
+    "assigned_unit": "Tim Kepatuhan Gizi",
+    "assigned_investigator": null,
+    "recommended_action": "Eskalasikan ke tinjauan pengadaan dan lakukan verifikasi menu.",
+    "summary": "MonitorMBG mengelompokkan 2 sinyal intake untuk Dapur Mandiri Surabaya Timur ke dalam MBG-007. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "what_happened": "MonitorMBG mengelompokkan 2 sinyal intake untuk Dapur Mandiri Surabaya Timur ke dalam MBG-007. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "why_it_matters": "Kasus ini menyangkut SMPN 35 Surabaya di Surabaya, Jawa Timur dan dapat mengindikasikan ketidaksesuaian menu terkait vendor dengan skor risiko 83.",
+    "risk_explanation": "Prioritas tinggi karena Dapur Mandiri Surabaya Timur menggabungkan risiko vendor 83, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "signals_count": 2,
+    "evidence_count": 3,
+    "ticket_id": "tkt-007",
+    "created_at": "2026-06-02T07:30:00+00:00",
+    "updated_at": "2026-06-04T09:00:00+00:00",
+    "vendor": {
+      "id": "vnd-004",
+      "name": "Dapur Mandiri Surabaya Timur",
+      "region": "Jawa Timur",
+      "district": "Surabaya",
+      "assigned_schools": [
+        "SDN Rungkut Menanggal",
+        "SMPN 35 Surabaya"
+      ],
+      "daily_meal_volume": 2875,
+      "compliance_status": "Dieskalasi",
+      "risk_score": 83,
+      "risk_trend": [
+        55,
+        61,
+        70,
+        77,
+        83
+      ],
+      "watchlist_status": "Kritis",
+      "watchlist_reason": "Anomali biaya, buah/susu tidak lengkap, dan ketidaksesuaian menu berulang.",
+      "last_inspection_date": "2026-05-22",
+      "repeated_issue_categories": [
+        "anomali biaya",
+        "buah/susu tidak lengkap",
+        "ketidaksesuaian menu"
+      ],
+      "coverage_notes": "Biaya per porsi dilaporkan di atas patokan sementara kelengkapan menu menurun.",
+      "recommended_action": "Eskalasikan ke tinjauan pengadaan dan lakukan verifikasi menu."
+    },
+    "signals": [
+      {
+        "id": 12,
+        "case_id": "case-007",
+        "source": "Laporan Pengawas",
+        "source_confidence": 0.71,
+        "urgency": "Tinggi",
+        "status": "Terhubung ke Kasus",
+        "summary": "Menu aktual tidak sesuai rencana di SMPN 35 Surabaya",
+        "text": "Pengawas mencatat menu aktual berulang kali tidak sesuai dengan rencana menu.",
+        "created_at": "2026-06-02T07:30:00+00:00",
+        "vendor_id": "vnd-004",
+        "vendor_name": "Dapur Mandiri Surabaya Timur",
+        "region": "Jawa Timur",
+        "district": "Surabaya",
+        "school": "SMPN 35 Surabaya",
+        "issue_category": "ketidaksesuaian menu"
+      },
+      {
+        "id": 13,
+        "case_id": "case-007",
+        "source": "Laporan Harian Vendor",
+        "source_confidence": 0.55,
+        "urgency": "Sedang",
+        "status": "Sedang Ditinjau",
+        "summary": "Foto laporan harian terindikasi mirip dengan hari sebelumnya",
+        "text": "Sistem menandai indikasi kemiripan foto antar hari; perlu peninjauan operator.",
+        "created_at": "2026-06-03T10:00:00+00:00",
+        "vendor_id": "vnd-004",
+        "vendor_name": "Dapur Mandiri Surabaya Timur",
+        "region": "Jawa Timur",
+        "district": "Surabaya",
+        "school": "SMPN 35 Surabaya",
+        "issue_category": "ketidaksesuaian menu"
+      }
+    ],
+    "complaints": [
+      {
+        "id": 12,
+        "case_id": "case-007",
+        "source": "Laporan Pengawas",
+        "source_confidence": 0.71,
+        "summary": "Menu aktual tidak sesuai rencana di SMPN 35 Surabaya",
+        "text": "Pengawas mencatat menu aktual berulang kali tidak sesuai dengan rencana menu.",
+        "issue_category": "ketidaksesuaian menu",
+        "sentiment": "negative",
+        "severity_score": 78,
+        "region": "Jawa Timur",
+        "district": "Surabaya",
+        "school": "SMPN 35 Surabaya",
+        "vendor_id": "vnd-004",
+        "vendor_name": "Dapur Mandiri Surabaya Timur",
+        "status": "Terhubung ke Kasus",
+        "urgency": "Tinggi",
+        "anomaly_tag": null,
+        "created_at": "2026-06-02T07:30:00+00:00"
+      },
+      {
+        "id": 13,
+        "case_id": "case-007",
+        "source": "Laporan Harian Vendor",
+        "source_confidence": 0.55,
+        "summary": "Foto laporan harian terindikasi mirip dengan hari sebelumnya",
+        "text": "Sistem menandai indikasi kemiripan foto antar hari; perlu peninjauan operator.",
+        "issue_category": "ketidaksesuaian menu",
+        "sentiment": "negative",
+        "severity_score": 78,
+        "region": "Jawa Timur",
+        "district": "Surabaya",
+        "school": "SMPN 35 Surabaya",
+        "vendor_id": "vnd-004",
+        "vendor_name": "Dapur Mandiri Surabaya Timur",
+        "status": "Sedang Ditinjau",
+        "urgency": "Sedang",
+        "anomaly_tag": null,
+        "created_at": "2026-06-03T10:00:00+00:00"
+      }
+    ],
+    "reports": [
+      {
+        "id": 7,
+        "case_id": "case-007",
+        "report_code": "RPT-MBG-2026-007",
+        "reporter_type": "Operator Sekolah",
+        "school": "SMPN 35 Surabaya",
+        "region": "Jawa Timur",
+        "district": "Surabaya",
+        "vendor_id": "vnd-004",
+        "vendor_name": "Dapur Mandiri Surabaya Timur",
+        "submitted_at": "2026-06-02T07:30:00+00:00",
+        "summary": "Paket laporan resmi untuk Dapur Mandiri Surabaya Timur mencakup distribusi menu dan tinjauan bukti.",
+        "evidence_count": 3,
+        "status": "Menunggu Klarifikasi Vendor",
+        "completeness_score": 64,
+        "linked_ticket_id": "tkt-007",
+        "linked_risk_score": 83
+      }
+    ],
+    "daily_reports": [
+      {
+        "id": 7,
+        "case_id": "case-007",
+        "vendor_id": "vnd-004",
+        "vendor_name": "Dapur Mandiri Surabaya Timur",
+        "school": "SMPN 35 Surabaya",
+        "region": "Jawa Timur",
+        "planned_menu": "Nasi, ayam, sayur, buah, susu",
+        "actual_menu": "Nasi, ayam, sayur, buah",
+        "delivery_timestamp": "2026-06-02T07:30:00+00:00",
+        "expected_timestamp": "2026-06-02T07:30:00+00:00",
+        "portion_count": 1437,
+        "photo_evidence_count": 1,
+        "document_complete": true,
+        "photo_verification": "Ketidaksesuaian Menu",
+        "verification_status": "Ditandai",
+        "duplicate_indicator": false,
+        "mismatch_indicator": true,
+        "nutrition_estimate": {
+          "calories": 540,
+          "protein_g": 16,
+          "carbs_g": 64,
+          "fat_g": 11
+        },
+        "cost_estimate": {
+          "cost_per_portion": 13600,
+          "standard_budget": 15000,
+          "cost_anomaly_flag": false
+        },
+        "recommended_follow_up": "Eskalasikan ke tinjauan pengadaan dan lakukan verifikasi menu."
+      }
+    ],
+    "evidence": [
+      {
+        "id": 16,
+        "case_id": "case-007",
+        "signal_id": 12,
+        "type": "photo",
+        "title": "Foto porsi makan siang — SMPN 35 Surabaya",
+        "file_path": "/evidence-media/17.jpg",
+        "linked_entity": "MBG-007",
+        "source": "Distribusi lapangan",
+        "ocr_result": null,
+        "image_text_match_score": 0.44,
+        "duplicate_score": 0.18,
+        "confidence_score": 0.58,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto photo untuk Dapur Mandiri Surabaya Timur: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+        "created_at": "2026-06-02T07:30:00+00:00"
+      },
+      {
+        "id": 17,
+        "case_id": "case-007",
+        "signal_id": 13,
+        "type": "document",
+        "title": "Laporan harian & menu (simulasi OCR) — SMPN 35 Surabaya",
+        "file_path": "/evidence-media/18.jpg",
+        "linked_entity": "MBG-007",
+        "source": "Laporan harian vendor",
+        "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+        "image_text_match_score": null,
+        "duplicate_score": null,
+        "confidence_score": 0.64,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto document untuk Dapur Mandiri Surabaya Timur: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+        "created_at": "2026-06-02T07:30:00+00:00"
+      },
+      {
+        "id": 18,
+        "case_id": "case-007",
+        "signal_id": 12,
+        "type": "metadata",
+        "title": "Metadata waktu distribusi — SMPN 35 Surabaya",
+        "file_path": "/evidence-media/19.jpg",
+        "linked_entity": "MBG-007",
+        "source": "Laporan harian vendor",
+        "ocr_result": null,
+        "image_text_match_score": null,
+        "duplicate_score": null,
+        "confidence_score": 0.7,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto metadata untuk Dapur Mandiri Surabaya Timur: catatan waktu distribusi vs jadwal; perlu validasi lapangan.",
+        "created_at": "2026-06-02T07:30:00+00:00"
+      }
+    ],
+    "score": {
+      "id": 7,
+      "case_id": "case-007",
+      "vendor_id": "vnd-004",
+      "vendor_name": "Dapur Mandiri Surabaya Timur",
+      "region": "Jawa Timur",
+      "severity_score": 78,
+      "confidence_score": 61,
+      "nutrition_concern_score": 52,
+      "cost_anomaly_score": 56,
+      "anomaly_score": 74,
+      "final_priority_score": 78,
+      "priority_label": "Tinggi",
+      "explanation": "Prioritas tinggi karena Dapur Mandiri Surabaya Timur menggabungkan risiko vendor 83, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+      "recommended_action": "Eskalasikan ke tinjauan pengadaan dan lakukan verifikasi menu.",
+      "computed_at": "2026-06-04T13:07:00+00:00",
+      "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+    },
+    "ticket": {
+      "id": "tkt-007",
+      "case_id": "case-007",
+      "title": "Tinjauan tinggi: Dapur Mandiri Surabaya Timur",
+      "status": "Menunggu Klarifikasi Vendor",
+      "sla": "48h",
+      "assigned_unit": "Tim Kepatuhan Gizi",
+      "escalation_level": "Tinggi",
+      "linked_vendor_id": "vnd-004",
+      "linked_vendor_name": "Dapur Mandiri Surabaya Timur",
+      "linked_region": "Jawa Timur",
+      "priority": 78,
+      "recommended_action": "Verifikasi menu aktual",
+      "linked_evidence_ids": [
+        16,
+        17,
+        18
+      ],
+      "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+      "created_at": "2026-06-02T07:30:00+00:00",
+      "updated_at": "2026-06-04T09:00:00+00:00"
+    },
+    "copilot_sources": [
+      {
+        "label": "Kasus",
+        "source_type": "case",
+        "source_id": "case-007",
+        "title": "MBG-007"
+      },
+      {
+        "label": "Vendor",
+        "source_type": "vendor",
+        "source_id": "vnd-004",
+        "title": "Dapur Mandiri Surabaya Timur"
+      },
+      {
+        "label": "Skor",
+        "source_type": "score",
+        "source_id": 7,
+        "title": "Skor MBG-007"
+      }
+    ],
+    "audit_events": [
+      {
+        "id": 31,
+        "case_id": "case-007",
+        "ticket_id": "tkt-007",
+        "event_type": "signal_received",
+        "actor": "Sistem Intake",
+        "role": "Sistem",
+        "description": "Signal intake diterima dan dikelompokkan.",
+        "timestamp": "2026-06-02T08:31:00+00:00"
+      },
+      {
+        "id": 32,
+        "case_id": "case-007",
+        "ticket_id": "tkt-007",
+        "event_type": "case_formed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Kasus MBG-007 dibentuk dari sinyal terhubung.",
+        "timestamp": "2026-06-02T09:32:00+00:00"
+      },
+      {
+        "id": 33,
+        "case_id": "case-007",
+        "ticket_id": "tkt-007",
+        "event_type": "evidence_reviewed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+        "timestamp": "2026-06-03T10:33:00+00:00"
+      },
+      {
+        "id": 34,
+        "case_id": "case-007",
+        "ticket_id": "tkt-007",
+        "event_type": "risk_computed",
+        "actor": "Layanan Penilaian",
+        "role": "Sistem",
+        "description": "Penilaian risiko dihitung: Tinggi.",
+        "timestamp": "2026-06-03T11:34:00+00:00"
+      },
+      {
+        "id": 35,
+        "case_id": "case-007",
+        "ticket_id": "tkt-007",
+        "event_type": "ticket_created",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Tiket tkt-007 dibuat untuk tindak lanjut.",
+        "timestamp": "2026-06-04T12:35:00+00:00"
+      }
+    ],
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": "case-008",
+    "case_id": "case-008",
+    "case_number": "MBG-008",
+    "title": "Kekhawatiran higiene dapur di SMPN 12 Bandung",
+    "priority_label": "Tinggi",
+    "status": "Verifikasi Lapangan Terjadwal",
+    "vendor_id": "vnd-002",
+    "vendor_name": "Dapur Sehat Bandung Raya",
+    "vendor_source_note": null,
+    "region": "Jawa Barat",
+    "district": "Kota Bandung",
+    "school": "SMPN 12 Bandung",
+    "issue_category": "kekhawatiran higiene",
+    "sla_status": "SLA 24h",
+    "assigned_unit": "Dinas Kesehatan Kota Bandung",
+    "assigned_investigator": null,
+    "recommended_action": "Koordinasikan inspeksi dinas kesehatan dan tingkatkan sampling sementara.",
+    "summary": "MonitorMBG mengelompokkan 1 sinyal intake untuk Dapur Sehat Bandung Raya ke dalam MBG-008. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "what_happened": "MonitorMBG mengelompokkan 1 sinyal intake untuk Dapur Sehat Bandung Raya ke dalam MBG-008. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "why_it_matters": "Kasus ini menyangkut SMPN 12 Bandung di Kota Bandung, Jawa Barat dan dapat mengindikasikan kekhawatiran higiene terkait vendor dengan skor risiko 79.",
+    "risk_explanation": "Prioritas tinggi karena Dapur Sehat Bandung Raya menggabungkan risiko vendor 79, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "signals_count": 1,
+    "evidence_count": 2,
+    "ticket_id": "tkt-008",
+    "created_at": "2026-06-03T07:45:00+00:00",
+    "updated_at": "2026-06-04T10:00:00+00:00",
+    "vendor": {
+      "id": "vnd-002",
+      "name": "Dapur Sehat Bandung Raya",
+      "region": "Jawa Barat",
+      "district": "Kota Bandung",
+      "assigned_schools": [
+        "SDN Sukajadi 05",
+        "SMPN 12 Bandung"
+      ],
+      "daily_meal_volume": 2410,
+      "compliance_status": "Perlu Verifikasi",
+      "risk_score": 79,
+      "risk_trend": [
+        52,
+        56,
+        63,
+        72,
+        79
+      ],
+      "watchlist_status": "Tinggi",
+      "watchlist_reason": "Kekhawatiran higiene dan indikasi gejala keracunan dari dua kanal independen.",
+      "last_inspection_date": "2026-05-25",
+      "repeated_issue_categories": [
+        "kekhawatiran higiene",
+        "indikasi keracunan makanan",
+        "makanan dingin"
+      ],
+      "coverage_notes": "Dua sekolah berdekatan melaporkan gejala serupa dalam 48 jam.",
+      "recommended_action": "Koordinasikan inspeksi dinas kesehatan dan tingkatkan sampling sementara."
+    },
+    "signals": [
+      {
+        "id": 14,
+        "case_id": "case-008",
+        "source": "Laporan Komunitas",
+        "source_confidence": 0.68,
+        "urgency": "Tinggi",
+        "status": "Terhubung ke Kasus",
+        "summary": "Kekhawatiran higiene area dapur di SMPN 12 Bandung",
+        "text": "Laporan komunitas menyebut kondisi higiene dapur perlu diperiksa.",
+        "created_at": "2026-06-03T07:45:00+00:00",
+        "vendor_id": "vnd-002",
+        "vendor_name": "Dapur Sehat Bandung Raya",
+        "region": "Jawa Barat",
+        "district": "Kota Bandung",
+        "school": "SMPN 12 Bandung",
+        "issue_category": "kekhawatiran higiene"
+      }
+    ],
+    "complaints": [
+      {
+        "id": 14,
+        "case_id": "case-008",
+        "source": "Laporan Komunitas",
+        "source_confidence": 0.68,
+        "summary": "Kekhawatiran higiene area dapur di SMPN 12 Bandung",
+        "text": "Laporan komunitas menyebut kondisi higiene dapur perlu diperiksa.",
+        "issue_category": "kekhawatiran higiene",
+        "sentiment": "negative",
+        "severity_score": 78,
+        "region": "Jawa Barat",
+        "district": "Kota Bandung",
+        "school": "SMPN 12 Bandung",
+        "vendor_id": "vnd-002",
+        "vendor_name": "Dapur Sehat Bandung Raya",
+        "status": "Terhubung ke Kasus",
+        "urgency": "Tinggi",
+        "anomaly_tag": null,
+        "created_at": "2026-06-03T07:45:00+00:00"
+      }
+    ],
+    "reports": [
+      {
+        "id": 8,
+        "case_id": "case-008",
+        "report_code": "RPT-MBG-2026-008",
+        "reporter_type": "Pengawas Distrik",
+        "school": "SMPN 12 Bandung",
+        "region": "Jawa Barat",
+        "district": "Kota Bandung",
+        "vendor_id": "vnd-002",
+        "vendor_name": "Dapur Sehat Bandung Raya",
+        "submitted_at": "2026-06-03T07:45:00+00:00",
+        "summary": "Paket laporan resmi untuk Dapur Sehat Bandung Raya mencakup distribusi menu dan tinjauan bukti.",
+        "evidence_count": 2,
+        "status": "Verifikasi Lapangan Terjadwal",
+        "completeness_score": 60,
+        "linked_ticket_id": "tkt-008",
+        "linked_risk_score": 79
+      }
+    ],
+    "daily_reports": [
+      {
+        "id": 8,
+        "case_id": "case-008",
+        "vendor_id": "vnd-002",
+        "vendor_name": "Dapur Sehat Bandung Raya",
+        "school": "SMPN 12 Bandung",
+        "region": "Jawa Barat",
+        "planned_menu": "Nasi, ayam, sayur, buah, susu",
+        "actual_menu": "Nasi, ayam, sayur, buah",
+        "delivery_timestamp": "2026-06-03T07:45:00+00:00",
+        "expected_timestamp": "2026-06-03T07:45:00+00:00",
+        "portion_count": 1205,
+        "photo_evidence_count": 1,
+        "document_complete": true,
+        "photo_verification": "Perlu Verifikasi",
+        "verification_status": "Sedang Ditinjau",
+        "duplicate_indicator": false,
+        "mismatch_indicator": false,
+        "nutrition_estimate": {
+          "calories": 540,
+          "protein_g": 16,
+          "carbs_g": 64,
+          "fat_g": 11
+        },
+        "cost_estimate": {
+          "cost_per_portion": 13600,
+          "standard_budget": 15000,
+          "cost_anomaly_flag": false
+        },
+        "recommended_follow_up": "Koordinasikan inspeksi dinas kesehatan dan tingkatkan sampling sementara."
+      }
+    ],
+    "evidence": [
+      {
+        "id": 19,
+        "case_id": "case-008",
+        "signal_id": 14,
+        "type": "photo",
+        "title": "Foto porsi makan siang — SMPN 12 Bandung",
+        "file_path": "/evidence-media/20.jpg",
+        "linked_entity": "MBG-008",
+        "source": "Distribusi lapangan",
+        "ocr_result": null,
+        "image_text_match_score": 0.44,
+        "duplicate_score": 0.18,
+        "confidence_score": 0.58,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto photo untuk Dapur Sehat Bandung Raya: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+        "created_at": "2026-06-03T07:45:00+00:00"
+      },
+      {
+        "id": 20,
+        "case_id": "case-008",
+        "signal_id": 14,
+        "type": "document",
+        "title": "Laporan harian & menu (simulasi OCR) — SMPN 12 Bandung",
+        "file_path": "/evidence-media/21.jpg",
+        "linked_entity": "MBG-008",
+        "source": "Laporan harian vendor",
+        "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+        "image_text_match_score": null,
+        "duplicate_score": null,
+        "confidence_score": 0.64,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto document untuk Dapur Sehat Bandung Raya: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+        "created_at": "2026-06-03T07:45:00+00:00"
+      }
+    ],
+    "score": {
+      "id": 8,
+      "case_id": "case-008",
+      "vendor_id": "vnd-002",
+      "vendor_name": "Dapur Sehat Bandung Raya",
+      "region": "Jawa Barat",
+      "severity_score": 78,
+      "confidence_score": 58,
+      "nutrition_concern_score": 63,
+      "cost_anomaly_score": 69,
+      "anomaly_score": 26,
+      "final_priority_score": 78,
+      "priority_label": "Tinggi",
+      "explanation": "Prioritas tinggi karena Dapur Sehat Bandung Raya menggabungkan risiko vendor 79, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+      "recommended_action": "Koordinasikan inspeksi dinas kesehatan dan tingkatkan sampling sementara.",
+      "computed_at": "2026-06-04T13:08:00+00:00",
+      "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+    },
+    "ticket": {
+      "id": "tkt-008",
+      "case_id": "case-008",
+      "title": "Tinjauan tinggi: Dapur Sehat Bandung Raya",
+      "status": "Verifikasi Lapangan",
+      "sla": "24h",
+      "assigned_unit": "Dinas Kesehatan Kota Bandung",
+      "escalation_level": "Tinggi",
+      "linked_vendor_id": "vnd-002",
+      "linked_vendor_name": "Dapur Sehat Bandung Raya",
+      "linked_region": "Jawa Barat",
+      "priority": 78,
+      "recommended_action": "Inspeksi higiene dapur",
+      "linked_evidence_ids": [
+        19,
+        20
+      ],
+      "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+      "created_at": "2026-06-03T07:45:00+00:00",
+      "updated_at": "2026-06-04T10:00:00+00:00"
+    },
+    "copilot_sources": [
+      {
+        "label": "Kasus",
+        "source_type": "case",
+        "source_id": "case-008",
+        "title": "MBG-008"
+      },
+      {
+        "label": "Vendor",
+        "source_type": "vendor",
+        "source_id": "vnd-002",
+        "title": "Dapur Sehat Bandung Raya"
+      },
+      {
+        "label": "Skor",
+        "source_type": "score",
+        "source_id": 8,
+        "title": "Skor MBG-008"
+      }
+    ],
+    "audit_events": [
+      {
+        "id": 36,
+        "case_id": "case-008",
+        "ticket_id": "tkt-008",
+        "event_type": "signal_received",
+        "actor": "Sistem Intake",
+        "role": "Sistem",
+        "description": "Signal intake diterima dan dikelompokkan.",
+        "timestamp": "2026-06-03T08:36:00+00:00"
+      },
+      {
+        "id": 37,
+        "case_id": "case-008",
+        "ticket_id": "tkt-008",
+        "event_type": "case_formed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Kasus MBG-008 dibentuk dari sinyal terhubung.",
+        "timestamp": "2026-06-03T09:37:00+00:00"
+      },
+      {
+        "id": 38,
+        "case_id": "case-008",
+        "ticket_id": "tkt-008",
+        "event_type": "evidence_reviewed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+        "timestamp": "2026-06-04T10:38:00+00:00"
+      },
+      {
+        "id": 39,
+        "case_id": "case-008",
+        "ticket_id": "tkt-008",
+        "event_type": "risk_computed",
+        "actor": "Layanan Penilaian",
+        "role": "Sistem",
+        "description": "Penilaian risiko dihitung: Tinggi.",
+        "timestamp": "2026-06-04T11:39:00+00:00"
+      },
+      {
+        "id": 40,
+        "case_id": "case-008",
+        "ticket_id": "tkt-008",
+        "event_type": "ticket_created",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Tiket tkt-008 dibuat untuk tindak lanjut.",
+        "timestamp": "2026-06-04T12:40:00+00:00"
+      }
+    ],
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": "case-005",
+    "case_id": "case-005",
+    "case_number": "MBG-005",
+    "title": "Laporan buah/susu tidak lengkap di SDN Condongcatur 02",
+    "priority_label": "Sedang",
+    "status": "Sedang Ditinjau",
+    "vendor_id": "vnd-008",
+    "vendor_name": "Dapur Anak Hebat Yogyakarta",
+    "vendor_source_note": null,
+    "region": "DI Yogyakarta",
+    "district": "Sleman",
+    "school": "SDN Condongcatur 02",
+    "issue_category": "buah/susu tidak lengkap",
+    "sla_status": "SLA 72h",
+    "assigned_unit": "Tim Kepatuhan Gizi",
+    "assigned_investigator": null,
+    "recommended_action": "Tinjau tiga laporan harian berikutnya dan konfirmasi substitusi menu.",
+    "summary": "MonitorMBG mengelompokkan 1 sinyal intake untuk Dapur Anak Hebat Yogyakarta ke dalam MBG-005. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "what_happened": "MonitorMBG mengelompokkan 1 sinyal intake untuk Dapur Anak Hebat Yogyakarta ke dalam MBG-005. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "why_it_matters": "Kasus ini menyangkut SDN Condongcatur 02 di Sleman, DI Yogyakarta dan dapat mengindikasikan buah/susu tidak lengkap terkait vendor dengan skor risiko 58.",
+    "risk_explanation": "Prioritas sedang karena Dapur Anak Hebat Yogyakarta menggabungkan risiko vendor 58, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "signals_count": 1,
+    "evidence_count": 3,
+    "ticket_id": "tkt-005",
+    "created_at": "2026-06-02T09:05:00+00:00",
+    "updated_at": "2026-06-03T14:00:00+00:00",
+    "vendor": {
+      "id": "vnd-008",
+      "name": "Dapur Anak Hebat Yogyakarta",
+      "region": "DI Yogyakarta",
+      "district": "Sleman",
+      "assigned_schools": [
+        "SDN Condongcatur 02",
+        "SMPN 4 Sleman"
+      ],
+      "daily_meal_volume": 1565,
+      "compliance_status": "Sedang Ditinjau",
+      "risk_score": 58,
+      "risk_trend": [
+        35,
+        42,
+        46,
+        53,
+        58
+      ],
+      "watchlist_status": "Sedang",
+      "watchlist_reason": "Laporan buah tidak lengkap meningkat dan satu lonjakan anomali publik.",
+      "last_inspection_date": "2026-05-28",
+      "repeated_issue_categories": [
+        "buah/susu tidak lengkap",
+        "dokumentasi belum lengkap"
+      ],
+      "coverage_notes": "Tren terkini meningkat namun keyakinan bukti sedang.",
+      "recommended_action": "Tinjau tiga laporan harian berikutnya dan konfirmasi substitusi menu."
+    },
+    "signals": [
+      {
+        "id": 10,
+        "case_id": "case-005",
+        "source": "Aduan Wali Murid",
+        "source_confidence": 0.63,
+        "urgency": "Sedang",
+        "status": "Sedang Ditinjau",
+        "summary": "Buah dan susu tidak tersedia beberapa hari di SDN Condongcatur 02",
+        "text": "Wali murid melaporkan buah dan susu tidak tersedia pada beberapa hari distribusi.",
+        "created_at": "2026-06-02T09:05:00+00:00",
+        "vendor_id": "vnd-008",
+        "vendor_name": "Dapur Anak Hebat Yogyakarta",
+        "region": "DI Yogyakarta",
+        "district": "Sleman",
+        "school": "SDN Condongcatur 02",
+        "issue_category": "buah/susu tidak lengkap"
+      }
+    ],
+    "complaints": [
+      {
+        "id": 10,
+        "case_id": "case-005",
+        "source": "Aduan Wali Murid",
+        "source_confidence": 0.63,
+        "summary": "Buah dan susu tidak tersedia beberapa hari di SDN Condongcatur 02",
+        "text": "Wali murid melaporkan buah dan susu tidak tersedia pada beberapa hari distribusi.",
+        "issue_category": "buah/susu tidak lengkap",
+        "sentiment": "negative",
+        "severity_score": 58,
+        "region": "DI Yogyakarta",
+        "district": "Sleman",
+        "school": "SDN Condongcatur 02",
+        "vendor_id": "vnd-008",
+        "vendor_name": "Dapur Anak Hebat Yogyakarta",
+        "status": "Sedang Ditinjau",
+        "urgency": "Sedang",
+        "anomaly_tag": null,
+        "created_at": "2026-06-02T09:05:00+00:00"
+      }
+    ],
+    "reports": [
+      {
+        "id": 5,
+        "case_id": "case-005",
+        "report_code": "RPT-MBG-2026-005",
+        "reporter_type": "Operator Sekolah",
+        "school": "SDN Condongcatur 02",
+        "region": "DI Yogyakarta",
+        "district": "Sleman",
+        "vendor_id": "vnd-008",
+        "vendor_name": "Dapur Anak Hebat Yogyakarta",
+        "submitted_at": "2026-06-02T09:05:00+00:00",
+        "summary": "Paket laporan resmi untuk Dapur Anak Hebat Yogyakarta mencakup distribusi menu dan tinjauan bukti.",
+        "evidence_count": 3,
+        "status": "Sedang Ditinjau",
+        "completeness_score": 72,
+        "linked_ticket_id": "tkt-005",
+        "linked_risk_score": 58
+      }
+    ],
+    "daily_reports": [
+      {
+        "id": 5,
+        "case_id": "case-005",
+        "vendor_id": "vnd-008",
+        "vendor_name": "Dapur Anak Hebat Yogyakarta",
+        "school": "SDN Condongcatur 02",
+        "region": "DI Yogyakarta",
+        "planned_menu": "Nasi, ayam, sayur, buah, susu",
+        "actual_menu": "Nasi, ayam, sayur, buah",
+        "delivery_timestamp": "2026-06-02T09:05:00+00:00",
+        "expected_timestamp": "2026-06-02T09:05:00+00:00",
+        "portion_count": 782,
+        "photo_evidence_count": 1,
+        "document_complete": true,
+        "photo_verification": "Ketidaksesuaian Menu",
+        "verification_status": "Ditandai",
+        "duplicate_indicator": false,
+        "mismatch_indicator": true,
+        "nutrition_estimate": {
+          "calories": 540,
+          "protein_g": 16,
+          "carbs_g": 64,
+          "fat_g": 11
+        },
+        "cost_estimate": {
+          "cost_per_portion": 13600,
+          "standard_budget": 15000,
+          "cost_anomaly_flag": false
+        },
+        "recommended_follow_up": "Tinjau tiga laporan harian berikutnya dan konfirmasi substitusi menu."
+      }
+    ],
+    "evidence": [
+      {
+        "id": 11,
+        "case_id": "case-005",
+        "signal_id": 10,
+        "type": "photo",
+        "title": "Foto porsi makan siang — SDN Condongcatur 02",
+        "file_path": "/evidence-media/12.jpg",
+        "linked_entity": "MBG-005",
+        "source": "Distribusi lapangan",
+        "ocr_result": null,
+        "image_text_match_score": 0.44,
+        "duplicate_score": 0.18,
+        "confidence_score": 0.58,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto photo untuk Dapur Anak Hebat Yogyakarta: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+        "created_at": "2026-06-02T09:05:00+00:00"
+      },
+      {
+        "id": 12,
+        "case_id": "case-005",
+        "signal_id": 10,
+        "type": "document",
+        "title": "Laporan harian & menu (simulasi OCR) — SDN Condongcatur 02",
+        "file_path": "/evidence-media/13.jpg",
+        "linked_entity": "MBG-005",
+        "source": "Laporan harian vendor",
+        "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+        "image_text_match_score": null,
+        "duplicate_score": null,
+        "confidence_score": 0.64,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto document untuk Dapur Anak Hebat Yogyakarta: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+        "created_at": "2026-06-02T09:05:00+00:00"
+      },
+      {
+        "id": 13,
+        "case_id": "case-005",
+        "signal_id": 10,
+        "type": "metadata",
+        "title": "Metadata waktu distribusi — SDN Condongcatur 02",
+        "file_path": "/evidence-media/14.jpg",
+        "linked_entity": "MBG-005",
+        "source": "Laporan harian vendor",
+        "ocr_result": null,
+        "image_text_match_score": null,
+        "duplicate_score": null,
+        "confidence_score": 0.7,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto metadata untuk Dapur Anak Hebat Yogyakarta: catatan waktu distribusi vs jadwal; perlu validasi lapangan.",
+        "created_at": "2026-06-02T09:05:00+00:00"
+      }
+    ],
+    "score": {
+      "id": 5,
+      "case_id": "case-005",
+      "vendor_id": "vnd-008",
+      "vendor_name": "Dapur Anak Hebat Yogyakarta",
+      "region": "DI Yogyakarta",
+      "severity_score": 58,
+      "confidence_score": 67,
+      "nutrition_concern_score": 30,
+      "cost_anomaly_score": 30,
+      "anomaly_score": 40,
+      "final_priority_score": 58,
+      "priority_label": "Sedang",
+      "explanation": "Prioritas sedang karena Dapur Anak Hebat Yogyakarta menggabungkan risiko vendor 58, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+      "recommended_action": "Tinjau tiga laporan harian berikutnya dan konfirmasi substitusi menu.",
+      "computed_at": "2026-06-04T13:05:00+00:00",
+      "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+    },
+    "ticket": {
+      "id": "tkt-005",
+      "case_id": "case-005",
+      "title": "Tinjauan sedang: Dapur Anak Hebat Yogyakarta",
+      "status": "Sedang Ditinjau",
+      "sla": "72h",
+      "assigned_unit": "Tim Kepatuhan Gizi",
+      "escalation_level": "Sedang",
+      "linked_vendor_id": "vnd-008",
+      "linked_vendor_name": "Dapur Anak Hebat Yogyakarta",
+      "linked_region": "DI Yogyakarta",
+      "priority": 58,
+      "recommended_action": "Konfirmasi substitusi menu",
+      "linked_evidence_ids": [
+        11,
+        12,
+        13
+      ],
+      "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+      "created_at": "2026-06-02T09:05:00+00:00",
+      "updated_at": "2026-06-03T14:00:00+00:00"
+    },
+    "copilot_sources": [
+      {
+        "label": "Kasus",
+        "source_type": "case",
+        "source_id": "case-005",
+        "title": "MBG-005"
+      },
+      {
+        "label": "Vendor",
+        "source_type": "vendor",
+        "source_id": "vnd-008",
+        "title": "Dapur Anak Hebat Yogyakarta"
+      },
+      {
+        "label": "Skor",
+        "source_type": "score",
+        "source_id": 5,
+        "title": "Skor MBG-005"
+      }
+    ],
+    "audit_events": [
+      {
+        "id": 21,
+        "case_id": "case-005",
+        "ticket_id": "tkt-005",
+        "event_type": "signal_received",
+        "actor": "Sistem Intake",
+        "role": "Sistem",
+        "description": "Signal intake diterima dan dikelompokkan.",
+        "timestamp": "2026-06-02T08:21:00+00:00"
+      },
+      {
+        "id": 22,
+        "case_id": "case-005",
+        "ticket_id": "tkt-005",
+        "event_type": "case_formed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Kasus MBG-005 dibentuk dari sinyal terhubung.",
+        "timestamp": "2026-06-02T09:22:00+00:00"
+      },
+      {
+        "id": 23,
+        "case_id": "case-005",
+        "ticket_id": "tkt-005",
+        "event_type": "evidence_reviewed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+        "timestamp": "2026-06-03T10:23:00+00:00"
+      },
+      {
+        "id": 24,
+        "case_id": "case-005",
+        "ticket_id": "tkt-005",
+        "event_type": "risk_computed",
+        "actor": "Layanan Penilaian",
+        "role": "Sistem",
+        "description": "Penilaian risiko dihitung: Sedang.",
+        "timestamp": "2026-06-03T11:24:00+00:00"
+      },
+      {
+        "id": 25,
+        "case_id": "case-005",
+        "ticket_id": "tkt-005",
+        "event_type": "ticket_created",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Tiket tkt-005 dibuat untuk tindak lanjut.",
+        "timestamp": "2026-06-04T12:25:00+00:00"
+      }
+    ],
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": "case-006",
+    "case_id": "case-006",
+    "case_number": "MBG-006",
+    "title": "Aduan makanan dingin dan keterlambatan di SDN Medan Johor 09",
+    "priority_label": "Sedang",
+    "status": "Sedang Ditinjau",
+    "vendor_id": "vnd-005",
+    "vendor_name": "SPPG Cerdas Gizi Medan",
+    "vendor_source_note": null,
+    "region": "Sumatera Utara",
+    "district": "Kota Medan",
+    "school": "SDN Medan Johor 09",
+    "issue_category": "makanan dingin",
+    "sla_status": "SLA 72h",
+    "assigned_unit": "Unit Pengawasan Vendor MBG",
+    "assigned_investigator": null,
+    "recommended_action": "Pantau waktu rute distribusi selama satu pekan.",
+    "summary": "MonitorMBG mengelompokkan 1 sinyal intake untuk SPPG Cerdas Gizi Medan ke dalam MBG-006. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "what_happened": "MonitorMBG mengelompokkan 1 sinyal intake untuk SPPG Cerdas Gizi Medan ke dalam MBG-006. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "why_it_matters": "Kasus ini menyangkut SDN Medan Johor 09 di Kota Medan, Sumatera Utara dan dapat mengindikasikan makanan dingin terkait vendor dengan skor risiko 41.",
+    "risk_explanation": "Prioritas sedang karena SPPG Cerdas Gizi Medan menggabungkan risiko vendor 41, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "signals_count": 1,
+    "evidence_count": 2,
+    "ticket_id": "tkt-006",
+    "created_at": "2026-06-03T08:10:00+00:00",
+    "updated_at": "2026-06-03T13:00:00+00:00",
+    "vendor": {
+      "id": "vnd-005",
+      "name": "SPPG Cerdas Gizi Medan",
+      "region": "Sumatera Utara",
+      "district": "Kota Medan",
+      "assigned_schools": [
+        "SDN Medan Johor 09",
+        "SMPN 28 Medan"
+      ],
+      "daily_meal_volume": 1740,
+      "compliance_status": "Sesuai",
+      "risk_score": 41,
+      "risk_trend": [
+        43,
+        39,
+        40,
+        42,
+        41
+      ],
+      "watchlist_status": "Sedang",
+      "watchlist_reason": "Aduan makanan dingin masih di bawah ambang eskalasi.",
+      "last_inspection_date": "2026-05-30",
+      "repeated_issue_categories": [
+        "makanan dingin",
+        "keterlambatan distribusi"
+      ],
+      "coverage_notes": "Isu tampak operasional, bukan terkait kecurangan bukti.",
+      "recommended_action": "Pantau waktu rute distribusi selama satu pekan."
+    },
+    "signals": [
+      {
+        "id": 11,
+        "case_id": "case-006",
+        "source": "Hotline Sekolah",
+        "source_confidence": 0.59,
+        "urgency": "Sedang",
+        "status": "Sedang Ditinjau",
+        "summary": "Makanan diterima dalam kondisi dingin dan sedikit terlambat di SDN Medan Johor 09",
+        "text": "Aduan makanan dingin dan keterlambatan ringan; tampak isu operasional rute.",
+        "created_at": "2026-06-03T08:10:00+00:00",
+        "vendor_id": "vnd-005",
+        "vendor_name": "SPPG Cerdas Gizi Medan",
+        "region": "Sumatera Utara",
+        "district": "Kota Medan",
+        "school": "SDN Medan Johor 09",
+        "issue_category": "makanan dingin"
+      }
+    ],
+    "complaints": [
+      {
+        "id": 11,
+        "case_id": "case-006",
+        "source": "Hotline Sekolah",
+        "source_confidence": 0.59,
+        "summary": "Makanan diterima dalam kondisi dingin dan sedikit terlambat di SDN Medan Johor 09",
+        "text": "Aduan makanan dingin dan keterlambatan ringan; tampak isu operasional rute.",
+        "issue_category": "makanan dingin",
+        "sentiment": "negative",
+        "severity_score": 58,
+        "region": "Sumatera Utara",
+        "district": "Kota Medan",
+        "school": "SDN Medan Johor 09",
+        "vendor_id": "vnd-005",
+        "vendor_name": "SPPG Cerdas Gizi Medan",
+        "status": "Sedang Ditinjau",
+        "urgency": "Sedang",
+        "anomaly_tag": null,
+        "created_at": "2026-06-03T08:10:00+00:00"
+      }
+    ],
+    "reports": [
+      {
+        "id": 6,
+        "case_id": "case-006",
+        "report_code": "RPT-MBG-2026-006",
+        "reporter_type": "Pengawas Distrik",
+        "school": "SDN Medan Johor 09",
+        "region": "Sumatera Utara",
+        "district": "Kota Medan",
+        "vendor_id": "vnd-005",
+        "vendor_name": "SPPG Cerdas Gizi Medan",
+        "submitted_at": "2026-06-03T08:10:00+00:00",
+        "summary": "Paket laporan resmi untuk SPPG Cerdas Gizi Medan mencakup distribusi menu dan tinjauan bukti.",
+        "evidence_count": 2,
+        "status": "Sedang Ditinjau",
+        "completeness_score": 68,
+        "linked_ticket_id": "tkt-006",
+        "linked_risk_score": 41
+      }
+    ],
+    "daily_reports": [
+      {
+        "id": 6,
+        "case_id": "case-006",
+        "vendor_id": "vnd-005",
+        "vendor_name": "SPPG Cerdas Gizi Medan",
+        "school": "SDN Medan Johor 09",
+        "region": "Sumatera Utara",
+        "planned_menu": "Nasi, ayam, sayur, buah, susu",
+        "actual_menu": "Nasi, ayam, sayur, buah",
+        "delivery_timestamp": "2026-06-03T08:10:00+00:00",
+        "expected_timestamp": "2026-06-03T08:10:00+00:00",
+        "portion_count": 870,
+        "photo_evidence_count": 1,
+        "document_complete": true,
+        "photo_verification": "Perlu Verifikasi",
+        "verification_status": "Sedang Ditinjau",
+        "duplicate_indicator": false,
+        "mismatch_indicator": false,
+        "nutrition_estimate": {
+          "calories": 540,
+          "protein_g": 16,
+          "carbs_g": 64,
+          "fat_g": 11
+        },
+        "cost_estimate": {
+          "cost_per_portion": 13600,
+          "standard_budget": 15000,
+          "cost_anomaly_flag": false
+        },
+        "recommended_follow_up": "Pantau waktu rute distribusi selama satu pekan."
+      }
+    ],
+    "evidence": [
+      {
+        "id": 14,
+        "case_id": "case-006",
+        "signal_id": 11,
+        "type": "photo",
+        "title": "Foto porsi makan siang — SDN Medan Johor 09",
+        "file_path": "/evidence-media/15.jpg",
+        "linked_entity": "MBG-006",
+        "source": "Distribusi lapangan",
+        "ocr_result": null,
+        "image_text_match_score": 0.44,
+        "duplicate_score": 0.18,
+        "confidence_score": 0.58,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto photo untuk SPPG Cerdas Gizi Medan: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+        "created_at": "2026-06-03T08:10:00+00:00"
+      },
+      {
+        "id": 15,
+        "case_id": "case-006",
+        "signal_id": 11,
+        "type": "document",
+        "title": "Laporan harian & menu (simulasi OCR) — SDN Medan Johor 09",
+        "file_path": "/evidence-media/16.jpg",
+        "linked_entity": "MBG-006",
+        "source": "Laporan harian vendor",
+        "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+        "image_text_match_score": null,
+        "duplicate_score": null,
+        "confidence_score": 0.64,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto document untuk SPPG Cerdas Gizi Medan: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+        "created_at": "2026-06-03T08:10:00+00:00"
+      }
+    ],
+    "score": {
+      "id": 6,
+      "case_id": "case-006",
+      "vendor_id": "vnd-005",
+      "vendor_name": "SPPG Cerdas Gizi Medan",
+      "region": "Sumatera Utara",
+      "severity_score": 58,
+      "confidence_score": 64,
+      "nutrition_concern_score": 41,
+      "cost_anomaly_score": 43,
+      "anomaly_score": 57,
+      "final_priority_score": 58,
+      "priority_label": "Sedang",
+      "explanation": "Prioritas sedang karena SPPG Cerdas Gizi Medan menggabungkan risiko vendor 41, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+      "recommended_action": "Pantau waktu rute distribusi selama satu pekan.",
+      "computed_at": "2026-06-04T13:06:00+00:00",
+      "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+    },
+    "ticket": {
+      "id": "tkt-006",
+      "case_id": "case-006",
+      "title": "Tinjauan sedang: SPPG Cerdas Gizi Medan",
+      "status": "Sedang Ditinjau",
+      "sla": "72h",
+      "assigned_unit": "Unit Pengawasan Vendor MBG",
+      "escalation_level": "Sedang",
+      "linked_vendor_id": "vnd-005",
+      "linked_vendor_name": "SPPG Cerdas Gizi Medan",
+      "linked_region": "Sumatera Utara",
+      "priority": 58,
+      "recommended_action": "Pantau rute distribusi",
+      "linked_evidence_ids": [
+        14,
+        15
+      ],
+      "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+      "created_at": "2026-06-03T08:10:00+00:00",
+      "updated_at": "2026-06-03T13:00:00+00:00"
+    },
+    "copilot_sources": [
+      {
+        "label": "Kasus",
+        "source_type": "case",
+        "source_id": "case-006",
+        "title": "MBG-006"
+      },
+      {
+        "label": "Vendor",
+        "source_type": "vendor",
+        "source_id": "vnd-005",
+        "title": "SPPG Cerdas Gizi Medan"
+      },
+      {
+        "label": "Skor",
+        "source_type": "score",
+        "source_id": 6,
+        "title": "Skor MBG-006"
+      }
+    ],
+    "audit_events": [
+      {
+        "id": 26,
+        "case_id": "case-006",
+        "ticket_id": "tkt-006",
+        "event_type": "signal_received",
+        "actor": "Sistem Intake",
+        "role": "Sistem",
+        "description": "Signal intake diterima dan dikelompokkan.",
+        "timestamp": "2026-06-03T08:26:00+00:00"
+      },
+      {
+        "id": 27,
+        "case_id": "case-006",
+        "ticket_id": "tkt-006",
+        "event_type": "case_formed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Kasus MBG-006 dibentuk dari sinyal terhubung.",
+        "timestamp": "2026-06-03T09:27:00+00:00"
+      },
+      {
+        "id": 28,
+        "case_id": "case-006",
+        "ticket_id": "tkt-006",
+        "event_type": "evidence_reviewed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+        "timestamp": "2026-06-04T10:28:00+00:00"
+      },
+      {
+        "id": 29,
+        "case_id": "case-006",
+        "ticket_id": "tkt-006",
+        "event_type": "risk_computed",
+        "actor": "Layanan Penilaian",
+        "role": "Sistem",
+        "description": "Penilaian risiko dihitung: Sedang.",
+        "timestamp": "2026-06-04T11:29:00+00:00"
+      },
+      {
+        "id": 30,
+        "case_id": "case-006",
+        "ticket_id": "tkt-006",
+        "event_type": "ticket_created",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Tiket tkt-006 dibuat untuk tindak lanjut.",
+        "timestamp": "2026-06-04T12:30:00+00:00"
+      }
+    ],
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": "case-009",
+    "case_id": "case-009",
+    "case_number": "MBG-009",
+    "title": "Checklist distribusi belum lengkap di SDN Tembalang 01",
+    "priority_label": "Rendah",
+    "status": "Selesai",
+    "vendor_id": "vnd-003",
+    "vendor_name": "SPPG Pangan Aman Semarang",
+    "vendor_source_note": null,
+    "region": "Jawa Tengah",
+    "district": "Kota Semarang",
+    "school": "SDN Tembalang 01",
+    "issue_category": "dokumentasi belum lengkap",
+    "sla_status": "SLA 72h",
+    "assigned_unit": "Unit Pengawasan Vendor MBG",
+    "assigned_investigator": null,
+    "recommended_action": "Minta pelengkapan checklist distribusi pada laporan harian berikutnya.",
+    "summary": "MonitorMBG mengelompokkan 1 sinyal intake untuk SPPG Pangan Aman Semarang ke dalam MBG-009. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "what_happened": "MonitorMBG mengelompokkan 1 sinyal intake untuk SPPG Pangan Aman Semarang ke dalam MBG-009. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "why_it_matters": "Kasus ini menyangkut SDN Tembalang 01 di Kota Semarang, Jawa Tengah dan dapat mengindikasikan dokumentasi belum lengkap terkait vendor dengan skor risiko 34.",
+    "risk_explanation": "Prioritas rendah karena SPPG Pangan Aman Semarang menggabungkan risiko vendor 34, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "signals_count": 1,
+    "evidence_count": 2,
+    "ticket_id": "tkt-009",
+    "created_at": "2026-06-01T08:00:00+00:00",
+    "updated_at": "2026-06-04T17:00:00+00:00",
+    "vendor": {
+      "id": "vnd-003",
+      "name": "SPPG Pangan Aman Semarang",
+      "region": "Jawa Tengah",
+      "district": "Kota Semarang",
+      "assigned_schools": [
+        "SDN Tembalang 01",
+        "SMPN 21 Semarang"
+      ],
+      "daily_meal_volume": 1980,
+      "compliance_status": "Sesuai",
+      "risk_score": 34,
+      "risk_trend": [
+        38,
+        36,
+        34,
+        33,
+        34
+      ],
+      "watchlist_status": "Rendah",
+      "watchlist_reason": "Pemantauan rutin saja.",
+      "last_inspection_date": "2026-05-31",
+      "repeated_issue_categories": [
+        "dokumentasi belum lengkap"
+      ],
+      "coverage_notes": "Operasional stabil dengan sedikit celah dokumentasi.",
+      "recommended_action": "Minta pelengkapan checklist distribusi pada laporan harian berikutnya."
+    },
+    "signals": [
+      {
+        "id": 15,
+        "case_id": "case-009",
+        "source": "Operator Sekolah",
+        "source_confidence": 0.5,
+        "urgency": "Rendah",
+        "status": "Terhubung ke Kasus",
+        "summary": "Checklist distribusi belum lengkap di SDN Tembalang 01",
+        "text": "Operator sekolah melaporkan checklist distribusi belum sepenuhnya terisi.",
+        "created_at": "2026-06-01T08:00:00+00:00",
+        "vendor_id": "vnd-003",
+        "vendor_name": "SPPG Pangan Aman Semarang",
+        "region": "Jawa Tengah",
+        "district": "Kota Semarang",
+        "school": "SDN Tembalang 01",
+        "issue_category": "dokumentasi belum lengkap"
+      }
+    ],
+    "complaints": [
+      {
+        "id": 15,
+        "case_id": "case-009",
+        "source": "Operator Sekolah",
+        "source_confidence": 0.5,
+        "summary": "Checklist distribusi belum lengkap di SDN Tembalang 01",
+        "text": "Operator sekolah melaporkan checklist distribusi belum sepenuhnya terisi.",
+        "issue_category": "dokumentasi belum lengkap",
+        "sentiment": "negative",
+        "severity_score": 38,
+        "region": "Jawa Tengah",
+        "district": "Kota Semarang",
+        "school": "SDN Tembalang 01",
+        "vendor_id": "vnd-003",
+        "vendor_name": "SPPG Pangan Aman Semarang",
+        "status": "Terhubung ke Kasus",
+        "urgency": "Rendah",
+        "anomaly_tag": null,
+        "created_at": "2026-06-01T08:00:00+00:00"
+      }
+    ],
+    "reports": [
+      {
+        "id": 9,
+        "case_id": "case-009",
+        "report_code": "RPT-MBG-2026-009",
+        "reporter_type": "Operator Sekolah",
+        "school": "SDN Tembalang 01",
+        "region": "Jawa Tengah",
+        "district": "Kota Semarang",
+        "vendor_id": "vnd-003",
+        "vendor_name": "SPPG Pangan Aman Semarang",
+        "submitted_at": "2026-06-01T08:00:00+00:00",
+        "summary": "Paket laporan resmi untuk SPPG Pangan Aman Semarang mencakup distribusi menu dan tinjauan bukti.",
+        "evidence_count": 2,
+        "status": "Selesai",
+        "completeness_score": 56,
+        "linked_ticket_id": "tkt-009",
+        "linked_risk_score": 34
+      }
+    ],
+    "daily_reports": [
+      {
+        "id": 9,
+        "case_id": "case-009",
+        "vendor_id": "vnd-003",
+        "vendor_name": "SPPG Pangan Aman Semarang",
+        "school": "SDN Tembalang 01",
+        "region": "Jawa Tengah",
+        "planned_menu": "Nasi, ayam, sayur, buah, susu",
+        "actual_menu": "Nasi, ayam, sayur, buah",
+        "delivery_timestamp": "2026-06-01T08:00:00+00:00",
+        "expected_timestamp": "2026-06-01T08:00:00+00:00",
+        "portion_count": 990,
+        "photo_evidence_count": 1,
+        "document_complete": false,
+        "photo_verification": "Perlu Verifikasi",
+        "verification_status": "Sedang Ditinjau",
+        "duplicate_indicator": false,
+        "mismatch_indicator": false,
+        "nutrition_estimate": {
+          "calories": 540,
+          "protein_g": 16,
+          "carbs_g": 64,
+          "fat_g": 11
+        },
+        "cost_estimate": {
+          "cost_per_portion": 13600,
+          "standard_budget": 15000,
+          "cost_anomaly_flag": false
+        },
+        "recommended_follow_up": "Minta pelengkapan checklist distribusi pada laporan harian berikutnya."
+      }
+    ],
+    "evidence": [
+      {
+        "id": 21,
+        "case_id": "case-009",
+        "signal_id": 15,
+        "type": "photo",
+        "title": "Foto porsi makan siang — SDN Tembalang 01",
+        "file_path": "/evidence-media/22.jpg",
+        "linked_entity": "MBG-009",
+        "source": "Distribusi lapangan",
+        "ocr_result": null,
+        "image_text_match_score": 0.44,
+        "duplicate_score": 0.18,
+        "confidence_score": 0.58,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto photo untuk SPPG Pangan Aman Semarang: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+        "created_at": "2026-06-01T08:00:00+00:00"
+      },
+      {
+        "id": 22,
+        "case_id": "case-009",
+        "signal_id": 15,
+        "type": "document",
+        "title": "Laporan harian & menu (simulasi OCR) — SDN Tembalang 01",
+        "file_path": "/evidence-media/23.jpg",
+        "linked_entity": "MBG-009",
+        "source": "Laporan harian vendor",
+        "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+        "image_text_match_score": null,
+        "duplicate_score": null,
+        "confidence_score": 0.64,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto document untuk SPPG Pangan Aman Semarang: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+        "created_at": "2026-06-01T08:00:00+00:00"
+      }
+    ],
+    "score": {
+      "id": 9,
+      "case_id": "case-009",
+      "vendor_id": "vnd-003",
+      "vendor_name": "SPPG Pangan Aman Semarang",
+      "region": "Jawa Tengah",
+      "severity_score": 38,
+      "confidence_score": 55,
+      "nutrition_concern_score": 74,
+      "cost_anomaly_score": 82,
+      "anomaly_score": 43,
+      "final_priority_score": 38,
+      "priority_label": "Rendah",
+      "explanation": "Prioritas rendah karena SPPG Pangan Aman Semarang menggabungkan risiko vendor 34, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+      "recommended_action": "Minta pelengkapan checklist distribusi pada laporan harian berikutnya.",
+      "computed_at": "2026-06-04T13:09:00+00:00",
+      "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+    },
+    "ticket": {
+      "id": "tkt-009",
+      "case_id": "case-009",
+      "title": "Tinjauan rendah: SPPG Pangan Aman Semarang",
+      "status": "Selesai",
+      "sla": "72h",
+      "assigned_unit": "Unit Pengawasan Vendor MBG",
+      "escalation_level": "Rendah",
+      "linked_vendor_id": "vnd-003",
+      "linked_vendor_name": "SPPG Pangan Aman Semarang",
+      "linked_region": "Jawa Tengah",
+      "priority": 38,
+      "recommended_action": "Checklist telah dilengkapi",
+      "linked_evidence_ids": [
+        21,
+        22
+      ],
+      "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+      "created_at": "2026-06-01T08:00:00+00:00",
+      "updated_at": "2026-06-04T17:00:00+00:00"
+    },
+    "copilot_sources": [
+      {
+        "label": "Kasus",
+        "source_type": "case",
+        "source_id": "case-009",
+        "title": "MBG-009"
+      },
+      {
+        "label": "Vendor",
+        "source_type": "vendor",
+        "source_id": "vnd-003",
+        "title": "SPPG Pangan Aman Semarang"
+      },
+      {
+        "label": "Skor",
+        "source_type": "score",
+        "source_id": 9,
+        "title": "Skor MBG-009"
+      }
+    ],
+    "audit_events": [
+      {
+        "id": 41,
+        "case_id": "case-009",
+        "ticket_id": "tkt-009",
+        "event_type": "signal_received",
+        "actor": "Sistem Intake",
+        "role": "Sistem",
+        "description": "Signal intake diterima dan dikelompokkan.",
+        "timestamp": "2026-06-01T08:41:00+00:00"
+      },
+      {
+        "id": 42,
+        "case_id": "case-009",
+        "ticket_id": "tkt-009",
+        "event_type": "case_formed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Kasus MBG-009 dibentuk dari sinyal terhubung.",
+        "timestamp": "2026-06-01T09:42:00+00:00"
+      },
+      {
+        "id": 43,
+        "case_id": "case-009",
+        "ticket_id": "tkt-009",
+        "event_type": "evidence_reviewed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+        "timestamp": "2026-06-02T10:43:00+00:00"
+      },
+      {
+        "id": 44,
+        "case_id": "case-009",
+        "ticket_id": "tkt-009",
+        "event_type": "risk_computed",
+        "actor": "Layanan Penilaian",
+        "role": "Sistem",
+        "description": "Penilaian risiko dihitung: Rendah.",
+        "timestamp": "2026-06-02T11:44:00+00:00"
+      },
+      {
+        "id": 45,
+        "case_id": "case-009",
+        "ticket_id": "tkt-009",
+        "event_type": "ticket_created",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Tiket tkt-009 dibuat untuk tindak lanjut.",
+        "timestamp": "2026-06-03T12:45:00+00:00"
+      },
+      {
+        "id": 46,
+        "case_id": "case-009",
+        "ticket_id": "tkt-009",
+        "event_type": "status_changed",
+        "actor": "Supervisor Bima",
+        "role": "Supervisor",
+        "description": "Kasus ditandai selesai setelah tindak lanjut operator.",
+        "timestamp": "2026-06-04T17:00:00+00:00"
+      }
+    ],
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  {
+    "id": "case-010",
+    "case_id": "case-010",
+    "case_number": "MBG-010",
+    "title": "Keterlambatan distribusi terisolasi di SDN Renon 04",
+    "priority_label": "Rendah",
+    "status": "Selesai",
+    "vendor_id": "vnd-007",
+    "vendor_name": "SPPG Sejahtera Denpasar",
+    "vendor_source_note": null,
+    "region": "Bali",
+    "district": "Denpasar",
+    "school": "SDN Renon 04",
+    "issue_category": "keterlambatan distribusi",
+    "sla_status": "SLA 72h",
+    "assigned_unit": "Unit Pengawasan Vendor MBG",
+    "assigned_investigator": null,
+    "recommended_action": "Lanjutkan pemantauan rutin.",
+    "summary": "MonitorMBG mengelompokkan 1 sinyal intake untuk SPPG Sejahtera Denpasar ke dalam MBG-010. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "what_happened": "MonitorMBG mengelompokkan 1 sinyal intake untuk SPPG Sejahtera Denpasar ke dalam MBG-010. Paket menggabungkan aduan publik, laporan resmi, bukti harian vendor, dan sinyal penilaian.",
+    "why_it_matters": "Kasus ini menyangkut SDN Renon 04 di Denpasar, Bali dan dapat mengindikasikan keterlambatan distribusi terkait vendor dengan skor risiko 28.",
+    "risk_explanation": "Prioritas rendah karena SPPG Sejahtera Denpasar menggabungkan risiko vendor 28, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+    "signals_count": 1,
+    "evidence_count": 2,
+    "ticket_id": "tkt-010",
+    "created_at": "2026-06-01T09:00:00+00:00",
+    "updated_at": "2026-06-03T12:00:00+00:00",
+    "vendor": {
+      "id": "vnd-007",
+      "name": "SPPG Sejahtera Denpasar",
+      "region": "Bali",
+      "district": "Denpasar",
+      "assigned_schools": [
+        "SDN Renon 04",
+        "SMPN 10 Denpasar"
+      ],
+      "daily_meal_volume": 1320,
+      "compliance_status": "Sesuai",
+      "risk_score": 28,
+      "risk_trend": [
+        31,
+        30,
+        29,
+        27,
+        28
+      ],
+      "watchlist_status": "Rendah",
+      "watchlist_reason": "Tidak ada isu berisiko tinggi berulang.",
+      "last_inspection_date": "2026-06-01",
+      "repeated_issue_categories": [],
+      "coverage_notes": "Vendor stabil dengan dokumentasi harian lengkap.",
+      "recommended_action": "Lanjutkan pemantauan rutin."
+    },
+    "signals": [
+      {
+        "id": 16,
+        "case_id": "case-010",
+        "source": "Aduan Wali Murid",
+        "source_confidence": 0.48,
+        "urgency": "Rendah",
+        "status": "Terhubung ke Kasus",
+        "summary": "Keterlambatan distribusi terisolasi di SDN Renon 04",
+        "text": "Satu laporan keterlambatan distribusi; tidak berulang.",
+        "created_at": "2026-06-01T09:00:00+00:00",
+        "vendor_id": "vnd-007",
+        "vendor_name": "SPPG Sejahtera Denpasar",
+        "region": "Bali",
+        "district": "Denpasar",
+        "school": "SDN Renon 04",
+        "issue_category": "keterlambatan distribusi"
+      }
+    ],
+    "complaints": [
+      {
+        "id": 16,
+        "case_id": "case-010",
+        "source": "Aduan Wali Murid",
+        "source_confidence": 0.48,
+        "summary": "Keterlambatan distribusi terisolasi di SDN Renon 04",
+        "text": "Satu laporan keterlambatan distribusi; tidak berulang.",
+        "issue_category": "keterlambatan distribusi",
+        "sentiment": "negative",
+        "severity_score": 38,
+        "region": "Bali",
+        "district": "Denpasar",
+        "school": "SDN Renon 04",
+        "vendor_id": "vnd-007",
+        "vendor_name": "SPPG Sejahtera Denpasar",
+        "status": "Terhubung ke Kasus",
+        "urgency": "Rendah",
+        "anomaly_tag": null,
+        "created_at": "2026-06-01T09:00:00+00:00"
+      }
+    ],
+    "reports": [
+      {
+        "id": 10,
+        "case_id": "case-010",
+        "report_code": "RPT-MBG-2026-010",
+        "reporter_type": "Pengawas Distrik",
+        "school": "SDN Renon 04",
+        "region": "Bali",
+        "district": "Denpasar",
+        "vendor_id": "vnd-007",
+        "vendor_name": "SPPG Sejahtera Denpasar",
+        "submitted_at": "2026-06-01T09:00:00+00:00",
+        "summary": "Paket laporan resmi untuk SPPG Sejahtera Denpasar mencakup distribusi menu dan tinjauan bukti.",
+        "evidence_count": 2,
+        "status": "Selesai",
+        "completeness_score": 52,
+        "linked_ticket_id": "tkt-010",
+        "linked_risk_score": 28
+      }
+    ],
+    "daily_reports": [
+      {
+        "id": 10,
+        "case_id": "case-010",
+        "vendor_id": "vnd-007",
+        "vendor_name": "SPPG Sejahtera Denpasar",
+        "school": "SDN Renon 04",
+        "region": "Bali",
+        "planned_menu": "Nasi, ayam, sayur, buah, susu",
+        "actual_menu": "Nasi, ayam, sayur, buah",
+        "delivery_timestamp": "2026-06-01T09:00:00+00:00",
+        "expected_timestamp": "2026-06-01T09:00:00+00:00",
+        "portion_count": 660,
+        "photo_evidence_count": 1,
+        "document_complete": true,
+        "photo_verification": "Perlu Verifikasi",
+        "verification_status": "Sedang Ditinjau",
+        "duplicate_indicator": false,
+        "mismatch_indicator": false,
+        "nutrition_estimate": {
+          "calories": 540,
+          "protein_g": 16,
+          "carbs_g": 64,
+          "fat_g": 11
+        },
+        "cost_estimate": {
+          "cost_per_portion": 13600,
+          "standard_budget": 15000,
+          "cost_anomaly_flag": false
+        },
+        "recommended_follow_up": "Lanjutkan pemantauan rutin."
+      }
+    ],
+    "evidence": [
+      {
+        "id": 23,
+        "case_id": "case-010",
+        "signal_id": 16,
+        "type": "photo",
+        "title": "Foto porsi makan siang — SDN Renon 04",
+        "file_path": "/evidence-media/24.jpg",
+        "linked_entity": "MBG-010",
+        "source": "Distribusi lapangan",
+        "ocr_result": null,
+        "image_text_match_score": 0.44,
+        "duplicate_score": 0.18,
+        "confidence_score": 0.58,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto photo untuk SPPG Sejahtera Denpasar: indikasi awal, perlu perbandingan dengan menu dan standar porsi.",
+        "created_at": "2026-06-01T09:00:00+00:00"
+      },
+      {
+        "id": 24,
+        "case_id": "case-010",
+        "signal_id": 16,
+        "type": "document",
+        "title": "Laporan harian & menu (simulasi OCR) — SDN Renon 04",
+        "file_path": "/evidence-media/25.jpg",
+        "linked_entity": "MBG-010",
+        "source": "Laporan harian vendor",
+        "ocr_result": "Simulasi OCR: menu terbaca 'nasi, telur, sayur' dengan keyakinan sedang.",
+        "image_text_match_score": null,
+        "duplicate_score": null,
+        "confidence_score": 0.64,
+        "review_status": "Perlu Ditinjau",
+        "reviewer_note": "Foto document untuk SPPG Sejahtera Denpasar: OCR menu terbaca sebagian; total biaya perlu konfirmasi operator.",
+        "created_at": "2026-06-01T09:00:00+00:00"
+      }
+    ],
+    "score": {
+      "id": 10,
+      "case_id": "case-010",
+      "vendor_id": "vnd-007",
+      "vendor_name": "SPPG Sejahtera Denpasar",
+      "region": "Bali",
+      "severity_score": 38,
+      "confidence_score": 52,
+      "nutrition_concern_score": 30,
+      "cost_anomaly_score": 35,
+      "anomaly_score": 60,
+      "final_priority_score": 38,
+      "priority_label": "Rendah",
+      "explanation": "Prioritas rendah karena SPPG Sejahtera Denpasar menggabungkan risiko vendor 28, kecukupan menu, anomali biaya, dan pola berulang. Validasi operator diperlukan sebelum eskalasi.",
+      "recommended_action": "Lanjutkan pemantauan rutin.",
+      "computed_at": "2026-06-04T13:10:00+00:00",
+      "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+    },
+    "ticket": {
+      "id": "tkt-010",
+      "case_id": "case-010",
+      "title": "Tinjauan rendah: SPPG Sejahtera Denpasar",
+      "status": "Selesai",
+      "sla": "72h",
+      "assigned_unit": "Unit Pengawasan Vendor MBG",
+      "escalation_level": "Rendah",
+      "linked_vendor_id": "vnd-007",
+      "linked_vendor_name": "SPPG Sejahtera Denpasar",
+      "linked_region": "Bali",
+      "priority": 38,
+      "recommended_action": "Isu operasional teratasi",
+      "linked_evidence_ids": [
+        23,
+        24
+      ],
+      "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+      "created_at": "2026-06-01T09:00:00+00:00",
+      "updated_at": "2026-06-03T12:00:00+00:00"
+    },
+    "copilot_sources": [
+      {
+        "label": "Kasus",
+        "source_type": "case",
+        "source_id": "case-010",
+        "title": "MBG-010"
+      },
+      {
+        "label": "Vendor",
+        "source_type": "vendor",
+        "source_id": "vnd-007",
+        "title": "SPPG Sejahtera Denpasar"
+      },
+      {
+        "label": "Skor",
+        "source_type": "score",
+        "source_id": 10,
+        "title": "Skor MBG-010"
+      }
+    ],
+    "audit_events": [
+      {
+        "id": 47,
+        "case_id": "case-010",
+        "ticket_id": "tkt-010",
+        "event_type": "signal_received",
+        "actor": "Sistem Intake",
+        "role": "Sistem",
+        "description": "Signal intake diterima dan dikelompokkan.",
+        "timestamp": "2026-06-01T08:47:00+00:00"
+      },
+      {
+        "id": 48,
+        "case_id": "case-010",
+        "ticket_id": "tkt-010",
+        "event_type": "case_formed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Kasus MBG-010 dibentuk dari sinyal terhubung.",
+        "timestamp": "2026-06-01T09:48:00+00:00"
+      },
+      {
+        "id": 49,
+        "case_id": "case-010",
+        "ticket_id": "tkt-010",
+        "event_type": "evidence_reviewed",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Bukti ditinjau sebagai sinyal pra-verifikasi.",
+        "timestamp": "2026-06-02T10:49:00+00:00"
+      },
+      {
+        "id": 50,
+        "case_id": "case-010",
+        "ticket_id": "tkt-010",
+        "event_type": "risk_computed",
+        "actor": "Layanan Penilaian",
+        "role": "Sistem",
+        "description": "Penilaian risiko dihitung: Rendah.",
+        "timestamp": "2026-06-02T11:50:00+00:00"
+      },
+      {
+        "id": 51,
+        "case_id": "case-010",
+        "ticket_id": "tkt-010",
+        "event_type": "ticket_created",
+        "actor": "Operator Dewi",
+        "role": "Operator Distrik",
+        "description": "Tiket tkt-010 dibuat untuk tindak lanjut.",
+        "timestamp": "2026-06-03T12:51:00+00:00"
+      },
+      {
+        "id": 52,
+        "case_id": "case-010",
+        "ticket_id": "tkt-010",
+        "event_type": "status_changed",
+        "actor": "Supervisor Bima",
+        "role": "Supervisor",
+        "description": "Kasus ditandai selesai setelah tindak lanjut operator.",
+        "timestamp": "2026-06-03T12:00:00+00:00"
+      }
+    ],
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  }
+];
+
+export const fallbackHeatmap: HeatmapRegion[] = [
+  {
+    "region": "DKI Jakarta",
+    "district": "Jakarta Timur",
+    "risk_score": 88,
+    "complaint_count": 3,
+    "high_priority_cases": 1,
+    "latitude": -6.2088,
+    "longitude": 106.8456
+  },
+  {
+    "region": "Jawa Barat",
+    "district": "Kota Bandung",
+    "risk_score": 79,
+    "complaint_count": 3,
+    "high_priority_cases": 2,
+    "latitude": -6.9175,
+    "longitude": 107.6191
+  },
+  {
+    "region": "Jawa Tengah",
+    "district": "Kota Semarang",
+    "risk_score": 34,
+    "complaint_count": 1,
+    "high_priority_cases": 0,
+    "latitude": -6.9667,
+    "longitude": 110.4167
+  },
+  {
+    "region": "Jawa Timur",
+    "district": "Surabaya",
+    "risk_score": 83,
+    "complaint_count": 4,
+    "high_priority_cases": 2,
+    "latitude": -7.2575,
+    "longitude": 112.7521
+  },
+  {
+    "region": "Sumatera Utara",
+    "district": "Kota Medan",
+    "risk_score": 41,
+    "complaint_count": 1,
+    "high_priority_cases": 0,
+    "latitude": 3.5952,
+    "longitude": 98.6722
+  },
+  {
+    "region": "Sulawesi Selatan",
+    "district": "Makassar",
+    "risk_score": 67,
+    "complaint_count": 2,
+    "high_priority_cases": 1,
+    "latitude": -5.1477,
+    "longitude": 119.4327
+  },
+  {
+    "region": "Bali",
+    "district": "Denpasar",
+    "risk_score": 28,
+    "complaint_count": 1,
+    "high_priority_cases": 0,
+    "latitude": -8.6705,
+    "longitude": 115.2126
+  },
+  {
+    "region": "DI Yogyakarta",
+    "district": "Sleman",
+    "risk_score": 58,
+    "complaint_count": 1,
+    "high_priority_cases": 0,
+    "latitude": -7.7956,
+    "longitude": 110.3695
+  },
+  {
+    "region": "Banten",
+    "district": "Kota Tangerang",
+    "risk_score": 48,
+    "complaint_count": 0,
+    "high_priority_cases": 0,
+    "latitude": -6.1783,
+    "longitude": 106.6319
+  },
+  {
+    "region": "Lampung",
+    "district": "Kabupaten Tanggamus",
+    "risk_score": 46,
+    "complaint_count": 0,
+    "high_priority_cases": 0,
+    "latitude": -5.4667,
+    "longitude": 104.6167
+  },
+  {
+    "region": "Lampung",
+    "district": "Kota Bandar Lampung",
+    "risk_score": 44,
+    "complaint_count": 0,
+    "high_priority_cases": 0,
+    "latitude": -5.4292,
+    "longitude": 105.261
+  },
+  {
+    "region": "Sumatera Selatan",
+    "district": "Kota Palembang",
+    "risk_score": 43,
+    "complaint_count": 0,
+    "high_priority_cases": 0,
+    "latitude": -2.9909,
+    "longitude": 104.7566
+  },
+  {
+    "region": "Kepulauan Riau",
+    "district": "Kota Batam",
+    "risk_score": 39,
+    "complaint_count": 0,
+    "high_priority_cases": 0,
+    "latitude": 1.0456,
+    "longitude": 104.0305
+  }
+];
 
 export const fallbackTrends: TrendPoint[] = [
-  { date: "2026-05-30", complaints: 22, high_priority: 4, avg_score: 62 },
-  { date: "2026-05-31", complaints: 28, high_priority: 5, avg_score: 67 },
-  { date: "2026-06-01", complaints: 35, high_priority: 7, avg_score: 74 },
+  {
+    "date": "2026-05-25",
+    "complaints": 12,
+    "high_priority": 2,
+    "avg_score": 52
+  },
+  {
+    "date": "2026-05-26",
+    "complaints": 15,
+    "high_priority": 3,
+    "avg_score": 56
+  },
+  {
+    "date": "2026-05-27",
+    "complaints": 18,
+    "high_priority": 4,
+    "avg_score": 60
+  },
+  {
+    "date": "2026-05-28",
+    "complaints": 21,
+    "high_priority": 5,
+    "avg_score": 64
+  },
+  {
+    "date": "2026-05-29",
+    "complaints": 24,
+    "high_priority": 2,
+    "avg_score": 68
+  },
+  {
+    "date": "2026-05-30",
+    "complaints": 27,
+    "high_priority": 3,
+    "avg_score": 72
+  },
+  {
+    "date": "2026-05-31",
+    "complaints": 30,
+    "high_priority": 4,
+    "avg_score": 76
+  },
+  {
+    "date": "2026-05-32",
+    "complaints": 33,
+    "high_priority": 5,
+    "avg_score": 80
+  }
 ];
 
 export const fallbackAnomalies: AnomalyHighlight[] = [
   {
-    id: "ano-001",
-    region: "DKI Jakarta",
-    issue_category: "low protein portion",
-    description: "Complaint volume rose above seven-day baseline.",
-    severity: "High",
-    linked_vendor_id: "vnd-001",
+    "id": "ano-001",
+    "region": "DKI Jakarta",
+    "issue_category": "porsi protein kurang",
+    "description": "Volume aduan naik 2,8x dibanding rata-rata tujuh hari.",
+    "severity": "Tinggi",
+    "linked_vendor_id": "vnd-001"
   },
+  {
+    "id": "ano-002",
+    "region": "Jawa Barat",
+    "issue_category": "indikasi keracunan makanan",
+    "description": "Dua sekolah melaporkan gejala serupa dalam 48 jam.",
+    "severity": "Kritis",
+    "linked_vendor_id": "vnd-002"
+  },
+  {
+    "id": "ano-003",
+    "region": "Jawa Timur",
+    "issue_category": "anomali biaya",
+    "description": "Biaya per porsi melampaui patokan sementara kelengkapan menu menurun.",
+    "severity": "Tinggi",
+    "linked_vendor_id": "vnd-004"
+  }
 ];
 
 export const fallbackNutritionSummary: NutritionSummary = {
-  avg_calories: 512,
-  avg_protein_g: 15.2,
-  avg_carbs_g: 63,
-  avg_fat_g: 12.4,
-  total_reports_analyzed: fallbackDailyReports.length,
-  flagged_reports: fallbackDailyReports,
-  ai_notice: demoNotice,
+  "avg_calories": 512,
+  "avg_protein_g": 14.0,
+  "avg_carbs_g": 63,
+  "avg_fat_g": 11.5,
+  "total_reports_analyzed": 10,
+  "flagged_reports": [
+    {
+      "id": 1,
+      "case_id": "case-001",
+      "vendor_id": "vnd-001",
+      "vendor_name": "SPPG Nusantara Sehat",
+      "school": "SDN Melati 03",
+      "region": "DKI Jakarta",
+      "planned_menu": "Nasi, ayam, sayur, buah, susu",
+      "actual_menu": "Nasi, telur kecil, sayur",
+      "delivery_timestamp": "2026-06-02T08:15:00+00:00",
+      "expected_timestamp": "2026-06-02T08:15:00+00:00",
+      "portion_count": 1093,
+      "photo_evidence_count": 1,
+      "document_complete": true,
+      "photo_verification": "Ketidaksesuaian Menu",
+      "verification_status": "Ditandai",
+      "duplicate_indicator": false,
+      "mismatch_indicator": true,
+      "nutrition_estimate": {
+        "calories": 505,
+        "protein_g": 11,
+        "carbs_g": 64,
+        "fat_g": 11
+      },
+      "cost_estimate": {
+        "cost_per_portion": 15800,
+        "standard_budget": 15000,
+        "cost_anomaly_flag": true
+      },
+      "recommended_follow_up": "Minta klarifikasi vendor dan jadwalkan verifikasi lapangan."
+    },
+    {
+      "id": 3,
+      "case_id": "case-003",
+      "vendor_id": "vnd-004",
+      "vendor_name": "Dapur Mandiri Surabaya Timur",
+      "school": "SDN Rungkut Menanggal",
+      "region": "Jawa Timur",
+      "planned_menu": "Nasi, ayam, sayur, buah, susu",
+      "actual_menu": "Nasi, ayam, sayur, buah",
+      "delivery_timestamp": "2026-06-01T09:20:00+00:00",
+      "expected_timestamp": "2026-06-01T09:20:00+00:00",
+      "portion_count": 1437,
+      "photo_evidence_count": 1,
+      "document_complete": true,
+      "photo_verification": "Perlu Verifikasi",
+      "verification_status": "Ditandai",
+      "duplicate_indicator": false,
+      "mismatch_indicator": false,
+      "nutrition_estimate": {
+        "calories": 540,
+        "protein_g": 16,
+        "carbs_g": 64,
+        "fat_g": 11
+      },
+      "cost_estimate": {
+        "cost_per_portion": 15800,
+        "standard_budget": 15000,
+        "cost_anomaly_flag": true
+      },
+      "recommended_follow_up": "Eskalasikan ke tinjauan pengadaan dan lakukan verifikasi menu."
+    },
+    {
+      "id": 5,
+      "case_id": "case-005",
+      "vendor_id": "vnd-008",
+      "vendor_name": "Dapur Anak Hebat Yogyakarta",
+      "school": "SDN Condongcatur 02",
+      "region": "DI Yogyakarta",
+      "planned_menu": "Nasi, ayam, sayur, buah, susu",
+      "actual_menu": "Nasi, ayam, sayur, buah",
+      "delivery_timestamp": "2026-06-02T09:05:00+00:00",
+      "expected_timestamp": "2026-06-02T09:05:00+00:00",
+      "portion_count": 782,
+      "photo_evidence_count": 1,
+      "document_complete": true,
+      "photo_verification": "Ketidaksesuaian Menu",
+      "verification_status": "Ditandai",
+      "duplicate_indicator": false,
+      "mismatch_indicator": true,
+      "nutrition_estimate": {
+        "calories": 540,
+        "protein_g": 16,
+        "carbs_g": 64,
+        "fat_g": 11
+      },
+      "cost_estimate": {
+        "cost_per_portion": 13600,
+        "standard_budget": 15000,
+        "cost_anomaly_flag": false
+      },
+      "recommended_follow_up": "Tinjau tiga laporan harian berikutnya dan konfirmasi substitusi menu."
+    },
+    {
+      "id": 7,
+      "case_id": "case-007",
+      "vendor_id": "vnd-004",
+      "vendor_name": "Dapur Mandiri Surabaya Timur",
+      "school": "SMPN 35 Surabaya",
+      "region": "Jawa Timur",
+      "planned_menu": "Nasi, ayam, sayur, buah, susu",
+      "actual_menu": "Nasi, ayam, sayur, buah",
+      "delivery_timestamp": "2026-06-02T07:30:00+00:00",
+      "expected_timestamp": "2026-06-02T07:30:00+00:00",
+      "portion_count": 1437,
+      "photo_evidence_count": 1,
+      "document_complete": true,
+      "photo_verification": "Ketidaksesuaian Menu",
+      "verification_status": "Ditandai",
+      "duplicate_indicator": false,
+      "mismatch_indicator": true,
+      "nutrition_estimate": {
+        "calories": 540,
+        "protein_g": 16,
+        "carbs_g": 64,
+        "fat_g": 11
+      },
+      "cost_estimate": {
+        "cost_per_portion": 13600,
+        "standard_budget": 15000,
+        "cost_anomaly_flag": false
+      },
+      "recommended_follow_up": "Eskalasikan ke tinjauan pengadaan dan lakukan verifikasi menu."
+    }
+  ],
+  "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
 };
 
 export const asList = <T>(items: T[]): ListResponse<T> => ({

@@ -8,6 +8,8 @@ import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 import { getWithFallback } from "@/lib/api";
 import { asList, fallbackAudit } from "@/lib/demoFallback";
+import { applyAudit } from "@/lib/runtimeOverlay";
+import { caseNumber } from "@/lib/utils";
 import type { AuditTrailEvent, ListResponse } from "@/types/monitoring";
 
 export default function AuditTrailPage() {
@@ -19,7 +21,7 @@ export default function AuditTrailPage() {
   useEffect(() => {
     async function load() {
       const result = await getWithFallback<ListResponse<AuditTrailEvent>>("/audit-trail?size=100", asList(fallbackAudit));
-      setEvents(result.data.items);
+      setEvents(applyAudit(result.data.items));
       setSource(result.source);
       setError(result.error);
       setLoading(false);
@@ -34,22 +36,22 @@ export default function AuditTrailPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Governance Log"
-        description="Accountability timeline for AI scoring, evidence review, ticket changes, operator actions, escalations, and resolutions."
-        breadcrumbs={[{ label: "Command Center", href: "/" }, { label: "Governance Log" }]}
+        title="Jejak Audit"
+        description="Kronologi akuntabilitas untuk penilaian, peninjauan bukti, perubahan tiket, tindakan operator, eskalasi, dan penyelesaian."
+        breadcrumbs={[{ label: "Pusat Kendali", href: "/" }, { label: "Jejak Audit" }]}
         source={source}
         error={error}
       />
       <GovernanceNote compact />
       <HelperPanel>
-        The governance log answers whether a case can be traced from intake through scoring, action, human review, and resolution.
+        Jejak audit menjawab apakah sebuah kasus dapat dilacak dari intake hingga penilaian, tindakan, tinjauan operator, dan penyelesaian.
       </HelperPanel>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricTile label="Events" value={String(events.length)} />
-        <MetricTile label="AI-Assisted" value={String(events.filter((event) => event.role.includes("AI") || event.actor.includes("AI")).length)} />
-        <MetricTile label="Operator Reviewed" value={String(events.filter((event) => event.role.includes("Operator")).length)} />
-        <MetricTile label="Escalations" value={String(events.filter((event) => event.event_type.includes("escalation")).length)} />
+        <MetricTile label="Peristiwa" value={String(events.length)} />
+        <MetricTile label="Berbantuan Sistem" value={String(events.filter((event) => event.role.includes("Sistem") || event.actor.includes("Sistem")).length)} />
+        <MetricTile label="Ditinjau Operator" value={String(events.filter((event) => event.role.includes("Operator")).length)} />
+        <MetricTile label="Eskalasi" value={String(events.filter((event) => event.event_type.includes("escalation") || event.event_type.includes("status")).length)} />
       </div>
 
       <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
@@ -57,8 +59,8 @@ export default function AuditTrailPage() {
           {sorted.map((event) => (
             <div key={event.id} className="grid min-w-0 gap-4 rounded-lg border border-border bg-surface p-4 lg:grid-cols-[170px_minmax(0,1fr)_190px] xl:grid-cols-[190px_minmax(0,1fr)_220px]">
               <div className="min-w-0">
-                <EntityChip label={event.case_id} href={`/cases/${event.case_id}?tab=audit-trail`} tone="case" />
-                <p className="mt-2 text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleString()}</p>
+                <EntityChip label={caseNumber(event.case_id)} href={`/cases/${event.case_id}`} tone="case" />
+                <p className="mt-2 text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleString("id-ID")}</p>
               </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap gap-2">
@@ -83,9 +85,8 @@ export default function AuditTrailPage() {
 }
 
 function classifyEvent(event: AuditTrailEvent) {
-  if (event.event_type.includes("copilot") || event.role.includes("AI")) return "AI-Assisted";
-  if (event.event_type.includes("escalation")) return "Escalated";
-  if (event.event_type.includes("resolved")) return "Resolved";
-  if (event.role.includes("Operator") || event.role.includes("Supervisor")) return "Operator Reviewed";
-  return "System Generated";
+  if (event.event_type.includes("escalation")) return "Dieskalasi";
+  if (event.event_type.includes("status") || event.event_type.includes("resolved")) return "Perubahan Status";
+  if (event.role.includes("Operator") || event.role.includes("Supervisor")) return "Ditinjau Operator";
+  return "Dihasilkan Sistem";
 }

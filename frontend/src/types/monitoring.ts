@@ -31,9 +31,39 @@ export interface Vendor {
   ai_notice?: string;
 }
 
+export interface LocationDistrict {
+  name: string;
+  schools: string[];
+  vendor_ids: string[];
+}
+
+export interface LocationRegistryEntry {
+  province: string;
+  districts: LocationDistrict[];
+}
+
+export interface AssignmentCandidate {
+  id: string;
+  name: string;
+  role: string;
+  provinces: string[];
+  districts: string[];
+  national: boolean;
+}
+
+export interface AssignmentOptions {
+  locations: LocationRegistryEntry[];
+  vendors: Vendor[];
+  investigators: AssignmentCandidate[];
+  units: AssignmentCandidate[];
+  vendor_message?: string;
+  manual_vendor: { id: string; label: string };
+  governance_notice: string;
+}
+
 export interface Complaint {
   id: number;
-  case_id: string;
+  case_id: string | null;
   source: string;
   source_confidence: number;
   summary: string;
@@ -44,11 +74,36 @@ export interface Complaint {
   region: string;
   district: string;
   school: string;
-  vendor_id: string;
+  vendor_id: string | null;
   vendor_name: string;
   status: string;
+  urgency?: string;
   anomaly_tag?: string | null;
   created_at: string;
+}
+
+/** Sinyal intake — sumber Kotak Masuk Sinyal. case_id null = belum dibentuk kasus. */
+export interface Signal {
+  id: number;
+  case_id: string | null;
+  source: string;
+  source_confidence: number;
+  urgency: string;
+  status: string;
+  summary: string;
+  text: string;
+  vendor_id: string | null;
+  vendor_name: string;
+  region: string;
+  district: string;
+  school: string;
+  issue_category: string;
+  created_at: string;
+  // Lampiran foto opsional (mis. laporan resmi 4.jpg, unggahan media sosial 26.jpg).
+  attachment_path?: string;
+  attachment_title?: string;
+  attachment_source?: string;
+  attachment_note?: string;
 }
 
 export interface Report {
@@ -100,17 +155,23 @@ export interface DailyReport {
 export interface Evidence {
   id: number;
   case_id: string;
-  report_id: number;
+  signal_id?: number | null;
+  report_id?: number;
   type: string;
   title: string;
+  file_path?: string;
   linked_entity: string;
+  source?: string;
   ocr_result?: string | null;
   image_text_match_score?: number | null;
   duplicate_score?: number | null;
   confidence_score: number;
-  ai_signal: string;
+  review_status?: string;
+  ai_signal?: string;
   reviewer_note: string;
   created_at: string;
+  // Ditandai bila relasi bukti dilepas dari kasus (aset fisik tidak dihapus).
+  unlinked_from_case?: boolean;
 }
 
 export interface NutritionEstimate {
@@ -148,7 +209,7 @@ export interface NutritionResult {
 export interface ScoreResult {
   id: number;
   case_id: string;
-  report_id: number;
+  report_id?: number;
   vendor_id: string;
   vendor_name: string;
   region: string;
@@ -179,6 +240,7 @@ export interface Ticket {
   priority: number;
   recommended_action: string;
   linked_evidence_ids: number[];
+  linked_report_ids?: number[];
   audit_preview: string;
   created_at: string;
   updated_at: string;
@@ -205,17 +267,20 @@ export interface CaseSource {
 export interface OversightCase {
   id: string;
   case_id: string;
+  case_number: string;
   title: string;
   priority_label: "Critical" | "High" | "Medium" | "Low" | string;
   status: string;
   vendor_id: string;
   vendor_name: string;
+  vendor_source_note?: string | null;
   region: string;
   district: string;
   school: string;
   issue_category: string;
   sla_status: string;
   assigned_unit: string;
+  assigned_investigator?: string | null;
   recommended_action: string;
   summary: string;
   what_happened: string;
@@ -227,6 +292,7 @@ export interface OversightCase {
   created_at: string;
   updated_at: string;
   vendor: Vendor;
+  signals: Signal[];
   complaints: Complaint[];
   reports: Report[];
   daily_reports: DailyReport[];

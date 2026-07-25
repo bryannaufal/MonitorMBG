@@ -13,6 +13,7 @@ from app.api.v1 import (
     nutrition,
     reports,
     scoring,
+    signals,
     tickets,
     vendors,
 )
@@ -20,6 +21,7 @@ from app.api.v1 import (
 api_v1_router = APIRouter()
 
 api_v1_router.include_router(cases.router, prefix="/cases", tags=["Cases"])
+api_v1_router.include_router(signals.router, prefix="/signals", tags=["Signals"])
 api_v1_router.include_router(complaints.router, prefix="/complaints", tags=["Complaints"])
 api_v1_router.include_router(reports.router, prefix="/reports", tags=["Reports"])
 api_v1_router.include_router(daily_reports.router, prefix="/daily-reports", tags=["Daily Reports"])
