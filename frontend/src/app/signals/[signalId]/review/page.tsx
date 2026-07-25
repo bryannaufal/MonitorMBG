@@ -520,6 +520,7 @@ export default function SignalReviewPage() {
               <div className="sm:col-span-2">
                 <Field label="Ringkasan kejadian"><textarea value={ncSummary} onChange={(e) => setNcSummary(e.target.value)} rows={3} className={inputCls} /></Field>
               </div>
+              <p className="text-xs text-muted-foreground sm:col-span-2">Sinyal dan bukti/laporan terpilih akan ditautkan ke kasus baru ini.</p>
               <p className="text-xs text-muted-foreground sm:col-span-2">Tidak ada tiket yang dibuat otomatis saat kasus baru dibentuk.</p>
             </div>
           ) : null}

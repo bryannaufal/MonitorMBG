@@ -20,6 +20,7 @@ import type {
   AuditTrailEvent,
   AssignmentCandidate,
   AssignmentOptions,
+  Evidence,
   LocationRegistryEntry,
   OversightCase,
   ScoreResult,
@@ -377,6 +378,10 @@ export interface ReviewResult {
   redirect: string;
   case?: OversightCase;
   audit_events: AuditTrailEvent[];
+  // Sinyal yang ditautkan & bukti yang ditambahkan pada aksi ini (termasuk
+  // kandidat terkait yang dicentang operator).
+  linked_signal_ids?: number[];
+  added_evidence_ids?: number[];
   ai_notice: string;
 }
 
@@ -394,8 +399,19 @@ function nextCaseId(): string {
 }
 
 function nextEvidenceId() { return fallbackEvidence.reduce((m, e) => Math.max(m, e.id), 0) + 1; }
+
+/** True bila kasus sudah punya bukti aktif dari sinyal/berkas yang sama. */
+function caseHasEvidence(caseId: string, opts: { signalId?: number; filePath?: string | null }): boolean {
+  return fallbackEvidence.some((e) =>
+    e.case_id === caseId && !e.unlinked_from_case &&
+    ((opts.signalId != null && e.signal_id === opts.signalId) ||
+      (opts.filePath != null && e.file_path === opts.filePath)));
+}
+
 function evidenceFromSignal(caseId: string, sig: Signal) {
   if (!sig.attachment_path) return null;
+  // Idempoten: bukti untuk sinyal/berkas ini sudah ada pada kasus -> jangan gandakan.
+  if (caseHasEvidence(caseId, { signalId: sig.id, filePath: sig.attachment_path })) return null;
   const ev = {
     id: nextEvidenceId(), case_id: caseId, signal_id: sig.id, type: "photo",
     title: sig.attachment_title || "Lampiran sinyal", file_path: sig.attachment_path,
@@ -407,6 +423,93 @@ function evidenceFromSignal(caseId: string, sig: Signal) {
   };
   fallbackEvidence.push(ev);
   return ev;
+}
+
+// ── Kandidat terkait yang dicentang operator (fusion) ────────────────────
+
+/** Validasi kandidat terpilih SEBELUM mutasi (fail-fast, tanpa status partial). */
+function validateSelectedItems(
+  originSignalId: number,
+  signalIds: number[] = [],
+  evidenceIds: number[] = [],
+): { extraSignals: Signal[]; extraEvidence: Evidence[] } {
+  const extraSignals: Signal[] = [];
+  for (const sid of signalIds) {
+    if (sid === originSignalId) continue;
+    const match = fallbackSignals.find((s) => s.id === sid);
+    if (!match) throw new Error(`Sinyal terpilih '${sid}' tidak ditemukan.`);
+    if (match.case_id) continue; // sudah terhubung: jangan buat relasi ganda
+    if (extraSignals.some((s) => s.id === sid)) continue;
+    extraSignals.push(match);
+  }
+  const extraEvidence: Evidence[] = [];
+  for (const eid of evidenceIds) {
+    const match = fallbackEvidence.find((e) => e.id === eid);
+    if (!match) throw new Error(`Bukti terpilih '${eid}' tidak ditemukan.`);
+    if (extraEvidence.some((e) => e.id === eid)) continue;
+    extraEvidence.push(match);
+  }
+  return { extraSignals, extraEvidence };
+}
+
+interface LinkedItems {
+  signals: Signal[];
+  evidence: Evidence[];
+  audits: AuditTrailEvent[];
+}
+
+/**
+ * Tautkan sinyal & bukti yang dicentang operator ke kasus (create maupun merge).
+ * Memutasi store fallback (sinyal, bukti, audit) dan mengembalikan item baru
+ * agar pemanggil dapat memperbarui snapshot kasus. Tanpa duplikasi.
+ */
+function linkSelectedItems(
+  caseId: string,
+  caseIssue: string,
+  extraSignals: Signal[],
+  extraEvidence: Evidence[],
+  actor: string,
+): LinkedItems {
+  const out: LinkedItems = { signals: [], evidence: [], audits: [] };
+  const num = caseNumber(caseId);
+  for (const s of extraSignals) {
+    s.case_id = caseId;
+    s.status = "Terhubung ke Kasus";
+    s.issue_category = caseIssue;
+    out.signals.push(s);
+    if ((s.source || "").toLowerCase().includes("sosial")) {
+      out.audits.push(addAudit(caseId, "social_signal_reviewed",
+        `Sinyal media sosial #${s.id} ditinjau operator sebagai sinyal pendukung, bukan bukti final atau konfirmasi kejadian.`, actor));
+    }
+    out.audits.push(addAudit(caseId, "signal_merged",
+      `Operator ${actor} menautkan sinyal #${s.id} ke ${num} sebagai sinyal pendukung. Keterkaitan lokasi/waktu belum dikonfirmasi dan tetap memerlukan verifikasi.`, actor));
+    const ev = evidenceFromSignal(caseId, s);
+    if (ev) {
+      out.evidence.push(ev);
+      out.audits.push(addAudit(caseId, "evidence_added",
+        `Bukti '${ev.title}' (sumber ${ev.source}) ditambahkan dari sinyal #${s.id}. Status: Perlu Ditinjau.`, actor));
+    }
+  }
+  for (const src of extraEvidence) {
+    if (src.case_id === caseId && !src.unlinked_from_case) continue;
+    if (caseHasEvidence(caseId, { filePath: src.file_path })) continue;
+    const ev: Evidence = {
+      ...src,
+      id: nextEvidenceId(),
+      case_id: caseId,
+      signal_id: null,
+      linked_entity: num,
+      review_status: "Perlu Ditinjau",
+      reviewer_note: `Bukti ditautkan operator dari ${caseNumber(src.case_id)}; tetap memerlukan peninjauan pada kasus ini.`,
+      unlinked_from_case: undefined,
+      created_at: nowIso(),
+    };
+    fallbackEvidence.push(ev);
+    out.evidence.push(ev);
+    out.audits.push(addAudit(caseId, "evidence_added",
+      `Bukti '${ev.title}' ditautkan operator dari ${caseNumber(src.case_id)}. Status: Perlu Ditinjau.`, actor));
+  }
+  return out;
 }
 
 function effectiveLocation(signal: Signal, newCase: ReviewPayload["new_case"]): { region: string; district: string; school: string } {
@@ -474,6 +577,8 @@ export function reviewSignal(signalId: number, p: ReviewPayload): ReviewResult {
     if (assign.unit && !options.units.some((item) => item.name === assign.unit)) {
       throw new Error("Unit penanggung jawab tidak sesuai dengan cakupan wilayah kasus.");
     }
+    // Kandidat yang dicentang operator ikut diproses (fail-fast sebelum mutasi).
+    const { extraSignals, extraEvidence } = validateSelectedItems(signalId, p.selected_signal_ids, p.selected_evidence_ids);
     sig.case_id = target.case_id;
     sig.status = "Terhubung ke Kasus";
     sig.issue_category = target.issue_category;
@@ -521,8 +626,34 @@ export function reviewSignal(signalId: number, p: ReviewPayload): ReviewResult {
     }
     target.signals_count += 1;
     target.signals = [...target.signals, sig];
+    // Sinyal/bukti terkait yang dicentang ikut ditautkan ke kasus target.
+    const linked = linkSelectedItems(target.case_id, target.issue_category, extraSignals, extraEvidence, actor);
+    for (const s of linked.signals) {
+      target.signals_count += 1;
+      target.signals = [...target.signals, s];
+    }
+    for (const fusedEv of linked.evidence) {
+      target.evidence = [...target.evidence, fusedEv];
+      target.evidence_count += 1;
+      if (target.ticket && !target.ticket.linked_evidence_ids.includes(fusedEv.id)) {
+        target.ticket = {
+          ...target.ticket,
+          linked_evidence_ids: [...target.ticket.linked_evidence_ids, fusedEv.id],
+        };
+      }
+    }
+    for (const fusedAudit of linked.audits) {
+      target.audit_events = [fusedAudit, ...target.audit_events];
+      audit.push(fusedAudit);
+    }
     target.updated_at = nowIso();
-    return { outcome: "merged", case_id: target.case_id, case_number: target.case_number ?? caseNumber(target.case_id), redirect: `/cases/${target.case_id}`, case: target, audit_events: audit, ai_notice: GOVERNANCE };
+    return {
+      outcome: "merged", case_id: target.case_id, case_number: target.case_number ?? caseNumber(target.case_id),
+      redirect: `/cases/${target.case_id}`, case: target, audit_events: audit,
+      linked_signal_ids: [signalId, ...linked.signals.map((s) => s.id)],
+      added_evidence_ids: [...(ev ? [ev.id] : []), ...linked.evidence.map((e) => e.id)],
+      ai_notice: GOVERNANCE,
+    };
   }
 
   if (p.decision === "create") {
@@ -530,11 +661,14 @@ export function reviewSignal(signalId: number, p: ReviewPayload): ReviewResult {
     const { region, district, school } = effectiveLocation(sig, nc);
     const vendorId = nc.vendor_id || sig.vendor_id || "vnd-unknown";
     validateOfflineAssignment(region, district, school, { ...nc, vendor_id: vendorId }, assign);
+    // Kandidat yang dicentang operator ikut diproses (fail-fast sebelum mutasi).
+    const { extraSignals, extraEvidence } = validateSelectedItems(signalId, p.selected_signal_ids, p.selected_evidence_ids);
     const vendor = fallbackVendors.find((v) => v.id === vendorId) ?? UNKNOWN_VENDOR;
     const manualVendor = vendorId === MANUAL_VENDOR_ID;
     const vendorName = manualVendor ? (nc.vendor_name ?? "").trim() : vendor.name;
     const resolvedVendorId = manualVendor ? UNKNOWN_VENDOR.id : vendor.id;
     const cid = nextCaseId();
+    const issueCategory = nc.issue_category || sig.issue_category || "belum diklasifikasi";
     const assess = initialAssessment(signalId);
     const finalScore = ov.final_priority_score ?? assess.final_priority_score;
     const label = ov.priority_label ?? assess.priority_label;
@@ -584,6 +718,11 @@ export function reviewSignal(signalId: number, p: ReviewPayload): ReviewResult {
       const ev = addAudit(cid, "responsible_unit_assigned", `Unit penanggung jawab ditetapkan. Sebelum: Belum ditetapkan; sesudah: ${assign.unit}.`, actor);
       audit.push(ev); caseAudit.unshift(ev);
     }
+    // Sinyal/bukti terkait yang dicentang ikut ditautkan ke kasus baru.
+    const linked = linkSelectedItems(cid, issueCategory, extraSignals, extraEvidence, actor);
+    for (const fusedAudit of linked.audits) { audit.push(fusedAudit); caseAudit.unshift(fusedAudit); }
+    const caseSignals = [sig, ...linked.signals];
+    const caseEvidence = [...(reportEv ? [reportEv] : []), ...linked.evidence];
 
     const newCase: OversightCase = {
       id: cid, case_id: cid, case_number: caseNumber(cid),
@@ -592,23 +731,29 @@ export function reviewSignal(signalId: number, p: ReviewPayload): ReviewResult {
       vendor_id: resolvedVendorId, vendor_name: vendorName || vendor.name, vendor_source_note: manualVendor ? (nc.vendor_source_note?.trim() || null) : null,
       region, district,
       school,
-      issue_category: nc.issue_category || sig.issue_category || "belum diklasifikasi",
+      issue_category: issueCategory,
       sla_status: "SLA 72h", assigned_unit: assign.unit || "Unit Pengawasan Vendor MBG Nasional", assigned_investigator: assign.investigator || null,
       recommended_action: score.recommended_action,
       summary: nc.summary || sig.text || sig.summary,
       what_happened: `Kasus ${caseNumber(cid)} dibentuk dari sinyal intake #${signalId} setelah tinjauan operator.`,
       why_it_matters: `Kasus menyangkut ${nc.school || sig.school || "lokasi belum teridentifikasi"} dan memerlukan klarifikasi awal.`,
       risk_explanation: score.explanation,
-      signals_count: 1, evidence_count: reportEv ? 1 : 0, ticket_id: null,
+      signals_count: caseSignals.length, evidence_count: caseEvidence.length, ticket_id: null,
       created_at: nowIso(), updated_at: nowIso(),
-      vendor: manualVendor ? UNKNOWN_VENDOR : vendor, signals: [sig], complaints: [], reports: [], daily_reports: [], evidence: reportEv ? [reportEv] : [],
+      vendor: manualVendor ? UNKNOWN_VENDOR : vendor, signals: caseSignals, complaints: [], reports: [], daily_reports: [], evidence: caseEvidence,
       score, ticket: null,
       copilot_sources: [{ label: "Kasus", source_type: "case", source_id: cid, title: caseNumber(cid) }],
       audit_events: caseAudit, ai_notice: GOVERNANCE,
     };
     fallbackCases.unshift(newCase);
     sig.case_id = cid; sig.status = "Terhubung ke Kasus"; sig.issue_category = newCase.issue_category;
-    return { outcome: "created", case_id: cid, case_number: caseNumber(cid), redirect: `/cases/${cid}`, case: newCase, audit_events: audit, ai_notice: GOVERNANCE };
+    return {
+      outcome: "created", case_id: cid, case_number: caseNumber(cid), redirect: `/cases/${cid}`,
+      case: newCase, audit_events: audit,
+      linked_signal_ids: [signalId, ...linked.signals.map((s) => s.id)],
+      added_evidence_ids: [...(reportEv ? [reportEv.id] : []), ...linked.evidence.map((e) => e.id)],
+      ai_notice: GOVERNANCE,
+    };
   }
 
   // defer

@@ -411,6 +411,117 @@ def _add_evidence_from_signal(case_id: str, signal: dict[str, Any]) -> dict[str,
     return ev
 
 
+# ── Kandidat terkait yang dicentang operator (fusion) ────────────────────
+def _validate_selected_items(origin_signal_id: int, signal_ids: list[int],
+                             evidence_ids: list[int]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Validasi kandidat terpilih SEBELUM mutasi apa pun (fail-fast).
+
+    - ID yang tidak dikenal -> 422; tidak ada status partial pada kandidat.
+    - Sinyal asal dan sinyal yang sudah terhubung dilewati (idempoten):
+      tidak ada relasi ganda maupun evidence ganda.
+    """
+    extra_signals: list[dict[str, Any]] = []
+    for sid in signal_ids:
+        if sid == origin_signal_id:
+            continue
+        match = next((s for s in sd.SIGNALS if s["id"] == sid), None)
+        if match is None:
+            raise HTTPException(status_code=422, detail=f"Sinyal terpilih '{sid}' tidak ditemukan.")
+        if match.get("case_id"):
+            continue
+        if any(s["id"] == sid for s in extra_signals):
+            continue
+        extra_signals.append(match)
+    extra_evidence: list[dict[str, Any]] = []
+    for eid in evidence_ids:
+        match = next((e for e in sd.EVIDENCE if e["id"] == eid), None)
+        if match is None:
+            raise HTTPException(status_code=422, detail=f"Bukti terpilih '{eid}' tidak ditemukan.")
+        if any(e["id"] == eid for e in extra_evidence):
+            continue
+        extra_evidence.append(match)
+    return extra_signals, extra_evidence
+
+
+def _link_selected_items(case: dict[str, Any], extra_signals: list[dict[str, Any]],
+                         extra_evidence: list[dict[str, Any]], audit: list[dict[str, Any]],
+                         actor: str) -> tuple[list[int], list[int]]:
+    """Tautkan sinyal & bukti yang dicentang operator ke kasus (create maupun merge).
+
+    Setiap sinyal ditautkan (status "Terhubung ke Kasus"), lampirannya
+    dimaterialkan sebagai bukti kasus tanpa duplikasi, dan setiap aksi dicatat
+    sebagai keputusan operator pada jejak audit. Bukti terpilih dari kasus lain
+    disalin sebagai baris bukti baru pada kasus ini; baris asal tidak diubah.
+    """
+    cid = case["case_id"]
+    linked_signal_ids: list[int] = []
+    added_evidence_ids: list[int] = []
+
+    def track_ticket(ev_id: int) -> None:
+        ticket = sd.TICKET_BY_CASE.get(cid)
+        if ticket and ev_id not in ticket["linked_evidence_ids"]:
+            ticket["linked_evidence_ids"].append(ev_id)
+
+    for sig in extra_signals:
+        sig["case_id"] = cid
+        sig["status"] = "Terhubung ke Kasus"
+        sig["issue_category"] = case["issue_category"]
+        linked_signal_ids.append(sig["id"])
+        if "sosial" in (sig.get("source") or "").lower():
+            audit.append(_add_audit(
+                cid, "social_signal_reviewed",
+                f"Sinyal media sosial #{sig['id']} ditinjau operator sebagai sinyal pendukung, "
+                f"bukan bukti final atau konfirmasi kejadian.", actor=actor))
+        audit.append(_add_audit(
+            cid, "signal_merged",
+            f"Operator {actor} menautkan sinyal #{sig['id']} ke {sd.case_number(cid)} sebagai sinyal pendukung. "
+            f"Keterkaitan lokasi/waktu belum dikonfirmasi dan tetap memerlukan verifikasi.",
+            actor=actor))
+        ev = _add_evidence_from_signal(cid, sig)
+        if ev:
+            added_evidence_ids.append(ev["id"])
+            track_ticket(ev["id"])
+            audit.append(_add_audit(
+                cid, "evidence_added",
+                f"Bukti '{ev['title']}' (sumber {ev['source']}) ditambahkan dari sinyal #{sig['id']}. "
+                f"Status: Perlu Ditinjau.", actor=actor))
+
+    for src in extra_evidence:
+        if src["case_id"] == cid and not src.get("unlinked_from_case"):
+            continue  # sudah menjadi bukti aktif kasus ini
+        if _case_has_evidence(cid, file_path=src.get("file_path")):
+            continue  # berkas yang sama sudah ada pada kasus; jangan gandakan
+        ev = {
+            "id": (max((e["id"] for e in sd.EVIDENCE), default=0) + 1),
+            "case_id": cid,
+            "signal_id": None,
+            "type": src["type"],
+            "title": src["title"],
+            "file_path": src.get("file_path"),
+            "linked_entity": sd.case_number(cid),
+            "source": src.get("source") or "Bukti terkait",
+            "ocr_result": src.get("ocr_result"),
+            "image_text_match_score": src.get("image_text_match_score"),
+            "duplicate_score": src.get("duplicate_score"),
+            "confidence_score": src.get("confidence_score", 0.5),
+            "review_status": "Perlu Ditinjau",
+            "reviewer_note": (f"Bukti ditautkan operator dari {sd.case_number(src['case_id'])}; "
+                              f"tetap memerlukan peninjauan pada kasus ini."),
+            "created_at": _now(),
+        }
+        sd.EVIDENCE.append(ev)
+        added_evidence_ids.append(ev["id"])
+        track_ticket(ev["id"])
+        audit.append(_add_audit(
+            cid, "evidence_added",
+            f"Bukti '{ev['title']}' ditautkan operator dari {sd.case_number(src['case_id'])}. "
+            f"Status: Perlu Ditinjau.", actor=actor))
+
+    if linked_signal_ids or added_evidence_ids:
+        case["updated_at"] = _now()
+    return linked_signal_ids, added_evidence_ids
+
+
 def _case_snapshot(case_id: str) -> dict[str, Any]:
     """Kembalikan snapshot kasus dari store yang sama dengan GET /cases."""
     # Import lokal menghindari circular import saat modul API memuat kedua store.
@@ -469,6 +580,9 @@ def review_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
         target_district = case.get("district") or target_vendor.get("district")
         target_school = case.get("school") or ""
         _validate_assignment(target_region, target_district, target_school, assignment)
+        # Kandidat yang dicentang operator ikut diproses (fail-fast sebelum mutasi).
+        extra_signals, extra_evidence = _validate_selected_items(
+            signal_id, payload.get("selected_signal_ids") or [], payload.get("selected_evidence_ids") or [])
         signal["case_id"] = target
         signal["status"] = "Terhubung ke Kasus"
         signal["issue_category"] = case["issue_category"]
@@ -514,8 +628,12 @@ def review_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
             audit.append(_add_audit(target, "responsible_unit_assigned",
                                     f"Unit penanggung jawab ditetapkan. Sebelum: {before}; sesudah: {assignment['unit']}.",
                                     actor=actor))
+        # Sinyal/bukti terkait yang dicentang ikut ditautkan ke kasus target.
+        extra_linked, extra_evidence_ids = _link_selected_items(case, extra_signals, extra_evidence, audit, actor)
         return {"outcome": "merged", "case_id": target, "case_number": sd.case_number(target),
                 "redirect": f"/cases/{target}", "audit_events": audit,
+                "linked_signal_ids": [signal_id, *extra_linked],
+                "added_evidence_ids": ([ev["id"]] if ev else []) + extra_evidence_ids,
                 # Frontend dapat menyinkronkan state tanpa menunggu/race dengan
                 # navigasi ke halaman detail kasus.
                 "case": _case_snapshot(target), "ai_notice": sd.GOVERNANCE_NOTICE}
@@ -532,6 +650,9 @@ def review_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
         manual_vendor_name = (new_case_data.get("vendor_name") or "").strip()
         if requested_vendor_id == MANUAL_VENDOR_ID and not manual_vendor_name:
             raise HTTPException(status_code=422, detail="Nama penyedia wajib diisi untuk opsi penyedia manual.")
+        # Kandidat yang dicentang operator ikut diproses (fail-fast sebelum mutasi).
+        extra_signals, extra_evidence = _validate_selected_items(
+            signal_id, payload.get("selected_signal_ids") or [], payload.get("selected_evidence_ids") or [])
         vendor_id = "vnd-unknown" if requested_vendor_id == MANUAL_VENDOR_ID else requested_vendor_id
         vendor = sd.VENDOR_BY_ID.get(vendor_id, sd.VENDOR_BY_ID["vnd-unknown"])
         cid = _next_case_id()
@@ -614,9 +735,13 @@ def review_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
                 f"Unit penanggung jawab ditetapkan. Sebelum: Belum ditetapkan; sesudah: {assignment['unit']}.",
                 actor=actor,
             ))
+        # Sinyal/bukti terkait yang dicentang ikut ditautkan ke kasus baru.
+        extra_linked, extra_evidence_ids = _link_selected_items(case, extra_signals, extra_evidence, audit, actor)
         # Tidak membuat tiket otomatis.
         return {"outcome": "created", "case_id": cid, "case_number": sd.case_number(cid),
                 "redirect": f"/cases/{cid}", "audit_events": audit,
+                "linked_signal_ids": [signal_id, *extra_linked],
+                "added_evidence_ids": ([ev["id"]] if ev else []) + extra_evidence_ids,
                 "case": _case_snapshot(cid), "ai_notice": sd.GOVERNANCE_NOTICE}
 
     if decision == "defer":
