@@ -20,40 +20,40 @@ import { cn } from "@/lib/utils";
 
 const navGroups = [
   {
-    label: "Monitoring",
+    label: "Pemantauan",
     items: [
-      { name: "Command Center", href: "/", icon: LayoutDashboard },
-      { name: "Oversight Flow Simulator", href: "/simulation", icon: GitBranch },
+      { name: "Pusat Kendali", href: "/", icon: LayoutDashboard },
+      { name: "Simulator Alur Pengawasan", href: "/simulation", icon: GitBranch },
     ],
   },
   {
     label: "Intake",
-    items: [{ name: "Signal Inbox", href: "/intake", icon: Inbox }],
+    items: [{ name: "Kotak Masuk Sinyal", href: "/intake", icon: Inbox }],
   },
   {
-    label: "Case Work",
+    label: "Kerja Kasus",
     items: [
-      { name: "Cases", href: "/cases", icon: FileSearch },
-      { name: "Tickets", href: "/tickets", icon: ClipboardList },
+      { name: "Kasus", href: "/cases", icon: FileSearch },
+      { name: "Tiket Tindak Lanjut", href: "/tickets", icon: ClipboardList },
     ],
   },
   {
-    label: "Intelligence",
+    label: "Intelijen",
     items: [
-      { name: "Risk Prioritization", href: "/scoring", icon: ShieldAlert },
-      { name: "Nutrition & Cost", href: "/nutrition", icon: Activity },
-      { name: "Regional Heatmap", href: "/heatmap", icon: Map },
+      { name: "Penilaian Risiko", href: "/scoring", icon: ShieldAlert },
+      { name: "Gizi & Biaya", href: "/nutrition", icon: Activity },
+      { name: "Heatmap Wilayah", href: "/heatmap", icon: Map },
     ],
   },
   {
-    label: "Vendor Oversight",
-    items: [{ name: "Vendor Watchlist", href: "/vendors", icon: Factory }],
+    label: "Pengawasan Vendor",
+    items: [{ name: "Daftar Pantauan Vendor", href: "/vendors", icon: Factory }],
   },
   {
-    label: "Governance",
+    label: "Tata Kelola",
     items: [
-      { name: "Governance Log", href: "/audit-trail", icon: History },
-      { name: "AI Case Copilot", href: "/copilot", icon: Bot },
+      { name: "Jejak Audit", href: "/audit-trail", icon: History },
+      { name: "Asisten Ringkasan Kasus", href: "/copilot", icon: Bot },
     ],
   },
 ];
@@ -68,7 +68,7 @@ export default function Sidebar() {
           <ShieldAlert className="h-6 w-6 text-brand-400" />
           <div>
             <span className="block text-lg font-bold tracking-tight">MonitorMBG</span>
-            <span className="block text-[11px] text-muted-foreground">Case Oversight</span>
+            <span className="block text-[11px] text-muted-foreground">Pengawasan Kasus MBG</span>
           </div>
         </Link>
       </div>

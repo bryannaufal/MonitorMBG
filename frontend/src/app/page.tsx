@@ -10,6 +10,7 @@ import { EntityChip, HelperPanel, PageHeader } from "@/components/monitoring/Pag
 import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 import { getWithFallback } from "@/lib/api";
+import { caseNumber } from "@/lib/utils";
 import {
   asList,
   fallbackAnomalies,
@@ -71,37 +72,38 @@ export default function DashboardHome() {
   if (!data) return <LoadingState />;
 
   const priorityCases = data.cases.slice(0, 5);
-  const watchlist = data.vendors.filter((vendor) => ["Critical", "High"].includes(vendor.watchlist_status)).slice(0, 4);
-  const activeCases = data.cases.filter((item) => item.status !== "Resolved").length;
-  const incomingSignals = data.cases.reduce((sum, item) => sum + item.signals_count, 0);
+  const watchlist = data.vendors.filter((vendor) => ["Kritis", "Tinggi", "Critical", "High"].includes(vendor.watchlist_status)).slice(0, 4);
+  const activeCases = data.cases.filter((item) => item.status !== "Selesai").length;
+  const incomingSignals = data.overview.public_signals;
+  const recentSignals = data.complaints.filter((c) => c.case_id);
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Command Center"
-        description="Daily starting point for national MBG oversight: monitor the situation, open high-risk cases, and drive accountable ticket action."
-        breadcrumbs={[{ label: "Command Center" }]}
+        title="Pusat Kendali"
+        description="Titik awal harian pengawasan MBG nasional: pantau situasi, buka kasus berisiko tinggi, dan dorong tindak lanjut tiket yang akuntabel."
+        breadcrumbs={[{ label: "Pusat Kendali" }]}
         source={source}
         error={error}
       />
       <GovernanceNote />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
-        <StatsCard title="Active Cases" value={String(activeCases)} trend="Case queue" />
-        <StatsCard title="Critical/High" value={String(data.overview.high_risk_cases)} trend="+3" />
-        <StatsCard title="New Signals" value={String(incomingSignals)} trend={data.overview.public_signal_spike} />
-        <StatsCard title="Avg Triage Time" value={data.overview.average_triage_time} trend="-4h" />
-        <StatsCard title="Ticket Response" value={`${data.overview.ticket_response_rate}%`} trend="+6%" />
-        <StatsCard title="Watchlist" value={String(data.overview.vendors_on_watchlist)} trend="Vendors" />
+        <StatsCard title="Kasus Aktif" value={String(activeCases)} trend="Antrean kasus" />
+        <StatsCard title="Kritis/Tinggi" value={String(data.overview.high_risk_cases)} trend="+3" />
+        <StatsCard title="Sinyal Masuk" value={String(incomingSignals)} trend={data.overview.public_signal_spike} />
+        <StatsCard title="Rata-rata Waktu Triase" value={data.overview.average_triage_time} trend="-4 jam" />
+        <StatsCard title="Respons Tiket" value={`${data.overview.ticket_response_rate}%`} trend="+6%" />
+        <StatsCard title="Daftar Pantauan" value={String(data.overview.vendors_on_watchlist)} trend="Vendor" />
       </div>
 
       <HelperPanel>
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <span>
-            Recommended Demo Flow: Oversight Flow Simulator {"->"} Case Detail {"->"} Evidence {"->"} Scoring {"->"} Copilot {"->"} Ticket {"->"} Audit Trail {"->"} Vendor Profile.
+            Alur demo yang disarankan: Kotak Masuk Sinyal {"->"} Buka Kasus {"->"} Bukti & Verifikasi {"->"} Penilaian Risiko {"->"} Tiket Tindak Lanjut {"->"} Jejak Audit.
           </span>
-          <Link href="/simulation" className="inline-flex shrink-0 items-center gap-2 rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-400">
-            Run Simulator <ArrowRight className="h-4 w-4" />
+          <Link href="/intake" className="inline-flex shrink-0 items-center gap-2 rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-400">
+            Mulai dari Sinyal <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </HelperPanel>
@@ -110,11 +112,11 @@ export default function DashboardHome() {
         <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5 xl:col-span-2">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <h2 className="text-lg font-semibold">Priority Work Queue</h2>
-              <p className="text-sm text-muted-foreground">Top cases that require operator attention now.</p>
+              <h2 className="text-lg font-semibold">Antrean Kerja Prioritas</h2>
+              <p className="text-sm text-muted-foreground">Kasus teratas yang memerlukan perhatian operator sekarang.</p>
             </div>
             <Link href="/cases" className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm text-muted-foreground hover:bg-surface">
-              View Cases <ArrowRight className="h-4 w-4" />
+              Lihat Kasus <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
           <div className="space-y-3">
@@ -123,7 +125,7 @@ export default function DashboardHome() {
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div className="min-w-0">
                     <div className="flex flex-wrap gap-2">
-                      <EntityChip label={item.case_id} href={`/cases/${item.case_id}`} tone="case" />
+                      <EntityChip label={item.case_number} href={`/cases/${item.case_id}`} tone="case" />
                       <StatusBadge label={item.priority_label} />
                       <StatusBadge label={item.status} />
                     </div>
@@ -132,7 +134,7 @@ export default function DashboardHome() {
                     <p className="mt-2 break-words text-sm text-muted-foreground">{item.recommended_action}</p>
                   </div>
                   <Link href={`/cases/${item.case_id}`} className="inline-flex shrink-0 justify-center rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-400">
-                    Open Case
+                    Buka Kasus
                   </Link>
                 </div>
               </article>
@@ -143,7 +145,7 @@ export default function DashboardHome() {
         <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
           <div className="mb-4 flex items-center gap-2">
             <ShieldAlert className="h-5 w-5 text-red-300" />
-            <h2 className="text-lg font-semibold">Vendor Watchlist Preview</h2>
+            <h2 className="text-lg font-semibold">Pratinjau Daftar Pantauan Vendor</h2>
           </div>
           <div className="space-y-3">
             {watchlist.map((vendor) => (
@@ -156,7 +158,7 @@ export default function DashboardHome() {
                   <StatusBadge label={vendor.watchlist_status} />
                 </div>
                 <p className="mt-2 break-words text-sm text-muted-foreground">{vendor.watchlist_reason}</p>
-                <p className="mt-3 text-sm font-semibold text-brand-300">Risk {vendor.risk_score}</p>
+                <p className="mt-3 text-sm font-semibold text-brand-300">Skor risiko {vendor.risk_score}</p>
               </Link>
             ))}
           </div>
@@ -167,7 +169,7 @@ export default function DashboardHome() {
         <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
           <div className="mb-4 flex items-center gap-2">
             <RadioTower className="h-5 w-5 text-brand-300" />
-            <h2 className="text-lg font-semibold">Situation Panel</h2>
+            <h2 className="text-lg font-semibold">Panel Situasi Wilayah</h2>
           </div>
           <div className="space-y-3">
             {data.heatmap.slice(0, 4).map((region) => (
@@ -177,7 +179,7 @@ export default function DashboardHome() {
                     <p className="break-words font-medium">{region.region}</p>
                     <p className="break-words text-xs text-muted-foreground">{region.district}</p>
                   </div>
-                  <StatusBadge label={region.risk_score >= 80 ? "Critical" : region.risk_score >= 65 ? "High" : "Medium"} />
+                  <StatusBadge label={region.risk_score >= 80 ? "Kritis" : region.risk_score >= 65 ? "Tinggi" : "Sedang"} />
                 </div>
                 <div className="mt-3 h-2 rounded-full bg-surface-overlay">
                   <div className="h-2 rounded-full bg-brand-500" style={{ width: `${region.risk_score}%` }} />
@@ -190,7 +192,7 @@ export default function DashboardHome() {
         <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
           <div className="mb-4 flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-amber-300" />
-            <h2 className="text-lg font-semibold">Active Anomaly Alerts</h2>
+            <h2 className="text-lg font-semibold">Peringatan Anomali Aktif</h2>
           </div>
           <div className="space-y-3">
             {data.anomalies.map((anomaly) => (
@@ -209,14 +211,14 @@ export default function DashboardHome() {
         </section>
 
         <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
-          <h2 className="text-lg font-semibold">Recent Signals</h2>
+          <h2 className="text-lg font-semibold">Sinyal Terbaru</h2>
           <div className="mt-4 space-y-3">
-            {data.complaints.map((complaint) => (
+            {recentSignals.map((complaint) => (
               <Link key={complaint.id} href={`/cases/${complaint.case_id}`} className="block min-w-0 rounded-lg border border-border bg-surface p-4 hover:border-brand-500/60">
                 <p className="break-words font-medium">{complaint.summary}</p>
                 <p className="mt-1 break-words text-sm text-muted-foreground">{complaint.source} · {complaint.region}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  <EntityChip label={complaint.case_id} tone="case" />
+                  <EntityChip label={caseNumber(complaint.case_id!)} tone="case" />
                   <EntityChip label={complaint.vendor_name} tone="vendor" />
                 </div>
               </Link>

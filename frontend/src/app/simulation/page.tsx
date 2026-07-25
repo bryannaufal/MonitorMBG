@@ -302,19 +302,19 @@ export default function SimulationPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Oversight Flow Simulator"
-        description="Simulate how MonitorMBG converts raw reports and evidence into prioritized, auditable oversight cases."
-        breadcrumbs={[{ label: "Command Center", href: "/" }, { label: "Oversight Flow Simulator" }]}
+        title="Simulator Alur Pengawasan"
+        description="Simulasikan bagaimana MonitorMBG mengubah laporan dan bukti mentah menjadi kasus pengawasan yang berprioritas dan dapat diaudit."
+        breadcrumbs={[{ label: "Pusat Kendali", href: "/" }, { label: "Simulator Alur Pengawasan" }]}
         action={
           <div className="flex flex-wrap gap-2">
-            <StatusBadge label="Demo scenario" />
-            <StatusBadge label="AI-assisted simulation" />
+            <StatusBadge label="Skenario demo" />
+            <StatusBadge label="Simulasi berbantuan AI" />
           </div>
         }
       />
       <GovernanceNote compact />
       <HelperPanel>
-        Human review required. This simulator uses deterministic demo intelligence for pre-verification, evidence fusion, scoring, and ticket action. It is not a final audit judgment and does not use real government data, real social scraping, OCR, CV inference, or production RAG.
+        Memerlukan tinjauan operator. Simulator ini memakai data demo deterministik untuk pra-verifikasi, penggabungan bukti, penilaian, dan tindakan tiket. Ini bukan keputusan audit final dan tidak memakai data pemerintah nyata, scraping media sosial nyata, OCR, inferensi CV, atau RAG produksi.
       </HelperPanel>
 
       <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-3 sm:p-4">
@@ -330,9 +330,9 @@ export default function SimulationPage() {
                 onClick={() => setActiveStep(index)}
                 className={`flex min-h-[76px] min-w-0 flex-col items-start justify-between rounded-lg border p-3 text-left transition-colors ${
                   isActive
-                    ? "border-brand-400 bg-brand-500/15 text-brand-100"
+                    ? "border-brand-400 bg-brand-500/15 text-brand-800 dark:text-brand-100"
                     : isDone
-                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-100"
+                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-100"
                       : "border-border bg-surface text-muted-foreground hover:border-brand-500/50"
                 }`}
               >
@@ -431,7 +431,7 @@ export default function SimulationPage() {
               <RadioTower className="h-5 w-5 text-brand-300" />
               <h2 className="text-lg font-semibold">Generated Outputs</h2>
             </div>
-            <p className="mt-3 break-words rounded-lg border border-brand-500/25 bg-brand-500/10 p-3 text-sm text-brand-100">{notice}</p>
+            <p className="mt-3 break-words rounded-lg border border-brand-500/25 bg-brand-500/10 p-3 text-sm text-brand-800 dark:text-brand-100">{notice}</p>
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <MetricTile label="Confidence" value={maxCompleted >= 3 ? "78" : "--"} detail="Pre-verification" />
               <MetricTile label="Severity" value={maxCompleted >= 3 ? "86" : "--"} detail="Fusion result" />
@@ -532,7 +532,7 @@ function IntakeStep() {
 function AiStep() {
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+      <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-800 dark:text-amber-100">
         AI-assisted pre-verification only. Final decision requires authorized operator review.
       </div>
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -558,7 +558,7 @@ function FusionStep() {
           {fusionRows.map(([label, impact]) => (
             <div key={label} className="flex flex-col gap-2 rounded-lg bg-surface p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
               <span className="break-words text-muted-foreground">{label}</span>
-              <span className={impact.startsWith("-") ? "font-semibold text-amber-200" : "font-semibold text-emerald-200"}>{impact}</span>
+              <span className={impact.startsWith("-") ? "font-semibold text-amber-800 dark:text-amber-200" : "font-semibold text-emerald-800 dark:text-emerald-200"}>{impact}</span>
             </div>
           ))}
         </div>
@@ -577,7 +577,7 @@ function FusionStep() {
         <div className="space-y-2">
           {["Complaint", "Evidence", "Daily Report", "Vendor", "Case"].map((item, index) => (
             <div key={item} className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-brand-500/40 bg-brand-500/10 text-xs font-semibold text-brand-100">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-brand-500/40 bg-brand-500/10 text-xs font-semibold text-brand-800 dark:text-brand-100">
                 {index + 1}
               </span>
               <div className="min-w-0 flex-1 break-words rounded-lg border border-border bg-surface p-3 text-sm">{item}</div>
@@ -604,7 +604,7 @@ function ScoringStep() {
         <p className="text-sm leading-6 text-muted-foreground">
           This case is ranked High because it combines repeated complaints, late delivery, low protein estimate, and daily report mismatch. Confidence is elevated by multiple independent signals, but operator review is required due to partial image-text match and incomplete vendor clarification.
         </p>
-        <p className="mt-4 rounded-lg border border-brand-500/25 bg-brand-500/10 p-3 text-sm font-medium text-brand-100">
+        <p className="mt-4 rounded-lg border border-brand-500/25 bg-brand-500/10 p-3 text-sm font-medium text-brand-800 dark:text-brand-100">
           Request vendor clarification and schedule field verification.
         </p>
       </SectionCard>
@@ -712,11 +712,11 @@ function HumanReviewStep({
               <option key={action} value={action}>{action}</option>
             ))}
           </select>
-          <button onClick={onApplyModified} className="rounded-md border border-brand-500/40 px-3 py-2 text-sm font-medium text-brand-100 hover:bg-brand-500/10">
+          <button onClick={onApplyModified} className="rounded-md border border-brand-500/40 px-3 py-2 text-sm font-medium text-brand-800 dark:text-brand-100 hover:bg-brand-500/10">
             Apply Modified Action
           </button>
         </div>
-        <p className="mt-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-100">{operatorDecision}</p>
+        <p className="mt-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-800 dark:text-emerald-100">{operatorDecision}</p>
       </SectionCard>
     </div>
   );

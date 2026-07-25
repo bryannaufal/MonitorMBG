@@ -63,3 +63,6 @@ htmlcov/
 *.onnx
 *.bin
 models/weights/
+
+# Copied prototype evidence photos (source: Dataset Gambar/, do not commit duplicates)
+frontend/public/evidence-media/

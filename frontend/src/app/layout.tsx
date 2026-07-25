@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "MonitorMBG",
-  description: "Makan Bergizi Gratis Monitoring Dashboard",
+  description: "Dasbor Pengawasan Makan Bergizi Gratis",
 };
 
 export default function RootLayout({
@@ -18,7 +18,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="id" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className={inter.className}>
         <div className="flex h-dvh w-full overflow-hidden bg-background">
           <Sidebar />

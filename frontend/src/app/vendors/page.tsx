@@ -30,27 +30,27 @@ export default function VendorsPage() {
 
   if (loading) return <LoadingState />;
 
-  const watchlist = vendors.filter((vendor) => vendor.watchlist_status !== "Low");
+  const watchlist = vendors.filter((vendor) => vendor.watchlist_status !== "Rendah");
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Vendor Watchlist"
-        description="SPPG/vendor risk profiles showing whether current cases are one-time events or recurring oversight patterns."
-        breadcrumbs={[{ label: "Command Center", href: "/" }, { label: "Vendor Watchlist" }]}
+        title="Daftar Pantauan Vendor"
+        description="Profil risiko SPPG/vendor yang menunjukkan apakah kasus saat ini kejadian sekali atau pola pengawasan berulang."
+        breadcrumbs={[{ label: "Pusat Kendali", href: "/" }, { label: "Daftar Pantauan Vendor" }]}
         source={source}
         error={error}
       />
       <GovernanceNote compact />
       <HelperPanel>
-        Vendor risk learning accumulates linked complaints, reports, daily evidence, tickets, scoring outcomes, and audit notes from cases over time.
+        Pembelajaran risiko vendor menghimpun aduan, laporan, bukti harian, tiket, hasil penilaian, dan catatan audit dari kasus dari waktu ke waktu.
       </HelperPanel>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricTile label="Vendors" value={String(vendors.length)} />
-        <MetricTile label="Watchlist" value={String(watchlist.length)} />
-        <MetricTile label="Critical" value={String(vendors.filter((vendor) => vendor.watchlist_status === "Critical").length)} />
-        <MetricTile label="Meals Covered" value={vendors.reduce((sum, vendor) => sum + vendor.daily_meal_volume, 0).toLocaleString("id-ID")} />
+        <MetricTile label="Total Vendor" value={String(vendors.length)} />
+        <MetricTile label="Dalam Pantauan" value={String(watchlist.length)} />
+        <MetricTile label="Kritis" value={String(vendors.filter((vendor) => vendor.watchlist_status === "Kritis").length)} />
+        <MetricTile label="Porsi Tercakup" value={vendors.reduce((sum, vendor) => sum + vendor.daily_meal_volume, 0).toLocaleString("id-ID")} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -67,26 +67,26 @@ export default function VendorsPage() {
                 <StatusBadge label={vendor.watchlist_status} />
               </div>
               <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
-                <Metric label="Risk" value={String(vendor.risk_score)} />
-                <Metric label="Meals/day" value={vendor.daily_meal_volume.toLocaleString("id-ID")} />
-                <Metric label="Schools" value={String(vendor.assigned_schools.length)} />
-                <Metric label="Issues" value={String(vendor.repeated_issue_categories.length)} />
-                <Metric label="Cases" value={String(vendorCases.length)} />
+                <Metric label="Skor Risiko" value={String(vendor.risk_score)} />
+                <Metric label="Porsi/hari" value={vendor.daily_meal_volume.toLocaleString("id-ID")} />
+                <Metric label="Sekolah" value={String(vendor.assigned_schools.length)} />
+                <Metric label="Isu Berulang" value={String(vendor.repeated_issue_categories.length)} />
+                <Metric label="Kasus" value={String(vendorCases.length)} />
               </div>
               <p className="mt-4 break-words text-sm text-muted-foreground">{vendor.watchlist_reason}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {vendor.repeated_issue_categories.map((issue) => <StatusBadge key={issue} label={issue} />)}
               </div>
               <div className="mt-4 break-words rounded-lg border border-border bg-surface p-3 text-sm text-muted-foreground">
-                Latest case: {latestCase ? <EntityChip label={latestCase.case_id} href={`/cases/${latestCase.case_id}`} tone="case" /> : noLinkedCaseMessage(source)}
+                Kasus terbaru: {latestCase ? <EntityChip label={latestCase.case_number} href={`/cases/${latestCase.case_id}`} tone="case" /> : noLinkedCaseMessage(source)}
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Link href={`/vendors/${vendor.id}`} className="rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-400">
-                  Open Vendor Profile
+                  Buka Profil Vendor
                 </Link>
                 {latestCase ? (
                   <Link href={`/cases/${latestCase.case_id}`} className="rounded-md border border-border px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-surface">
-                    Open Latest Case
+                    Buka Kasus Terbaru
                   </Link>
                 ) : null}
               </div>
@@ -117,8 +117,8 @@ function timestampForCase(item: OversightCase) {
 
 function noLinkedCaseMessage(source: "api" | "fallback") {
   return source === "api"
-    ? "No active linked case returned by the API list. Open vendor profile for full case history."
-    : "No active linked case in fallback data.";
+    ? "Tidak ada kasus aktif dari daftar API. Buka profil vendor untuk riwayat kasus lengkap."
+    : "Tidak ada kasus aktif pada data demo lokal.";
 }
 
 function Metric({ label, value }: { label: string; value: string }) {

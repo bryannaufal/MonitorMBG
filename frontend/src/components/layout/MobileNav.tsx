@@ -22,17 +22,17 @@ import {
 import { cn } from "@/lib/utils";
 
 const mobileItems = [
-  { name: "Command Center", href: "/", icon: LayoutDashboard },
-  { name: "Oversight Flow Simulator", href: "/simulation", icon: GitBranch },
-  { name: "Signal Inbox", href: "/intake", icon: Inbox },
-  { name: "Cases", href: "/cases", icon: FileSearch },
-  { name: "Tickets", href: "/tickets", icon: ClipboardList },
-  { name: "Risk Prioritization", href: "/scoring", icon: ShieldAlert },
-  { name: "Nutrition & Cost", href: "/nutrition", icon: Activity },
-  { name: "Regional Heatmap", href: "/heatmap", icon: Map },
-  { name: "Vendor Watchlist", href: "/vendors", icon: Factory },
-  { name: "Governance Log", href: "/audit-trail", icon: History },
-  { name: "AI Case Copilot", href: "/copilot", icon: Bot },
+  { name: "Pusat Kendali", href: "/", icon: LayoutDashboard },
+  { name: "Simulator Alur Pengawasan", href: "/simulation", icon: GitBranch },
+  { name: "Kotak Masuk Sinyal", href: "/intake", icon: Inbox },
+  { name: "Kasus", href: "/cases", icon: FileSearch },
+  { name: "Tiket Tindak Lanjut", href: "/tickets", icon: ClipboardList },
+  { name: "Penilaian Risiko", href: "/scoring", icon: ShieldAlert },
+  { name: "Gizi & Biaya", href: "/nutrition", icon: Activity },
+  { name: "Heatmap Wilayah", href: "/heatmap", icon: Map },
+  { name: "Daftar Pantauan Vendor", href: "/vendors", icon: Factory },
+  { name: "Jejak Audit", href: "/audit-trail", icon: History },
+  { name: "Asisten Ringkasan Kasus", href: "/copilot", icon: Bot },
 ];
 
 export default function MobileNav() {
@@ -62,7 +62,7 @@ export default function MobileNav() {
                   className={cn(
                     "flex min-w-0 items-center gap-3 rounded-md px-3 py-3 text-sm font-medium transition-colors",
                     active
-                      ? "bg-brand-500/10 text-brand-200"
+                      ? "bg-brand-500/10 text-brand-800 dark:text-brand-200"
                       : "text-muted-foreground hover:bg-surface hover:text-foreground",
                   )}
                 >

@@ -41,26 +41,26 @@ export default function HeatmapPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Regional Risk Intelligence"
-        description="Ranked regional oversight view showing where complaints, high-risk cases, and anomaly patterns are concentrated."
-        breadcrumbs={[{ label: "Command Center", href: "/" }, { label: "Regional Heatmap" }]}
+        title="Heatmap Wilayah"
+        description="Tampilan pengawasan wilayah terperingkat yang menunjukkan konsentrasi aduan, kasus berisiko tinggi, dan pola anomali."
+        breadcrumbs={[{ label: "Pusat Kendali", href: "/" }, { label: "Heatmap Wilayah" }]}
         source={source}
         error={error}
       />
       <GovernanceNote compact />
       <HelperPanel>
-        Regional risk is a prioritization signal for supervision planning. Operators should open linked cases before taking field or vendor actions.
+        Risiko wilayah adalah sinyal prioritisasi untuk perencanaan pengawasan. Operator sebaiknya membuka kasus terkait sebelum mengambil tindakan lapangan atau vendor.
       </HelperPanel>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricTile label="Highest Region" value={top?.region ?? "N/A"} detail={top ? `Risk ${top.risk_score}` : undefined} />
-        <MetricTile label="Regions Ranked" value={String(regions.length)} />
-        <MetricTile label="Complaint Signals" value={String(regions.reduce((sum, item) => sum + item.complaint_count, 0))} />
-        <MetricTile label="High-Risk Cases" value={String(regions.reduce((sum, item) => sum + item.high_priority_cases, 0))} />
+        <MetricTile label="Wilayah Tertinggi" value={top?.region ?? "-"} detail={top ? `Skor risiko ${top.risk_score}` : undefined} />
+        <MetricTile label="Wilayah Terperingkat" value={String(regions.length)} />
+        <MetricTile label="Sinyal Aduan" value={String(regions.reduce((sum, item) => sum + item.complaint_count, 0))} />
+        <MetricTile label="Kasus Berisiko Tinggi" value={String(regions.reduce((sum, item) => sum + item.high_priority_cases, 0))} />
       </div>
 
       <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
-        <h2 className="text-lg font-semibold">Region Risk Ranking</h2>
+        <h2 className="text-lg font-semibold">Peringkat Risiko Wilayah</h2>
         <div className="mt-4 space-y-3">
           {regions.map((region, index) => {
             const anomaly = anomalies.find((item) => item.region === region.region);
@@ -72,13 +72,13 @@ export default function HeatmapPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-mono text-sm text-brand-300">#{index + 1}</span>
                       <h3 className="break-words font-semibold">{region.region}</h3>
-                      <StatusBadge label={region.risk_score >= 80 ? "Critical" : region.risk_score >= 65 ? "High" : "Medium"} />
+                      <StatusBadge label={region.risk_score >= 80 ? "Kritis" : region.risk_score >= 65 ? "Tinggi" : "Sedang"} />
                     </div>
                     <p className="mt-1 break-words text-sm text-muted-foreground">
-                      {region.district} · {region.complaint_count} signals · {region.high_priority_cases} high-risk cases
+                      {region.district} · {region.complaint_count} sinyal · {region.high_priority_cases} kasus berisiko tinggi
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
-                      <EntityChip label={anomaly?.issue_category ?? "dominant issue pending"} />
+                      <EntityChip label={anomaly?.issue_category ?? "isu dominan belum ada"} />
                       {vendor ? <EntityChip label={vendor.name} href={`/vendors/${vendor.id}`} tone="vendor" /> : null}
                     </div>
                   </div>
@@ -87,7 +87,7 @@ export default function HeatmapPage() {
                       <div className="h-2 rounded-full bg-brand-500" style={{ width: `${region.risk_score}%` }} />
                     </div>
                     <Link href={`/cases?region=${encodeURIComponent(region.region)}`} className="mt-3 inline-flex rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-400">
-                      View Cases
+                      Lihat Kasus
                     </Link>
                   </div>
                 </div>

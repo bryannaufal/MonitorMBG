@@ -17,9 +17,9 @@ export default function CasesPage() {
   const [source, setSource] = useState<"api" | "fallback">("fallback");
   const [error, setError] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
-  const [priority, setPriority] = useState("All");
-  const [status, setStatus] = useState("All");
-  const [region, setRegion] = useState("All");
+  const [priority, setPriority] = useState("Semua");
+  const [status, setStatus] = useState("Semua");
+  const [region, setRegion] = useState("Semua");
   const [query, setQuery] = useState("");
 
   useEffect(() => {
@@ -42,9 +42,9 @@ export default function CasesPage() {
     return cases.filter((item) => {
       const haystack = `${item.title} ${item.vendor_name} ${item.school} ${item.case_id} ${item.issue_category}`.toLowerCase();
       return (
-        (priority === "All" || item.priority_label === priority) &&
-        (status === "All" || item.status === status) &&
-        (region === "All" || item.region === region) &&
+        (priority === "Semua" || item.priority_label === priority) &&
+        (status === "Semua" || item.status === status) &&
+        (region === "Semua" || item.region === region) &&
         (!query || haystack.includes(query.toLowerCase()))
       );
     });
@@ -54,27 +54,27 @@ export default function CasesPage() {
 
   const regions = Array.from(new Set(cases.map((item) => item.region)));
   const statuses = Array.from(new Set(cases.map((item) => item.status)));
-  const highRisk = cases.filter((item) => ["Critical", "High"].includes(item.priority_label)).length;
+  const highRisk = cases.filter((item) => ["Kritis", "Tinggi"].includes(item.priority_label)).length;
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Cases"
-        description="Prioritized oversight cases generated from public signals, reports, daily vendor evidence, and risk scoring."
-        breadcrumbs={[{ label: "Command Center", href: "/" }, { label: "Cases" }]}
+        title="Kasus"
+        description="Kasus pengawasan berprioritas yang dibentuk dari sinyal publik, laporan, bukti harian vendor, dan penilaian risiko."
+        breadcrumbs={[{ label: "Pusat Kendali", href: "/" }, { label: "Kasus" }]}
         source={source}
         error={error}
       />
       <GovernanceNote compact />
       <HelperPanel>
-        Cases are the center of MonitorMBG. Every signal, evidence item, score, ticket, vendor pattern, copilot answer, and audit event is connected back to a case.
+        Kasus adalah pusat MonitorMBG. Setiap sinyal, bukti, skor, tiket, pola vendor, ringkasan asisten, dan peristiwa audit terhubung kembali ke satu kasus.
       </HelperPanel>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricTile label="Active Cases" value={String(cases.length)} detail="Generated from linked intake records" />
-        <MetricTile label="Critical/High" value={String(highRisk)} detail="Requires near-term review" />
-        <MetricTile label="Evidence Items" value={String(cases.reduce((sum, item) => sum + item.evidence_count, 0))} detail="Attached to cases" />
-        <MetricTile label="Open Tickets" value={String(cases.filter((item) => item.ticket && item.ticket.status !== "Resolved").length)} detail="Action layer" />
+        <MetricTile label="Kasus Aktif" value={String(cases.length)} detail="Dibentuk dari sinyal intake terhubung" />
+        <MetricTile label="Kritis/Tinggi" value={String(highRisk)} detail="Perlu ditinjau segera" />
+        <MetricTile label="Butir Bukti" value={String(cases.reduce((sum, item) => sum + item.evidence_count, 0))} detail="Terlampir pada kasus" />
+        <MetricTile label="Tiket Terbuka" value={String(cases.filter((item) => item.ticket && item.ticket.status !== "Selesai").length)} detail="Lapisan tindakan" />
       </div>
 
       <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
@@ -84,14 +84,14 @@ export default function CasesPage() {
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search case, vendor, school, issue..."
+              placeholder="Cari kasus, vendor, sekolah, isu..."
               className="h-9 w-full rounded-md border border-border bg-surface pl-9 pr-3 text-sm outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:flex xl:shrink-0">
-            <FilterSelect label="Priority" value={priority} options={["All", "Critical", "High", "Medium", "Low"]} onChange={setPriority} />
-            <FilterSelect label="Status" value={status} options={["All", ...statuses]} onChange={setStatus} />
-            <FilterSelect label="Region" value={region} options={["All", ...regions]} onChange={setRegion} />
+            <FilterSelect label="Prioritas" value={priority} options={["Semua", "Kritis", "Tinggi", "Sedang", "Rendah"]} onChange={setPriority} />
+            <FilterSelect label="Status" value={status} options={["Semua", ...statuses]} onChange={setStatus} />
+            <FilterSelect label="Wilayah" value={region} options={["Semua", ...regions]} onChange={setRegion} />
           </div>
         </div>
       </section>
@@ -102,7 +102,7 @@ export default function CasesPage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
                 <div className="flex flex-wrap gap-2">
-                  <EntityChip label={item.case_id} href={`/cases/${item.case_id}`} tone="case" />
+                  <EntityChip label={item.case_number} href={`/cases/${item.case_id}`} tone="case" />
                   <EntityChip label={item.vendor_name} href={`/vendors/${item.vendor_id}`} tone="vendor" />
                   {item.ticket_id ? <EntityChip label={item.ticket_id} tone="ticket" /> : null}
                 </div>
@@ -119,19 +119,16 @@ export default function CasesPage() {
 
             <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
               <Mini label="Severity" value={String(item.score.severity_score)} />
-              <Mini label="Confidence" value={String(item.score.confidence_score)} />
-              <Mini label="Final" value={String(item.score.final_priority_score)} />
-              <Mini label="Signals" value={String(item.signals_count)} />
+              <Mini label="Keyakinan" value={String(item.score.confidence_score)} />
+              <Mini label="Skor Akhir" value={String(item.score.final_priority_score)} />
+              <Mini label="Sinyal" value={String(item.signals_count)} />
               <Mini label="SLA" value={item.sla_status} />
             </div>
 
             <p className="mt-4 break-words text-sm leading-6 text-muted-foreground">{item.recommended_action}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Link href={`/cases/${item.case_id}`} className="inline-flex justify-center rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-400">
-                Open Case
-              </Link>
-              <Link href={`/cases/${item.case_id}?tab=scoring`} className="inline-flex justify-center rounded-md border border-border px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-surface">
-                Explain Score
+                Buka Kasus
               </Link>
             </div>
           </article>

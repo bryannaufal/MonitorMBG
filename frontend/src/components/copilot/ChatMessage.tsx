@@ -31,7 +31,7 @@ export default function ChatMessage({ role, content, sources = [] }: ChatMessage
         <p className="whitespace-pre-line break-words">{content}</p>
         {sources.length > 0 ? (
           <div className="mt-3 space-y-2 border-t border-border/60 pt-3">
-            <p className="text-xs font-semibold uppercase text-muted-foreground">Sources</p>
+            <p className="text-xs font-semibold uppercase text-muted-foreground">Sumber</p>
             {sources.map((source) => (
               <div key={`${source.source_type}-${source.source_id}`} className="min-w-0 rounded-md bg-surface/60 px-3 py-2 text-xs">
                 <p className="break-words font-medium">{source.title}</p>

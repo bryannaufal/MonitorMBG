@@ -43,11 +43,11 @@ const config: Config = {
           high: "#f97316",
           critical: "#ef4444",
         },
-        // Dashboard surface colors (dark mode first)
+        // Dashboard surface colors (var-driven, flips with .dark)
         surface: {
-          DEFAULT: "#0f1117",
-          raised: "#1a1d27",
-          overlay: "#252833",
+          DEFAULT: "hsl(var(--surface))",
+          raised: "hsl(var(--surface-raised))",
+          overlay: "hsl(var(--surface-overlay))",
         },
       },
       fontFamily: {
