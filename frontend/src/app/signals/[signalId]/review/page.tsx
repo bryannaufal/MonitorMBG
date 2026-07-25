@@ -20,6 +20,7 @@ import StatusBadge from "@/components/monitoring/StatusBadge";
 import { api } from "@/lib/api";
 import * as store from "@/lib/reviewStore";
 import * as overlay from "@/lib/runtimeOverlay";
+import { evidenceMediaUrl } from "@/lib/utils";
 import type { AssignmentOptions, Signal } from "@/types/monitoring";
 
 type Decision = "merge" | "create" | "defer";
@@ -340,7 +341,7 @@ export default function SignalReviewPage() {
             {sig.attachment_path ? (
               <div className="mt-4 max-w-md">
                 <div className="relative aspect-video w-full overflow-hidden rounded-md border border-border bg-surface-overlay">
-                  <Image src={sig.attachment_path} alt={sig.attachment_title ?? "Lampiran sinyal"} fill unoptimized className="object-cover" sizes="(max-width: 768px) 100vw, 400px" />
+                  <Image src={evidenceMediaUrl(sig.attachment_path)!} alt={sig.attachment_title ?? "Lampiran sinyal"} fill unoptimized className="object-cover" sizes="(max-width: 768px) 100vw, 400px" />
                 </div>
                 <p className="mt-2 break-words text-xs text-muted-foreground">
                   {sig.attachment_title} · Sumber: {sig.attachment_source ?? sig.source}
@@ -697,7 +698,7 @@ function CandidateCard({
           <p className="mt-1 break-words text-xs text-muted-foreground">{meta}</p>
           {thumb ? (
             <div className="relative mt-2 aspect-video w-full max-w-[220px] overflow-hidden rounded-md border border-border">
-              <Image src={thumb} alt={title} fill unoptimized className="object-cover" sizes="220px" />
+              <Image src={evidenceMediaUrl(thumb)!} alt={title} fill unoptimized className="object-cover" sizes="220px" />
             </div>
           ) : null}
           <div className="mt-2 flex flex-wrap gap-2">

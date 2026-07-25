@@ -59,7 +59,11 @@ export default function AuditTrailPage() {
           {sorted.map((event) => (
             <div key={event.id} className="grid min-w-0 gap-4 rounded-lg border border-border bg-surface p-4 lg:grid-cols-[170px_minmax(0,1fr)_190px] xl:grid-cols-[190px_minmax(0,1fr)_220px]">
               <div className="min-w-0">
-                <EntityChip label={caseNumber(event.case_id)} href={`/cases/${event.case_id}`} tone="case" />
+                <EntityChip
+                  label={event.case_id ? caseNumber(event.case_id) : "Intake"}
+                  href={event.case_id ? `/cases/${event.case_id}` : undefined}
+                  tone={event.case_id ? "case" : "audit"}
+                />
                 <p className="mt-2 text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleString("id-ID")}</p>
               </div>
               <div className="min-w-0">
@@ -72,9 +76,11 @@ export default function AuditTrailPage() {
               <div className="min-w-0 text-sm">
                 <p className="break-words font-medium">{event.actor}</p>
                 <p className="break-words text-muted-foreground">{event.role}</p>
-                <div className="mt-2">
-                  <EntityChip label={event.ticket_id} tone="ticket" />
-                </div>
+                {event.ticket_id ? (
+                  <div className="mt-2">
+                    <EntityChip label={event.ticket_id} tone="ticket" />
+                  </div>
+                ) : null}
               </div>
             </div>
           ))}

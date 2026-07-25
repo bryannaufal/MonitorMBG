@@ -22,7 +22,7 @@ import StatusBadge from "@/components/monitoring/StatusBadge";
 import { api } from "@/lib/api";
 import { getCase } from "@/lib/reviewStore";
 import * as overlay from "@/lib/runtimeOverlay";
-import { caseNumber } from "@/lib/utils";
+import { caseNumber, evidenceMediaUrl } from "@/lib/utils";
 import type { AuditTrailEvent, Evidence, OversightCase, Signal, Ticket } from "@/types/monitoring";
 
 // Aksi status tiket (board: Baru, Sedang Ditinjau, Menunggu Klarifikasi Vendor, Verifikasi Lapangan, Selesai).
@@ -472,7 +472,8 @@ function SectionCard({
 }
 
 function EvidenceCard({ ev }: { ev: Evidence }) {
-  const isPhoto = ev.type === "photo" && ev.file_path;
+  const mediaUrl = evidenceMediaUrl(ev.file_path);
+  const isPhoto = ev.type === "photo" && mediaUrl;
   const typeLabel = ev.source?.toLowerCase().includes("media sosial")
     ? "Foto / Lampiran media sosial"
     : ev.type === "photo" ? "Foto" : ev.type;
@@ -487,7 +488,7 @@ function EvidenceCard({ ev }: { ev: Evidence }) {
       </div>
       {isPhoto ? (
         <div className="relative mt-3 aspect-video w-full overflow-hidden rounded-md border border-border bg-surface-overlay">
-          <Image src={ev.file_path!} alt={ev.title} fill unoptimized className="object-cover" sizes="(max-width: 768px) 100vw, 400px" />
+          <Image src={mediaUrl} alt={ev.title} fill unoptimized className="object-cover" sizes="(max-width: 768px) 100vw, 400px" />
         </div>
       ) : null}
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">

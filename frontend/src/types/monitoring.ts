@@ -248,8 +248,8 @@ export interface Ticket {
 
 export interface AuditTrailEvent {
   id: number;
-  case_id: string;
-  ticket_id: string;
+  case_id: string | null;
+  ticket_id: string | null;
   event_type: string;
   actor: string;
   role: string;
