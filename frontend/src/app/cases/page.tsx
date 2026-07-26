@@ -34,6 +34,10 @@ export default function CasesPage() {
         if (idx >= 0) merged[idx] = normalizeCase({ ...merged[idx], ...normalized, score: normalized.score });
         else merged.push(normalized);
       }
+      // Kasus overlay di-push ke akhir, jadi urutan dari backend harus dipulihkan
+      // dengan kunci yang sama (demo_data.oversight_cases) — tanpa ini kasus baru
+      // berskor tinggi nyangkut di bawah kasus lama berskor rendah.
+      merged.sort((a, b) => b.score.final_priority_score - a.score.final_priority_score);
       setCases(merged);
       setSource(result.source);
       setError(result.error);
