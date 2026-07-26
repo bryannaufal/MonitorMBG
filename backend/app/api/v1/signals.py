@@ -10,6 +10,8 @@ from fastapi import APIRouter, Query
 from pydantic import BaseModel
 
 from app import demo_data, review_store
+from app.runtime_store import all_signals
+from app.services.ticketing import ticket_service
 
 router = APIRouter()
 
@@ -31,9 +33,7 @@ class Override(BaseModel):
     final_priority_score: int = 45
     severity_score: int | None = None
     confidence_score: int | None = None
-    nutrition_concern_score: int | None = None
-    cost_anomaly_score: int | None = None
-    anomaly_score: int | None = None
+    actionability_score: int | None = None
     override_reason: str | None = None
 
 
@@ -84,7 +84,7 @@ async def list_signals(
 
     Setiap sinyal punya ``case_id`` valid atau ``null`` (belum dibentuk kasus).
     """
-    items = demo_data.SIGNALS
+    items = all_signals()
     if source:
         items = [s for s in items if source.lower() in s["source"].lower()]
     if status:
@@ -125,16 +125,28 @@ async def get_assignment_options(
     return review_store.assignment_options(region, district, school)
 
 
-@router.get("/{signal_id}")
-async def get_signal(signal_id: int):
-    """Ambil satu sinyal. 404 jelas bila tidak ditemukan (tanpa fallback)."""
-    return review_store.get_signal(signal_id)
+@router.get("/{signal_id}/auto-evaluate")
+async def auto_evaluate(signal_id: int):
+    """Preview risk score dan kelayakan auto-ticket untuk sinyal."""
+    return ticket_service.evaluate_signal(signal_id)
+
+
+@router.post("/{signal_id}/auto-ticket")
+async def auto_ticket(signal_id: int):
+    """Buat Case + Ticket otomatis bila sinyal lolos gate."""
+    return ticket_service.create_auto_from_signal(signal_id)
 
 
 @router.get("/{signal_id}/assessment")
 async def get_assessment(signal_id: int):
     """Penilaian awal sistem (pra-verifikasi) untuk sinyal."""
     return review_store.initial_assessment(signal_id)
+
+
+@router.get("/{signal_id}")
+async def get_signal(signal_id: int):
+    """Ambil satu sinyal. 404 jelas bila tidak ditemukan (tanpa fallback)."""
+    return review_store.get_signal(signal_id)
 
 
 @router.post("/{signal_id}/related")
@@ -146,7 +158,7 @@ async def search_related(signal_id: int):
 @router.post("/{signal_id}/review")
 async def review(signal_id: int, action: ReviewAction):
     """Aksi review: gabungkan / bentuk kasus baru / simpan untuk ditinjau nanti."""
-    return review_store.review_signal(signal_id, action.model_dump())
+    return review_store.review_signal(signal_id, action.model_dump(exclude_none=True))
 
 
 @router.post("/{signal_id}/unlink")

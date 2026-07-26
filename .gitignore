@@ -15,6 +15,9 @@ venv/
 env/
 .env
 .env.local
+# Salinan .env berisi kredensial — jangan pernah masuk repo.
+.env.bak*
+.env.*.bak
 *.log
 
 # ──────────────────────────────────────────────
@@ -66,3 +69,10 @@ models/weights/
 
 # Copied prototype evidence photos (source: Dataset Gambar/, do not commit duplicates)
 frontend/public/evidence-media/
+
+# Runtime uploads from public intake form
+backend/uploads/
+
+# Indeks RAG copilot — dibangkitkan saat startup (bootstrap_rag) atau lewat
+# scripts/build_copilot_rag_fixture.py. Hanya generatornya yang di-commit.
+backend/app/data/copilot_rag_fixture.json

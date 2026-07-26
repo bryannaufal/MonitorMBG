@@ -8,6 +8,7 @@ class CopilotQuery(BaseModel):
     message: str
     conversation_id: str | None = None
     context_filters: dict | None = None  # e.g., {"region": "Jakarta", "date_range": "7d"}
+    client_cases: list[dict] | None = None  # runtime overlay cases from frontend
 
 
 class SourceDocument(BaseModel):

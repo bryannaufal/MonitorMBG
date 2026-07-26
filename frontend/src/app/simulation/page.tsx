@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 import GovernanceNote from "@/components/monitoring/GovernanceNote";
+import GiziBar from "@/components/monitoring/GiziBar";
 import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 
@@ -179,23 +180,24 @@ const pipeline = [
   },
 ];
 
-const fusionRows = [
-  ["Official report", "+20 confidence"],
-  ["Photo evidence", "+15 confidence"],
-  ["Daily vendor report mismatch", "+20 severity"],
-  ["Repeated public complaints", "+20 severity"],
-  ["Late delivery pattern", "+10 severity"],
-  ["Low protein estimate", "+25 severity"],
-  ["Incomplete clarification document", "-10 confidence"],
-];
+/** Skor penilaian risiko case-001 (selaras seed demo / halaman review). */
+const demoScores = {
+  severity: 90,
+  trust: 82,
+  actionability: 84,
+  nutrition: 58,
+  final: 86,
+  priorityLabel: "Tinggi",
+};
 
-const scoreRows = [
-  ["Severity Score", 86],
-  ["Confidence Score", 78],
-  ["Nutrition Concern Score", 82],
-  ["Cost Anomaly Score", 64],
-  ["Operational Risk Score", 73],
-  ["Final Priority Score", 86],
+const fusionRows = [
+  ["Official report", "+20 kepercayaan sumber"],
+  ["Photo evidence", "+15 dapat ditindak"],
+  ["Daily vendor report mismatch", "+dampak isu"],
+  ["Repeated public complaints", "+dampak isu"],
+  ["Late delivery pattern", "+dampak isu"],
+  ["Low protein estimate", "indikator gizi (terpisah)"],
+  ["Incomplete clarification document", "−kepercayaan sumber"],
 ];
 
 const actionOptions = [
@@ -433,10 +435,10 @@ export default function SimulationPage() {
             </div>
             <p className="mt-3 break-words rounded-lg border border-brand-500/25 bg-brand-500/10 p-3 text-sm text-brand-800 dark:text-brand-100">{notice}</p>
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <MetricTile label="Confidence" value={maxCompleted >= 3 ? "78" : "--"} detail="Pre-verification" />
-              <MetricTile label="Severity" value={maxCompleted >= 3 ? "86" : "--"} detail="Fusion result" />
-              <MetricTile label="Priority" value={maxCompleted >= 4 ? "High" : "--"} detail="Human review required" />
-              <MetricTile label="Ticket" value={ticketStatus} detail={scenario.ticketId} />
+              <MetricTile label="Kepercayaan sumber" value={maxCompleted >= 3 ? String(demoScores.trust) : "--"} detail="Pra-verifikasi" />
+              <MetricTile label="Dampak isu" value={maxCompleted >= 3 ? String(demoScores.severity) : "--"} detail="Hasil fusion" />
+              <MetricTile label="Skor prioritas" value={maxCompleted >= 4 ? String(demoScores.final) : "--"} detail={maxCompleted >= 4 ? demoScores.priorityLabel : "Tinjauan operator"} />
+              <MetricTile label="Tiket" value={ticketStatus} detail={scenario.ticketId} />
             </div>
           </section>
 
@@ -495,7 +497,7 @@ function stepDescription(index: number) {
     "Reports can come from public complaints, official channels, school reports, or vendor daily evidence. MonitorMBG enriches and prioritizes their signals; it does not replace existing channels.",
     "The system simulates classification, entity matching, evidence checks, nutrition estimate, and cost plausibility as pre-verification signals.",
     "Independent sources are combined into one confidence and severity view so operators understand why a case is being prioritized.",
-    "Scoring ranks the candidate case while preserving explanations, evidence concerns, and recommended next action.",
+    "Scoring ranks the candidate case using dampak isu, kepercayaan sumber, and dapat ditindak. Gizi is shown separately and does not affect skor prioritas suggested.",
     "The candidate signal becomes a case-centered work item linked to existing evidence, ticketing, scoring, vendor, copilot, and audit views.",
     "Ticketing converts intelligence into accountable operational action with an assigned unit, SLA, and escalation path.",
     "AI recommends. A human operator accepts, modifies, or rejects the recommendation before operational action is treated as reviewed.",
@@ -564,12 +566,12 @@ function FusionStep() {
         </div>
       </SectionCard>
       <SectionCard title="Fusion Result">
-        <ScoreBar label="Confidence Score" value={78} />
-        <ScoreBar label="Severity Score" value={86} />
+        <ScoreBar label="Kepercayaan sumber (trust)" value={demoScores.trust} />
+        <ScoreBar label="Dampak isu (severity)" value={demoScores.severity} />
         <div className="mt-4 rounded-lg border border-red-500/25 bg-red-500/10 p-4">
-          <StatusBadge label="High priority candidate case" />
+          <StatusBadge label="Kandidat kasus prioritas tinggi" />
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Multiple independent signals raise confidence, while late delivery, low protein estimate, and daily report mismatch raise severity.
+            Beberapa sinyal independen menaikkan kepercayaan sumber; bukti foto memperkuat kesiapan tindak (lampiran). Keterlambatan distribusi, estimasi protein rendah, dan ketidaksesuaian laporan harian menaikkan dampak isu.
           </p>
         </div>
       </SectionCard>
@@ -594,18 +596,28 @@ function ScoringStep() {
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
       <section className="rounded-xl border border-border bg-surface-raised p-5 xl:col-span-2">
         <h3 className="text-lg font-semibold">Scoring Breakdown</h3>
-        <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-          {scoreRows.map(([label, value]) => (
-            <ScoreBar key={label} label={String(label)} value={Number(value)} />
-          ))}
+        <p className="mt-2 text-sm text-muted-foreground">
+          Skor prioritas suggested = 50% dampak isu + 25% kepercayaan sumber + 25% dapat ditindak. Gizi informasi tambahan.
+        </p>
+        <div className="mt-4 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <ScoreBar label="Dampak isu (severity)" value={demoScores.severity} />
+            <ScoreBar label="Dapat ditindak (actionability)" value={demoScores.actionability} />
+            <ScoreBar label="Kepercayaan sumber (trust)" value={demoScores.trust} />
+            <ScoreBar label="Skor prioritas suggested" value={demoScores.final} />
+          </div>
+          <GiziBar
+            value={demoScores.nutrition}
+            note="Informasi tambahan dari bukti foto — tidak mempengaruhi skor prioritas suggested."
+          />
         </div>
       </section>
-      <SectionCard title="Recommended Action" badge="High">
+      <SectionCard title="Recommended Action" badge={demoScores.priorityLabel}>
         <p className="text-sm leading-6 text-muted-foreground">
-          This case is ranked High because it combines repeated complaints, late delivery, low protein estimate, and daily report mismatch. Confidence is elevated by multiple independent signals, but operator review is required due to partial image-text match and incomplete vendor clarification.
+          Kasus ini prioritas tinggi karena aduan berulang, pola keterlambatan distribusi, estimasi protein rendah, dan ketidaksesuaian laporan harian saling menguatkan. Kepercayaan sumber dinaikkan oleh beberapa sinyal independen; tinjauan operator tetap diperlukan karena kecocokan gambar-teks parsial.
         </p>
         <p className="mt-4 rounded-lg border border-brand-500/25 bg-brand-500/10 p-3 text-sm font-medium text-brand-800 dark:text-brand-100">
-          Request vendor clarification and schedule field verification.
+          Minta klarifikasi vendor dan jadwalkan verifikasi lapangan.
         </p>
       </SectionCard>
     </div>
@@ -621,7 +633,7 @@ function CaseStep() {
         <Field label="Vendor" value={scenario.vendorName} />
         <Field label="School" value={scenario.school} />
         <Field label="Region" value={scenario.region} />
-        <Field label="Priority" value="High" />
+        <Field label="Priority" value={demoScores.priorityLabel} />
         <Field label="Status" value="New / Under Review" />
         <Field label="Recommended Action" value="Request clarification and schedule field verification" />
       </div>

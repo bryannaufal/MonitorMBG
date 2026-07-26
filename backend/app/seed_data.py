@@ -731,24 +731,42 @@ for _ev in EVIDENCE:
 _PRIORITY_TO_SCORE = {"Kritis": 88, "Tinggi": 78, "Sedang": 58, "Rendah": 38}
 
 
+# Skor gizi demo per kasus (simulasi penilaian foto MBG; null = belum dinilai).
+_NUTRITION_DEMO: dict[str, int | None] = {
+    "case-001": 58,   # keluhan porsi/protein
+    "case-002": 42,   # higiene / keracunan
+    "case-003": 71,
+    "case-004": 55,   # anomali biaya + menu
+    "case-005": 68,
+    "case-006": 74,
+    "case-007": 61,
+    "case-008": 38,   # higiene
+    "case-009": 82,
+    "case-010": 77,
+}
+
+
 def _build_risk() -> list[dict[str, Any]]:
+    """Satu record risiko per kasus — severity, keyakinan, actionability (+ gizi demo)."""
     out: list[dict[str, Any]] = []
     for idx, case in enumerate(CASES, start=1):
         vendor = VENDOR_BY_ID[case["vendor_id"]]
         label = case["priority_label"]
         if case["case_id"] == "case-001":
+            severity, trust, actionability = 90, 82, 84
+            final = min(95, int(severity * 0.50 + trust * 0.25 + actionability * 0.25))
             out.append({
                 "id": idx, "case_id": case["case_id"], "vendor_id": vendor["id"],
                 "vendor_name": vendor["name"], "region": vendor["region"],
-                "severity_score": 86, "confidence_score": 78,
-                "nutrition_concern_score": 82, "cost_anomaly_score": 64, "anomaly_score": 73,
-                "final_priority_score": 86, "priority_label": "Tinggi",
+                "severity_score": severity, "confidence_score": trust,
+                "actionability_score": actionability,
+                "nutrition_score": _NUTRITION_DEMO.get(case["case_id"]),
+                "final_priority_score": final, "priority_label": "Tinggi",
                 "explanation": (
                     "Prioritas tinggi karena aduan berulang, pola keterlambatan distribusi, "
                     "estimasi protein rendah, dan ketidaksesuaian laporan harian saling menguatkan. "
-                    "Keyakinan meningkat oleh beberapa sinyal independen, namun peninjauan operator "
-                    "tetap diperlukan karena kecocokan gambar-teks parsial dan klarifikasi vendor "
-                    "belum lengkap."
+                    "Severity 90, keyakinan 82, actionability 84, gizi 58/100 (estimasi dari bukti foto). "
+                    "Peninjauan operator tetap diperlukan karena kecocokan gambar-teks parsial."
                 ),
                 "recommended_action": vendor["recommended_action"],
                 "computed_at": _ts(4, 13, 5),
@@ -756,20 +774,26 @@ def _build_risk() -> list[dict[str, Any]]:
             })
             continue
         base = _PRIORITY_TO_SCORE[label]
-        nutrition = 30 + (idx * 11) % 55
-        cost = 25 + (idx * 13) % 60
-        anomaly = 20 + (idx * 17) % 65
-        confidence = max(45, 82 - idx * 3)
+        severity = base
+        trust = max(45, 82 - idx * 3)
+        actionability = 30 + (idx * 11) % 55
+        final = min(95, int(severity * 0.50 + trust * 0.25 + actionability * 0.25))
         out.append({
             "id": idx, "case_id": case["case_id"], "vendor_id": vendor["id"],
             "vendor_name": vendor["name"], "region": vendor["region"],
-            "severity_score": base, "confidence_score": confidence,
-            "nutrition_concern_score": nutrition, "cost_anomaly_score": cost, "anomaly_score": anomaly,
-            "final_priority_score": base, "priority_label": label,
+            "severity_score": severity, "confidence_score": trust,
+            "actionability_score": actionability,
+            "nutrition_score": _NUTRITION_DEMO.get(case["case_id"]),
+            "final_priority_score": final, "priority_label": label,
             "explanation": (
-                f"Prioritas {label.lower()} karena {vendor['name']} menggabungkan risiko vendor "
-                f"{vendor['risk_score']}, kecukupan menu, anomali biaya, dan pola berulang. "
-                "Validasi operator diperlukan sebelum eskalasi."
+                f"Prioritas {label.lower()} — severity {severity}/100, keyakinan {trust}/100, "
+                f"actionability {actionability}/100"
+                + (
+                    f", gizi {_NUTRITION_DEMO[case['case_id']]}/100 (estimasi dari bukti foto)."
+                    if _NUTRITION_DEMO.get(case["case_id"]) is not None
+                    else "."
+                )
+                + " Validasi operator diperlukan sebelum eskalasi."
             ),
             "recommended_action": vendor["recommended_action"],
             "computed_at": _ts(4, 13, idx),

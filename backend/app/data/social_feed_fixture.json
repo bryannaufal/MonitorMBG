@@ -1,0 +1,16 @@
+[
+  {
+    "text": "Ada laporan porsi MBG kecil di SD swasta Jakarta Timur, anak masih lapar setelah makan siang.",
+    "summary": "Keluhan porsi MBG kecil di Jakarta Timur",
+    "region": "DKI Jakarta",
+    "source_confidence": 0.42
+  },
+  {
+    "text": "Viral di grup WA: dugaan makanan MBG basi di salah satu sekolah Jawa Barat, belum ada konfirmasi resmi.",
+    "summary": "Dugaan makanan MBG basi — sinyal media sosial",
+    "region": "Jawa Barat",
+    "source_confidence": 0.36,
+    "attachment_path": "/evidence-media/8.jpg",
+    "attachment_title": "Foto unggahan dugaan makanan basi"
+  }
+]

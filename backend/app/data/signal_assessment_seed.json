@@ -1,0 +1,378 @@
+{
+  "1": {
+    "severity_score": 78,
+    "confidence_score": 41,
+    "actionability_score": 100,
+    "nutrition_score": null,
+    "final_priority_score": 87,
+    "priority_label": "Kritis",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 78/100 — Urgensi sinyal: Tinggi; Isu gizi/porsi terdeteksi pada teks",
+      "Kepercayaan sumber: 41/100 — Sumber: Aduan Wali Murid (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi",
+      "Bonus pola: +13 — Vendor pada watchlist / riwayat risiko; Ada sinyal serupa di wilayah yang sama"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Jadwalkan verifikasi lapangan segera.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "2": {
+    "severity_score": 78,
+    "confidence_score": 64,
+    "actionability_score": 100,
+    "nutrition_score": null,
+    "final_priority_score": 93,
+    "priority_label": "Kritis",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 78/100 — Urgensi sinyal: Tinggi; Isu gizi/porsi terdeteksi pada teks",
+      "Kepercayaan sumber: 64/100 — Sumber: Laporan Pengawas (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi",
+      "Bonus pola: +13 — Vendor pada watchlist / riwayat risiko; Ada sinyal serupa di wilayah yang sama"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Jadwalkan verifikasi lapangan segera.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "3": {
+    "severity_score": 58,
+    "confidence_score": 27,
+    "actionability_score": 100,
+    "nutrition_score": null,
+    "final_priority_score": 73,
+    "priority_label": "Tinggi",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 58/100 — Urgensi sinyal: Sedang; Isu gizi/porsi terdeteksi pada teks",
+      "Kepercayaan sumber: 27/100 — Sumber: Laporan Harian Vendor (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi",
+      "Bonus pola: +13 — Vendor pada watchlist / riwayat risiko; Ada sinyal serupa di wilayah yang sama"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Jadwalkan verifikasi lapangan segera.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "4": {
+    "severity_score": 85,
+    "confidence_score": 32,
+    "actionability_score": 100,
+    "nutrition_score": null,
+    "final_priority_score": 88,
+    "priority_label": "Kritis",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 85/100 — Urgensi sinyal: Tinggi; Isu keamanan pangan / kontaminasi terdeteksi pada teks",
+      "Kepercayaan sumber: 32/100 — Sumber: Hotline Sekolah (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi",
+      "Bonus pola: +13 — Vendor pada watchlist / riwayat risiko; Ada sinyal serupa di wilayah yang sama"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Jadwalkan verifikasi lapangan segera.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "5": {
+    "severity_score": 85,
+    "confidence_score": 26,
+    "actionability_score": 100,
+    "nutrition_score": null,
+    "final_priority_score": 87,
+    "priority_label": "Kritis",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 85/100 — Urgensi sinyal: Tinggi; Isu keamanan pangan / kontaminasi terdeteksi pada teks",
+      "Kepercayaan sumber: 26/100 — Sumber: Laporan Komunitas (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi",
+      "Bonus pola: +13 — Vendor pada watchlist / riwayat risiko; Ada sinyal serupa di wilayah yang sama"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Jadwalkan verifikasi lapangan segera.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "6": {
+    "severity_score": 58,
+    "confidence_score": 23,
+    "actionability_score": 100,
+    "nutrition_score": null,
+    "final_priority_score": 72,
+    "priority_label": "Tinggi",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 58/100 — Urgensi sinyal: Sedang; Isu gizi/porsi terdeteksi pada teks",
+      "Kepercayaan sumber: 23/100 — Sumber: Laporan Harian Vendor (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi",
+      "Bonus pola: +13 — Vendor pada watchlist / riwayat risiko; Ada sinyal serupa di wilayah yang sama"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Jadwalkan verifikasi lapangan segera.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "7": {
+    "severity_score": 78,
+    "confidence_score": 29,
+    "actionability_score": 100,
+    "nutrition_score": null,
+    "final_priority_score": 84,
+    "priority_label": "Kritis",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 78/100 — Urgensi sinyal: Tinggi; Isu gizi/porsi terdeteksi pada teks",
+      "Kepercayaan sumber: 29/100 — Sumber: Tinjauan Pengadaan (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi",
+      "Bonus pola: +13 — Vendor pada watchlist / riwayat risiko; Ada sinyal serupa di wilayah yang sama"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Jadwalkan verifikasi lapangan segera.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "8": {
+    "severity_score": 56,
+    "confidence_score": 20,
+    "actionability_score": 100,
+    "nutrition_score": null,
+    "final_priority_score": 63,
+    "priority_label": "Sedang",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 56/100 — Urgensi sinyal: Sedang; Isu biaya/anggaran terdeteksi pada teks",
+      "Kepercayaan sumber: 20/100 — Sumber: Laporan Harian Vendor (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi",
+      "Bonus pola: +5 — Ada sinyal serupa di wilayah yang sama"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Kumpulkan bukti tambahan dan klarifikasi lokasi/vendor.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "9": {
+    "severity_score": 50,
+    "confidence_score": 48,
+    "actionability_score": 100,
+    "nutrition_score": null,
+    "final_priority_score": 67,
+    "priority_label": "Tinggi",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 50/100 — Urgensi sinyal: Sedang",
+      "Kepercayaan sumber: 48/100 — Sumber: Operator Sekolah (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi",
+      "Bonus pola: +5 — Ada sinyal serupa di wilayah yang sama"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Jadwalkan verifikasi lapangan segera.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "10": {
+    "severity_score": 50,
+    "confidence_score": 40,
+    "actionability_score": 100,
+    "nutrition_score": null,
+    "final_priority_score": 60,
+    "priority_label": "Sedang",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 50/100 — Urgensi sinyal: Sedang",
+      "Kepercayaan sumber: 40/100 — Sumber: Aduan Wali Murid (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Kumpulkan bukti tambahan dan klarifikasi lokasi/vendor.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "11": {
+    "severity_score": 50,
+    "confidence_score": 23,
+    "actionability_score": 100,
+    "nutrition_score": null,
+    "final_priority_score": 55,
+    "priority_label": "Sedang",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 50/100 — Urgensi sinyal: Sedang",
+      "Kepercayaan sumber: 23/100 — Sumber: Hotline Sekolah (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Kumpulkan bukti tambahan dan klarifikasi lokasi/vendor.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "12": {
+    "severity_score": 78,
+    "confidence_score": 63,
+    "actionability_score": 100,
+    "nutrition_score": null,
+    "final_priority_score": 92,
+    "priority_label": "Kritis",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 78/100 — Urgensi sinyal: Tinggi; Isu gizi/porsi terdeteksi pada teks",
+      "Kepercayaan sumber: 63/100 — Sumber: Laporan Pengawas (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi",
+      "Bonus pola: +13 — Vendor pada watchlist / riwayat risiko; Ada sinyal serupa di wilayah yang sama"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Jadwalkan verifikasi lapangan segera.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "13": {
+    "severity_score": 58,
+    "confidence_score": 22,
+    "actionability_score": 100,
+    "nutrition_score": null,
+    "final_priority_score": 72,
+    "priority_label": "Tinggi",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 58/100 — Urgensi sinyal: Sedang; Isu gizi/porsi terdeteksi pada teks",
+      "Kepercayaan sumber: 22/100 — Sumber: Laporan Harian Vendor (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi",
+      "Bonus pola: +13 — Vendor pada watchlist / riwayat risiko; Ada sinyal serupa di wilayah yang sama"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Jadwalkan verifikasi lapangan segera.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "14": {
+    "severity_score": 70,
+    "confidence_score": 27,
+    "actionability_score": 100,
+    "nutrition_score": null,
+    "final_priority_score": 79,
+    "priority_label": "Tinggi",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 70/100 — Urgensi sinyal: Tinggi",
+      "Kepercayaan sumber: 27/100 — Sumber: Laporan Komunitas (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi",
+      "Bonus pola: +13 — Vendor pada watchlist / riwayat risiko; Ada sinyal serupa di wilayah yang sama"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Jadwalkan verifikasi lapangan segera.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "15": {
+    "severity_score": 30,
+    "confidence_score": 40,
+    "actionability_score": 100,
+    "nutrition_score": null,
+    "final_priority_score": 50,
+    "priority_label": "Sedang",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 30/100 — Urgensi sinyal: Rendah",
+      "Kepercayaan sumber: 40/100 — Sumber: Operator Sekolah (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Kumpulkan bukti tambahan dan klarifikasi lokasi/vendor.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "16": {
+    "severity_score": 30,
+    "confidence_score": 31,
+    "actionability_score": 100,
+    "nutrition_score": null,
+    "final_priority_score": 47,
+    "priority_label": "Sedang",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 30/100 — Urgensi sinyal: Rendah",
+      "Kepercayaan sumber: 31/100 — Sumber: Aduan Wali Murid (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Kumpulkan bukti tambahan dan klarifikasi lokasi/vendor.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "17": {
+    "severity_score": 38,
+    "confidence_score": 14,
+    "actionability_score": 0,
+    "nutrition_score": null,
+    "final_priority_score": 22,
+    "priority_label": "Rendah",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 38/100 — Urgensi sinyal: Rendah; Isu gizi/porsi terdeteksi pada teks",
+      "Kepercayaan sumber: 14/100 — Sumber: Media Sosial (tingkat kepercayaan channel)",
+      "Dapat ditindak: 0/100 — – wilayah; – sekolah/lokasi"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Pantau sinyal; prioritaskan jika ada sinyal pendukung.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "18": {
+    "severity_score": 50,
+    "confidence_score": 30,
+    "actionability_score": 0,
+    "nutrition_score": null,
+    "final_priority_score": 32,
+    "priority_label": "Rendah",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 50/100 — Urgensi sinyal: Sedang",
+      "Kepercayaan sumber: 30/100 — Sumber: Formulir Publik (tingkat kepercayaan channel)",
+      "Dapat ditindak: 0/100 — – wilayah; – sekolah/lokasi"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Pantau sinyal; prioritaskan jika ada sinyal pendukung.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "19": {
+    "severity_score": 95,
+    "confidence_score": 77,
+    "actionability_score": 100,
+    "nutrition_score": 28,
+    "final_priority_score": 95,
+    "priority_label": "Kritis",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 95/100 — Urgensi sinyal: Kritis; Isu keamanan pangan / kontaminasi terdeteksi pada teks",
+      "Kepercayaan sumber: 77/100 — Sumber: Laporan Pengawas (tingkat kepercayaan channel)",
+      "Dapat ditindak: 100/100 — ✓ wilayah; ✓ sekolah/lokasi",
+      "Bonus pola: +5 — Ada sinyal serupa di wilayah yang sama",
+      "Gizi: 28/100 (estimasi seed dari bukti foto) — Foto laporan resmi menunjukkan indikasi kontaminasi/belatung pada porsi; Porsi tampak tidak layak konsumsi — estimasi seed dari bukti foto 4.jpg"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Gizi diestimasi dari deskripsi isu dan keberadaan lampiran. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Jadwalkan verifikasi lapangan segera.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  },
+  "20": {
+    "severity_score": 75,
+    "confidence_score": 13,
+    "actionability_score": 65,
+    "nutrition_score": 35,
+    "final_priority_score": 62,
+    "priority_label": "Sedang",
+    "priority_mode": "suggested",
+    "scoring_engine": "seed",
+    "reasons": [
+      "Dampak isu: 75/100 — Urgensi sinyal: Sedang; Isu keamanan pangan / kontaminasi terdeteksi pada teks",
+      "Kepercayaan sumber: 13/100 — Sumber: Media Sosial (tingkat kepercayaan channel)",
+      "Dapat ditindak: 65/100 — ✓ wilayah; – sekolah/lokasi",
+      "Bonus pola: +5 — Ada sinyal serupa di wilayah yang sama",
+      "Gizi: 35/100 (estimasi seed dari bukti foto) — Unggahan sosmed: dugaan belatung — kualitas gizi sangat rendah jika terkonfirmasi; Estimasi seed dari bukti foto 26.jpg (pra-verifikasi)"
+    ],
+    "explanation": "Penilaian otomatis (pra-verifikasi) dari urgensi isu, kepercayaan sumber, dan kelengkapan data. Gizi diestimasi dari deskripsi isu dan keberadaan lampiran. Bukan keputusan final — operator dapat menyesuaikan.",
+    "recommended_action": "Kumpulkan bukti tambahan dan klarifikasi lokasi/vendor.",
+    "ai_notice": "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang."
+  }
+}

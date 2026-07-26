@@ -43,7 +43,7 @@ export default function CopilotPage() {
       />
       <GovernanceNote compact />
       <HelperPanel>
-        Setiap jawaban adalah sintesis berbantuan AI berdasar bukti demo. Keputusan akhir memerlukan tinjauan operator berwenang.
+        Setiap jawaban adalah sintesis berbantuan AI berdasar bukti kasus. Keputusan akhir memerlukan tinjauan operator berwenang.
       </HelperPanel>
 
       <div className="grid min-h-[620px] grid-cols-1 gap-6 2xl:grid-cols-[320px_minmax(0,1fr)]">

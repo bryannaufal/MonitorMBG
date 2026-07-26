@@ -2,187 +2,199 @@
 
 **AI Oversight Intelligence & Case Orchestration Platform for MBG Vendor Supervision**
 
-MonitorMBG is a GovTech hackathon MVP for **DIGDAYA X HACKATHON 2026**. It is designed as an intelligent oversight layer that complements existing MBG supervision systems. It does **not** replace formal audits, field inspections, or final government decisions.
+MonitorMBG is a GovTech hackathon MVP for **DIGDAYA X HACKATHON 2026**. It is an intelligent oversight layer that complements existing MBG supervision systems. It does **not** replace formal audits, field inspections, or final government decisions.
 
-The current prototype uses fictional, privacy-safe Indonesian demo data and deterministic simulated intelligence outputs so the product can run locally without paid APIs or heavy ML model downloads.
+The prototype uses fictional, privacy-safe Indonesian demo data. **Seed workflows run without API keys** (rules + pre-baked assessments). Optional **Kimi** (scoring/vision/chat) and **Gemini** (Copilot embeddings) activate when keys are set in `.env`.
 
 ## Product Workflow
 
-MonitorMBG is organized around one operational workflow:
-
 ```text
-Monitor -> Intake -> Case Creation & Monitoring -> Evidence Review -> Risk Scoring -> Direct Handling or Child Workstreams -> Audit Trail -> Vendor Risk Learning
+Monitor → Intake → Review & Case Creation → Evidence → 4-Factor Scoring → Ticket Action → Audit → Vendor Learning
 ```
 
-Public signals, official reports, and daily vendor reports enter the Signal Inbox. Related signals are grouped into oversight cases. Each case connects evidence, nutrition/cost checks, scoring, ticketing, copilot synthesis, and audit trail. Vendor profiles accumulate historical risk patterns. Operators use the system for pre-verification and prioritization, while final decisions remain human-led.
-
-Core product story:
+Public signals enter **Kotak Masuk Sinyal** via social/news scrape or operator review. **Lapor MBG** (public form) creates follow-up tickets. Related signals are merged into oversight cases. Each case links evidence, scoring, tickets, Copilot synthesis, and audit events.
 
 ```text
-Signal -> Case (Open & Monitored) -> Evidence -> Score -> Direct Handling or Optional Child Tickets -> Verified Resolution -> Audit -> Vendor Learning
+Signal → (optional auto-ticket) → Case → Evidence → Score → Ticket → Audit → Vendor profile
 ```
 
 ## Product Positioning
 
 MonitorMBG helps operators supervise MBG vendors/SPPG through:
 
-- public signal intelligence from social/community/school complaint channels,
-- assisted official and daily vendor reporting,
-- multimodal evidence pre-verification,
-- evidence fusion and hybrid risk scoring,
-- ticket/case orchestration,
-- vendor watchlist and risk profiles,
-- bounded AI copilot synthesis,
-- audit trail and human-in-the-loop governance.
+- **Signal intake** — fixture demo feed, live X (twitterapi.io), or Google News RSS
+- **4-factor risk scoring** — Dampak, Keyakinan, Dapat Ditindak, plus separate Gizi estimate
+- **Auto-ticket gate** — optional automatic case/ticket when score + risk triggers pass threshold
+- **Case review** — merge/create/defer signals with human-in-the-loop
+- **Bounded AI Copilot** — in-memory RAG over cases + Kimi synthesis
+- **Governance** — audit trail, pre-verification disclaimers, operator override
+
+## Scoring Model (4-Factor)
+
+| Factor | Backend field | In priority formula? | Notes |
+|--------|---------------|----------------------|--------|
+| **Dampak** | `severity_score` | 50% | Issue impact (safety, contamination, nutrition) |
+| **Keyakinan** | `confidence_score` | 25% | Source channel trust (rules) |
+| **Dapat Ditindak** | `actionability_score` | 25% | Location, school, attachment completeness |
+| **Gizi** | `nutrition_score` | No (informational) | Photo/description estimate; shown separately |
+
+```text
+Skor prioritas = min(95, 50%×Dampak + 25%×Keyakinan + 25%×Dapat Ditindak + bonus)
+```
+
+**Seed signals (#1–20):** pre-baked assessments in `backend/app/data/signal_assessment_seed.json` — **no Kimi on open**.
+
+**Runtime signals:** Kimi text scoring + optional Kimi vision for Gizi when `SCRAPER_MODE=live` and `KIMI_API_KEY` is set; otherwise rules fallback.
+
+## Intake & Auto-Ticket
+
+| Path | Destination |
+|------|----------------|
+| Scrape (fixture / X / RSS) | Kotak Masuk Sinyal (runtime signals, id ≥ 9001) |
+| Lapor MBG (`/lapor`) | Tiket Tindak Lanjut (+ optional auto-ticket) |
+| Review → Bentuk Kasus | Cases + in-memory backend + browser overlay |
+
+**`SCRAPER_MODE`**
+
+- `fixture` — load `backend/app/data/social_feed_fixture.json`; rules-only scoring
+- `live` — fetch X and/or Google News RSS; Kimi when key present; falls back to fixture on fetch failure
+
+**`AUTO_TICKET_ON_INTAKE`** (default `false` in `.env.example`)
+
+When `true`, after intake each signal is scored and passed through `auto_ticket_gate`:
+
+- Priority score ≥ **55**
+- At least one trigger: Kritis urgency, high-risk category, attachment, or severity ≥ 75
+- Social signals with incomplete location need score ≥ **75**
+
+## AI Copilot (Asisten Ringkasan Kasus)
+
+| Layer | Provider | When |
+|-------|----------|------|
+| **Embeddings / RAG search** | Gemini (`GEMINI_API_KEY`) | Preferred |
+| **Embeddings fallback** | Local hash (`local-fixture-v1`) | No Gemini key |
+| **Chat synthesis** | Kimi (`KIMI_API_KEY`) | When set |
+| **Fallback answer** | RAG snippet or keyword demo | No Kimi / empty RAG |
+
+RAG is **in-memory**. On each chat request the backend syncs all cases in `sd.CASES` and indexes **client overlay cases** sent from the browser (`localStorage`) so runtime cases (e.g. MBG-011) can appear in answers after restart.
+
+Hybrid retrieval: case number match (`MBG-011`), keyword overlap, + semantic similarity.
 
 ## MVP Feature List
 
-Implemented demo workflows:
-
-- Command Center dashboard with active cases, critical/high-risk cases, incoming signals, regional risk, anomaly alerts, watchlist preview, and priority work queue.
-- Oversight Flow Simulator that walks through report intake, AI-assisted pre-verification, evidence fusion, risk scoring, case creation, ticket orchestration, human review, audit trail, Command Center update, and vendor risk learning.
-- Signal Inbox that unifies public complaints, official reports, and daily vendor reports.
-- Case Work Queue with filters, SLA indicators, recommended actions, and direct case links.
-- Case Detail / Investigation Hub as the main handling workspace: case lifecycle, ownership, progress, blockers, evidence, scoring, optional child workstreams, and audit trail.
-- Ticket Queue as an optional child-workstream execution layer for linked cases; ticket status does not close a case automatically.
-- Risk Prioritization page with explainable final priority scores linked back to cases.
-- Nutrition & Cost Intelligence page connected to cases and vendors.
-- Regional Risk Intelligence page with ranked regional concentration signals.
-- Vendor Watchlist and Vendor Risk Profile pages that show recurring risk patterns.
-- Governance Log for AI outputs, operator actions, ticket changes, evidence review, and escalations.
-- Bounded AI Case Copilot that answers from internal demo data and cites demo sources.
-- FastAPI `/docs` with working `/api/v1` endpoints.
+- Command Center, Oversight Flow Simulator (aligned with 4-factor + Gizi model)
+- **Kotak Masuk Sinyal** — seed + runtime signals, scrape job, review workflow
+- **Lapor MBG** — public intake form → tickets
+- **Cases** — filters, SLA, factor scores, runtime overlay merge
+- **Case detail** — signals, evidence, scoring, ticket, copilot sources, audit
+- **Tiket Tindak Lanjut** — sort by priority or date
+- Risk Prioritization, Gizi & Biaya, Regional Heatmap, Vendor Watchlist
+- Governance Log / Jejak Audit
+- **Asisten Ringkasan Kasus** — RAG + Kimi
+- FastAPI `/docs` — full `/api/v1` surface
 
 ## Prototype Status
 
-Implemented:
+**Implemented (demo / in-memory):**
 
-- Next.js dashboard and all required pages.
-- FastAPI API surface with deterministic demo data.
-- Fictional vendors, cases, complaints, reports, daily reports, evidence, scoring, tickets, audit events, analytics.
-- First-class case aggregation linking vendor, signals, reports, daily evidence, score, ticket, copilot sources, and audit events.
-- Rule-based demo scoring and nutrition/cost plausibility outputs.
-- Bounded copilot response synthesis without external API calls.
-- Basic backend smoke tests.
+- Next.js dashboard and navigation (Indonesian labels)
+- FastAPI backend with seed data + **runtime mutation** (cases, signals, tickets per session)
+- Unified `risk_scorer`, `nutrition_scorer`, `kimi_signal_scorer`
+- Social scraper + public form intake
+- Auto-ticket gate + ticket service
+- Copilot RAG store, indexer, synthesizer
+- Frontend **runtime overlay** (`localStorage`) so operator actions survive page refresh
+- Backend tests for scoring, nutrition, copilot RAG, Kimi integration
 
-Simulated:
+**Optional with API keys:**
 
-- AI classification and case synthesis.
-- OCR/document parsing.
-- Image-text consistency.
-- Duplicate photo detection.
-- Nutrition plausibility.
-- Public signal anomaly detection.
-- Evidence fusion.
+- Kimi — live signal scoring, Gizi vision, Copilot chat
+- Gemini — Copilot embedding quality
+- twitterapi.io — live X scrape
 
-Not production-ready:
+**Simulated / seed-only:**
 
-- No real government data.
-- No real social scraping.
-- No deployed ML/CV/OCR/RAG models.
-- No formal identity provider or full RBAC enforcement.
-- No production-grade migration/rollback policy yet (schema is additive-only so far).
-- No production audit/legal workflow.
+- OCR, duplicate photo detection, full CV pipeline (demo labels on evidence)
+- Persistent PostgreSQL for MVP flow (scaffold present)
+
+**Not production-ready:**
+
+- No real government or PII data
+- Runtime data lost on backend restart (overlay partially restores UI state)
+- No formal RBAC / identity provider
+- No production model governance or Satu Data integration
 
 ## Architecture
 
 ```text
-Next.js Dashboard (3000)
-  -> typed API client
-  -> FastAPI Backend (8000)
-     -> deterministic demo data service
-     -> simulated intelligence/scoring helpers
-     -> optional Celery/Redis scaffold
-     -> PostgreSQL (write-through persistence, SQLAlchemy + Alembic)
+Next.js (3000)
+  ├─ API client + runtimeOverlay (localStorage)
+  └─ FastAPI (8000)
+       ├─ seed_data + runtime_store (in-memory)
+       ├─ review_store / ticket_service
+       ├─ scoring (rules + optional Kimi/vision)
+       ├─ intake (scraper, public form)
+       ├─ copilot (RAG in-memory + optional Gemini/Kimi)
+       └─ optional PostgreSQL, Redis, Celery scaffolds
 ```
-
-Read paths serve dict-shaped domain objects loaded from PostgreSQL at startup; every operator mutation is written back through `app/persistence.py`, so runtime state survives restarts. Redis and Celery scaffolds remain in place for the next production phase.
 
 ## UX Structure
 
-The navigation is grouped around the oversight workflow:
-
-- Monitoring: Command Center, Oversight Flow Simulator
-- Intake: Signal Inbox
-- Case Work: Cases, Tickets
-- Intelligence: Risk Prioritization, Nutrition & Cost, Regional Heatmap
-- Vendor Oversight: Vendor Watchlist
-- Governance: Governance Log, AI Case Copilot
+| Group | Pages |
+|-------|--------|
+| Pemantauan | Pusat Kendali, Simulator Alur Pengawasan |
+| Intake | Kotak Masuk Sinyal, Lapor MBG (Publik) |
+| Kerja Kasus | Kasus, Tiket Tindak Lanjut |
+| Intelijen | Penilaian Risiko, Gizi & Biaya, Heatmap Wilayah |
+| Pengawasan Vendor | Daftar Pantauan Vendor |
+| Tata Kelola | Jejak Audit, Asisten Ringkasan Kasus |
 
 ## Local Development Setup
 
-Recommended reliable path:
+### 1. Environment
 
 ```bash
-cd ~/projects/MonitorMBG
-docker compose up -d postgres redis
+cp .env.example .env
+# Edit .env — never commit real API keys
+```
 
+Minimal demo (no paid APIs):
+
+```env
+SCRAPER_MODE=fixture
+AUTO_TICKET_ON_INTAKE=false
+# Leave KIMI_API_KEY and GEMINI_API_KEY empty
+```
+
+### 2. Infrastructure (optional)
+
+```bash
+docker compose up -d postgres redis
+```
+
+### 3. Backend
+
+```bash
 cd backend
 python3.12 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip setuptools wheel
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-
-# Persistensi: buat skema lalu muat data demo (sekali saja).
-alembic upgrade head
-python -m app.dbctl seed --scenario belatung
-
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Use the Python 3.12 interpreter available on your system. On some machines this may be `python3`, `python3.12`, or a pyenv-managed interpreter.
-
-In another terminal:
+### 4. Frontend
 
 ```bash
-cd ~/projects/MonitorMBG/frontend
+cd frontend
 npm install
 npm run dev
 ```
 
-URLs:
+**URLs**
 
 - Frontend: http://localhost:3000
 - Backend health: http://localhost:8000/health
-- Backend docs: http://localhost:8000/docs
-
-## Database & Seed Workflow
-
-Perubahan operator (kasus baru dari fusion, status tiket, tautan sinyal/bukti,
-kepemilikan, jejak audit) **disimpan ke PostgreSQL dan bertahan setelah restart**.
-Saat startup backend memuat state dari DB; bila DB tidak tersedia atau belum
-di-seed, aplikasi otomatis kembali ke data demo in-memory (demo tetap jalan).
-
-Semua perintah dijalankan dari `backend/` dengan virtualenv aktif.
-
-```bash
-alembic upgrade head                        # buat/perbarui skema
-python -m app.dbctl seed                    # baseline demo (MBG-001..010)
-python -m app.dbctl seed --scenario belatung  # baseline + skenario kontaminasi
-python -m app.dbctl reset                   # kembali ke baseline (buang data runtime)
-python -m app.dbctl reset --scenario belatung
-python -m app.dbctl reset --empty           # kosongkan DB, tanpa seed
-python -m app.dbctl status                  # jumlah baris + pembagian seed/runtime
-```
-
-Mode pengembangan:
-
-| Mode | Perintah | Kegunaan |
-| --- | --- | --- |
-| Baseline demo | `dbctl seed` | Demo standar, data selalu sama |
-| Baseline + skenario | `dbctl seed --scenario belatung` | Latihan alur evidence fusion |
-| Kosong | `dbctl reset --empty` | Uji alur dari nol tanpa data bawaan |
-| Live persistent | jalankan backend seperti biasa | Perubahan operator terakumulasi lintas restart |
-
-Baris seed ditandai `is_seeded=True` beserta `seed_group` (`baseline`,
-`belatung`), sedangkan baris hasil aksi operator bernilai `is_seeded=False`.
-`dbctl status` menampilkan pemisahan itu. `reset` bersifat menyeluruh: baris
-runtime mereferensikan baris seed (bukti hasil fusion menunjuk sinyal seed),
-sehingga satu lapis tidak dapat dihapus sendiri tanpa melanggar foreign key.
-
-Skenario `belatung` memuat sinyal #19 (laporan pengawas, lampiran `4.jpg`) dan
-#20 (unggahan media sosial, lampiran `26.jpg`) dalam status belum dibentuk
-kasus, siap dipakai untuk mendemokan penggabungan sinyal menjadi satu kasus.
+- API docs: http://localhost:8000/docs
 
 ## Docker Setup
 
@@ -199,146 +211,102 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Docker compose overrides backend service hostnames to use `postgres` and `redis`. `.env.example` remains optimized for manual local development from the host.
+Docker Compose overrides `DATABASE_URL` / `REDIS_URL` for container hostnames. `.env.example` targets manual host development.
 
-## End-to-End Demo Flow
+## Environment Variables (summary)
 
-```text
-Oversight Flow Simulator
--> Submit Demo Report
--> AI-Assisted Pre-Verification
--> Evidence Fusion
--> Risk Scoring
--> Case Creation
--> Ticket Orchestration
--> Human Review
--> Audit Trail
--> Command Center Update
--> Vendor Risk Learning
-```
+See [`.env.example`](.env.example) for full comments.
 
-## Recommended Judge Demo
+| Variable | Purpose |
+|----------|---------|
+| `KIMI_API_KEY` | Live scoring, Gizi vision, Copilot chat |
+| `GEMINI_API_KEY` | Copilot RAG embeddings (local fallback if empty) |
+| `SCRAPER_MODE` | `fixture` \| `live` |
+| `SCRAPER_LIVE_PROVIDER` | `twitter`, `rss`, or comma list |
+| `TWITTERAPI_IO_API_KEY` | Live X scrape |
+| `AUTO_TICKET_ON_INTAKE` | Auto case/ticket after scrape/form when gate passes |
+| `NEXT_PUBLIC_API_URL` | Frontend → backend API base |
 
-```text
-1. Open /simulation
-2. Run the golden scenario
-3. Open generated case detail
-4. Review evidence and scoring
-5. Ask Copilot
-6. Update ticket through human review
-7. Open audit trail
-8. Open vendor profile
-9. Return to Command Center
+## Utility Scripts
+
+```bash
+# Regenerate seed signal assessments (optional Kimi vision for photos)
+cd backend && PYTHONPATH=. python scripts/bake_signal_assessments.py
+
+# Build Copilot RAG fixture JSON from seed cases
+cd backend && PYTHONPATH=. python scripts/build_copilot_rag_fixture.py
 ```
 
 ## Recommended Demo Flow
 
-```text
-Oversight Flow Simulator -> Case Detail -> Signals -> Evidence -> Scoring -> Copilot -> Ticket -> Audit Trail -> Vendor Profile -> Command Center
-```
+1. **`/simulation`** — run golden scenario (4-factor + Gizi explained)
+2. **`/intake`** — scrape (fixture) or review signal #19 (belatung + photo)
+3. **`/signals/19/review`** — Bentuk Kasus → new case appears on **`/cases`**
+4. **`/cases/case-001`** — evidence, scoring, ticket, audit tabs
+5. **`/copilot`** — ask about priority cases or belatung (RAG + Kimi if keys set)
+6. **`/lapor`** — submit public report → **`/tickets`**
+7. **`/audit-trail`** — traceability
 
-1. Start at `/simulation` and run the Low Protein Portion + Late Delivery Pattern scenario.
-2. Open the generated `case-001` detail page.
-3. Review Signals to show how complaints, official reports, and daily reports entered the system.
-4. Review Evidence to show OCR, image-text match, duplicate warning, confidence, and reviewer notes.
-5. Open Scoring to explain severity, confidence, nutrition, cost, anomaly, and final priority.
-6. Open Copilot to synthesize the case with source cards and human review disclaimer.
-7. Open Ticket and simulate an operator action such as escalation or field verification.
-8. Open Audit Trail to prove traceability.
-9. Open Vendor Profile to show whether this is recurring vendor risk.
-10. Ask Global AI Case Copilot:
-    - “Which cases are highest priority?”
-    - “Summarize the highest risk vendor.”
-    - “What evidence supports this case?”
-    - “Show nutrition-related anomalies.”
-    - “Which region has the highest risk?”
+**Copilot sample questions**
 
-## Honest AI Note
-
-The MVP uses deterministic demo intelligence to simulate AI-assisted pre-verification, evidence fusion, scoring, and bounded copilot behavior. Production deployment would replace or augment these modules with validated models, secure integrations, model monitoring, and government-approved data pipelines.
-
-## Responsive QA Checklist
-
-Before a judge demo, check the app at 320, 375, 768, 1024, and 1440 px widths. Also check browser zoom at 125% and 150%.
-
-Priority routes:
-
-- `/simulation`
-- `/cases/case-001`
-- `/`
-- `/intake`
-- `/tickets`
-- `/vendors/vnd-001`
-- `/audit-trail`
-- `/copilot`
-
-Responsive review points:
-
-- No page-level horizontal scroll except inside table/tab scroll containers.
-- Long vendor, school, issue, status, and action text wraps without breaking card layouts.
-- Tabs remain usable on small screens.
-- Score cards, metric cards, ticket actions, and timeline rows stack cleanly.
-- Copilot chat messages and source cards remain readable on mobile.
+- “Kasus mana yang prioritas tertinggi?”
+- “Apakah ada case belatung?”
+- “Apakah ada MBG-011?” (after creating runtime case; overlay syncs on chat)
 
 ## API Overview
 
-Health:
+**Health:** `GET /health`
 
-- `GET /health`
+**Intake**
 
-Analytics:
+- `POST /api/v1/intake/scrape` — start scrape job
+- `GET /api/v1/intake/scrape/status`
+- `POST /api/v1/intake/form` — Lapor MBG public form
 
-- `GET /api/v1/analytics/overview`
-- `GET /api/v1/analytics/heatmap`
-- `GET /api/v1/analytics/trends`
-- `GET /api/v1/analytics/anomalies`
+**Signals**
 
-Core data:
+- `GET /api/v1/signals`
+- `GET /api/v1/signals/{id}/assessment` — 4-factor pre-assessment
+- `POST /api/v1/signals/{id}/review` — merge / create case / defer
+- `GET /api/v1/signals/{id}/auto-evaluate`
+- `POST /api/v1/signals/{id}/auto-ticket`
 
-- `GET /api/v1/cases`
-- `GET /api/v1/cases/{case_id}`
-- `GET /api/v1/complaints`
-- `GET /api/v1/complaints/{id}`
-- `GET /api/v1/reports`
-- `GET /api/v1/reports/{id}`
-- `GET /api/v1/daily-reports`
-- `GET /api/v1/daily-reports/{id}`
-- `GET /api/v1/daily-reports/{id}/verification`
-- `GET /api/v1/evidence`
-- `GET /api/v1/evidence/{id}`
-- `GET /api/v1/nutrition/summary`
-- `GET /api/v1/nutrition/report/{id}`
-- `GET /api/v1/scoring/rankings`
-- `GET /api/v1/scoring/report/{id}`
-- `POST /api/v1/scoring/recompute/{id}`
-- `GET /api/v1/tickets`
-- `GET /api/v1/tickets/{id}`
-- `PATCH /api/v1/tickets/{id}/status`
-- `GET /api/v1/vendors`
-- `GET /api/v1/vendors/{id}`
-- `GET /api/v1/audit-trail`
-- `GET /api/v1/audit-trail/case/{case_id}`
-- `POST /api/v1/copilot/chat`
-- `POST /api/v1/copilot/chat/stream`
+**Cases, tickets, scoring, vendors, audit** — see `/docs`
 
-## Safety and Governance Note
+**Copilot**
 
-AI output is a pre-verification signal. Final decisions remain with authorized operators. The demo uses fictional data, avoids real personal data, and is framed for PDP/SPBE/Satu Data-aligned supervision design discussions.
+- `POST /api/v1/copilot/chat` — body: `{ "message", "client_cases"?: [...] }`
+- `POST /api/v1/copilot/ingest` — re-index all cases into RAG
+
+## Data & Persistence Notes
+
+| Data | Persistence |
+|------|-------------|
+| Seed cases/signals (#1–20) | Code + JSON fixtures |
+| Runtime cases/signals (session) | Backend RAM — **lost on restart** |
+| Operator UI overlay | Browser `localStorage` — survives refresh |
+| Copilot RAG index | Backend RAM — rebuilt on startup + chat sync |
+| `copilot_rag_fixture.json` | Disk cache for seed embeddings only |
+
+Clear runtime overlay (browser console): `localStorage.removeItem('mbg.runtimeOverlay.v1')`
+
+## Safety and Governance
+
+AI output is **pre-verification**. Final decisions remain with authorized operators. Demo data is fictional. Copilot and scoring responses include governance notices.
 
 ## Known Limitations
 
-- Seed data is deterministic; run `alembic upgrade head` + `python -m app.dbctl seed` once to enable persistence.
-- Without a reachable database the app falls back to in-memory demo data and runtime changes are lost on restart.
-- Reports/daily reports remain derived projections over cases (no tables of their own).
-- Celery tasks are scaffolded but not required for the current demo.
-- Real model inference is intentionally excluded from default setup.
+- In-memory runtime; restart clears backend state (frontend overlay partially compensates)
+- Copilot without API keys uses local embeddings + rules/keyword fallbacks
+- Kimi Code keys may not work on all Moonshot embedding endpoints — use scoring/chat paths documented in `.env.example`
+- PostgreSQL/Celery scaffolds exist but are not required for the demo path
+- Ticket/case mutations in overlay are not a substitute for production persistence
 
 ## Next Development Phase
 
-- Move read paths onto async ORM queries so the process holds no shared mutable state.
-- Add authentication, RBAC, and operator identity.
-- Add vendor licensing/perizinan workflows.
-- Add production evidence storage and chain-of-custody controls.
-- Integrate evaluated NLP/CV/OCR models behind clearly governed interfaces.
-- Add real Satu Data-compatible integration contracts.
-- Expand tests and CI/CD.
+- Persist runtime cases/signals/tickets to PostgreSQL
+- Authentication, RBAC, operator identity
+- Production evidence storage and chain-of-custody
+- Evaluated CV/OCR behind governed interfaces
+- Satu Data–compatible integration contracts
+- Expanded tests and CI/CD
