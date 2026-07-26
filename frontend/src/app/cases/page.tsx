@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Filter, Search } from "lucide-react";
+import { ArrowDownWideNarrow, Filter, Search } from "lucide-react";
 
 import GovernanceNote from "@/components/monitoring/GovernanceNote";
 import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
@@ -14,6 +14,19 @@ import { overlayCases } from "@/lib/runtimeOverlay";
 import { fmtGizi, fmtScore, normalizeCase } from "@/lib/scoreDisplay";
 import type { ListResponse, OversightCase } from "@/types/monitoring";
 
+// Urutan daftar kasus. Default mengikuti backend (demo_data.oversight_cases):
+// skor prioritas tertinggi di atas.
+const SORTS = {
+  "Skor tertinggi": (a: OversightCase, b: OversightCase) =>
+    b.score.final_priority_score - a.score.final_priority_score,
+  "Terbaru diperbarui": (a: OversightCase, b: OversightCase) =>
+    Date.parse(b.updated_at) - Date.parse(a.updated_at),
+  "Bukti terbanyak": (a: OversightCase, b: OversightCase) =>
+    b.evidence_count - a.evidence_count,
+} satisfies Record<string, (a: OversightCase, b: OversightCase) => number>;
+
+type SortKey = keyof typeof SORTS;
+
 export default function CasesPage() {
   const [cases, setCases] = useState<OversightCase[]>([]);
   const [source, setSource] = useState<"api" | "fallback">("fallback");
@@ -23,6 +36,7 @@ export default function CasesPage() {
   const [status, setStatus] = useState("Semua");
   const [region, setRegion] = useState("Semua");
   const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState<SortKey>("Skor tertinggi");
 
   useEffect(() => {
     async function load() {
@@ -34,10 +48,8 @@ export default function CasesPage() {
         if (idx >= 0) merged[idx] = normalizeCase({ ...merged[idx], ...normalized, score: normalized.score });
         else merged.push(normalized);
       }
-      // Kasus overlay di-push ke akhir, jadi urutan dari backend harus dipulihkan
-      // dengan kunci yang sama (demo_data.oversight_cases) — tanpa ini kasus baru
-      // berskor tinggi nyangkut di bawah kasus lama berskor rendah.
-      merged.sort((a, b) => b.score.final_priority_score - a.score.final_priority_score);
+      // Urutan tampil ditentukan `filtered` (lihat SORTS), jadi urutan array di
+      // sini tidak penting — termasuk kasus overlay yang di-push ke akhir.
       setCases(merged);
       setSource(result.source);
       setError(result.error);
@@ -52,7 +64,7 @@ export default function CasesPage() {
   }, []);
 
   const filtered = useMemo(() => {
-    return cases.filter((item) => {
+    const rows = cases.filter((item) => {
       const haystack = `${item.title} ${item.vendor_name} ${item.school} ${item.case_id} ${item.issue_category}`.toLowerCase();
       return (
         (priority === "Semua" || item.priority_label === priority) &&
@@ -61,7 +73,11 @@ export default function CasesPage() {
         (!query || haystack.includes(query.toLowerCase()))
       );
     });
-  }, [cases, priority, query, region, status]);
+    // Salin sebelum sort: filter() memang sudah menghasilkan array baru, tapi
+    // sort di sini yang menentukan urutan tampil — termasuk kasus overlay yang
+    // ditambahkan di akhir saat load.
+    return rows.sort(SORTS[sortBy]);
+  }, [cases, priority, query, region, status, sortBy]);
 
   if (loading) return <LoadingState />;
 
@@ -101,10 +117,11 @@ export default function CasesPage() {
               className="h-9 w-full rounded-md border border-border bg-surface pl-9 pr-3 text-sm outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 xl:flex xl:shrink-0">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:flex xl:shrink-0">
             <FilterSelect label="Prioritas" value={priority} options={["Semua", "Kritis", "Tinggi", "Sedang", "Rendah"]} onChange={setPriority} />
             <FilterSelect label="Status" value={status} options={["Semua", ...statuses]} onChange={setStatus} />
             <FilterSelect label="Wilayah" value={region} options={["Semua", ...regions]} onChange={setRegion} />
+            <FilterSelect label="Urutkan" value={sortBy} options={Object.keys(SORTS)} onChange={(v) => setSortBy(v as SortKey)} />
           </div>
         </div>
       </section>
@@ -164,10 +181,12 @@ function FilterSelect({
   options: string[];
   onChange: (value: string) => void;
 }) {
+  // "Urutkan" mengubah urutan, bukan menyaring — ikonnya dibedakan.
+  const Icon = label === "Urutkan" ? ArrowDownWideNarrow : Filter;
   return (
     <label className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
       <span className="hidden items-center gap-1 lg:inline-flex">
-        <Filter className="h-3.5 w-3.5" />
+        <Icon className="h-3.5 w-3.5" />
         {label}
       </span>
       <select
