@@ -33,7 +33,8 @@ async def get_severity_rankings(
     items = sorted(demo_data.SCORES, key=lambda item: item["final_priority_score"], reverse=True)
     if severity:
         items = [item for item in items if item["priority_label"].lower() == severity.lower()]
-    return {"items": items[:limit], "total": len(items)}
+    items = [demo_data._normalize_score(item) for item in items[:limit]]
+    return {"items": items, "total": len(items)}
 
 
 @router.post("/recompute/{report_id}")

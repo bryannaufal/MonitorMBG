@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { ClipboardList, FileText, Megaphone, MessageSquareWarning } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ClipboardList, FileText, Loader2, Megaphone, MessageSquareWarning } from "lucide-react";
 
 import GovernanceNote from "@/components/monitoring/GovernanceNote";
 import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
@@ -10,8 +10,18 @@ import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 import { getWithFallback } from "@/lib/api";
 import { asList, fallbackCases, fallbackSignals } from "@/lib/demoFallback";
+import { readIntakeCache, writeIntakeCache } from "@/lib/intakeCache";
 import { applySignals, overlayCases } from "@/lib/runtimeOverlay";
-import { caseNumber } from "@/lib/utils";
+import {
+  getScrapeStatus,
+  isScrapeBusy,
+  readStoredScrapeStatus,
+  resumeScrapePolling,
+  startScrape,
+  subscribeScrape,
+  type ScrapeJobStatus,
+} from "@/lib/scrapeSession";
+import { caseNumber, signalPriorityScore } from "@/lib/utils";
 import type { ListResponse, OversightCase, Signal } from "@/types/monitoring";
 
 const ANY = "Semua";
@@ -27,37 +37,148 @@ const QUEUES: { id: Queue; label: string }[] = [
 
 const DONE_STATUSES = new Set(["Selesai", "Selesai / Arsip", "Ditutup"]);
 
+type SortBy = "recent" | "priority";
+const SORT_OPTIONS: { id: SortBy; label: string }[] = [
+  { id: "recent", label: "Terbaru" },
+  { id: "priority", label: "Prioritas tertinggi" },
+];
+
 export default function IntakePage() {
   const [signals, setSignals] = useState<Signal[]>([]);
   const [caseStatus, setCaseStatus] = useState<Record<string, string>>({});
+  const [casePriority, setCasePriority] = useState<Record<string, number>>({});
   const [source, setSource] = useState<"api" | "fallback">("fallback");
   const [error, setError] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
+  const [scrapeStatus, setScrapeStatus] = useState<ScrapeJobStatus>(() => getScrapeStatus());
+  const [scrapeError, setScrapeError] = useState<string | null>(null);
+
+  const applyListData = useCallback(
+    (
+      sigItems: Signal[],
+      caseItems: OversightCase[],
+      nextSource: "api" | "fallback",
+      nextError?: string,
+    ) => {
+      setSignals(applySignals(sigItems));
+      const statusMap: Record<string, string> = {};
+      const priorityMap: Record<string, number> = {};
+      for (const c of caseItems) {
+        statusMap[c.case_id] = c.status;
+        priorityMap[c.case_id] = c.score?.final_priority_score ?? 0;
+      }
+      for (const c of overlayCases()) {
+        statusMap[c.case_id] = c.status;
+        priorityMap[c.case_id] = c.score?.final_priority_score ?? priorityMap[c.case_id] ?? 0;
+      }
+      setCaseStatus(statusMap);
+      setCasePriority(priorityMap);
+      setSource(nextSource);
+      setError(nextError);
+      writeIntakeCache({
+        signals: applySignals(sigItems),
+        caseStatus: statusMap,
+        casePriority: priorityMap,
+        source: nextSource,
+        error: nextError,
+      });
+    },
+    [],
+  );
+
+  const loadInbox = useCallback(
+    async (opts?: { preferCacheOnFallback?: boolean }) => {
+      const cached = readIntakeCache();
+      const [sigRes, caseRes] = await Promise.all([
+        getWithFallback<ListResponse<Signal>>("/signals", asList(fallbackSignals)),
+        getWithFallback<ListResponse<OversightCase>>("/cases", asList(fallbackCases)),
+      ]);
+
+      const apiOk = sigRes.source === "api" && caseRes.source === "api";
+      if (!apiOk && opts?.preferCacheOnFallback && cached) {
+        setSignals(cached.signals);
+        setCaseStatus(cached.caseStatus);
+        setCasePriority(cached.casePriority);
+        setSource(cached.source);
+        setError(sigRes.error ?? caseRes.error ?? cached.error);
+        return;
+      }
+
+      const mergedCases = [...caseRes.data.items];
+      for (const c of overlayCases()) {
+        if (!mergedCases.some((item) => item.case_id === c.case_id)) mergedCases.push(c);
+      }
+      applyListData(
+        sigRes.data.items,
+        mergedCases,
+        apiOk ? "api" : "fallback",
+        sigRes.error ?? caseRes.error,
+      );
+    },
+    [applyListData],
+  );
+
+  useEffect(() => {
+    const cached = readIntakeCache();
+    const storedScrape = readStoredScrapeStatus();
+    if (cached) {
+      setSignals(cached.signals);
+      setCaseStatus(cached.caseStatus);
+      setCasePriority(cached.casePriority);
+      setSource(cached.source);
+      setError(cached.error);
+      setLoading(false);
+    }
+    if (storedScrape) setScrapeStatus(storedScrape);
+
+    resumeScrapePolling();
+    const unsub = subscribeScrape(setScrapeStatus);
+
+    void loadInbox({ preferCacheOnFallback: !!cached }).finally(() => setLoading(false));
+
+    return unsub;
+  }, [loadInbox]);
+
+  useEffect(() => {
+    if (scrapeStatus.phase === "done") {
+      setScrapeError(null);
+      void loadInbox();
+      return;
+    }
+    if (scrapeStatus.phase === "error") {
+      setScrapeError(scrapeStatus.error ?? "Scrape gagal.");
+    }
+  }, [scrapeStatus.phase, scrapeStatus.job_id, scrapeStatus.error, loadInbox]);
+
+  async function runScrape() {
+    setScrapeError(null);
+    try {
+      await startScrape();
+    } catch {
+      setScrapeError("Scrape gagal — pastikan backend berjalan.");
+    }
+  }
+
+  const scraping = isScrapeBusy(scrapeStatus);
+  const scrapeMsg =
+    scrapeStatus.phase === "done" && scrapeStatus.result?.message
+      ? scrapeStatus.result.message
+      : null;
 
   const [queue, setQueue] = useState<Queue>("action");
   const [fSource, setFSource] = useState(ANY);
   const [fUrgency, setFUrgency] = useState(ANY);
   const [fRegion, setFRegion] = useState(ANY);
+  const [sortBy, setSortBy] = useState<SortBy>("recent");
 
-  useEffect(() => {
-    async function load() {
-      const [sigRes, caseRes] = await Promise.all([
-        getWithFallback<ListResponse<Signal>>("/signals", asList(fallbackSignals)),
-        getWithFallback<ListResponse<OversightCase>>("/cases", asList(fallbackCases)),
-      ]);
-      // Overlay runtime menang: tautan/kasus hasil fusion pada sesi ini tetap
-      // tampil walau API sudah restart dan mengembalikan data seed.
-      setSignals(applySignals(sigRes.data.items));
-      const statusMap: Record<string, string> = {};
-      for (const c of caseRes.data.items) statusMap[c.case_id] = c.status;
-      for (const c of overlayCases()) statusMap[c.case_id] = c.status;
-      setCaseStatus(statusMap);
-      setSource(sigRes.source === "api" && caseRes.source === "api" ? "api" : "fallback");
-      setError(sigRes.error ?? caseRes.error);
-      setLoading(false);
-    }
-    load();
-  }, []);
+  function intakeBadge(origin?: string) {
+    if (!origin) return null;
+    if (origin === "scraper_live") return <StatusBadge label="RSS Live" />;
+    if (origin === "scraper_twitter") return <StatusBadge label="X Live" />;
+    if (origin === "scraper_fixture") return <StatusBadge label="Scraped" />;
+    if (origin === "public_form") return <StatusBadge label="Formulir" />;
+    return null;
+  }
 
   function classify(s: Signal): Queue {
     if (!s.case_id) return "action";
@@ -78,16 +199,23 @@ export default function IntakePage() {
   }, [signals]);
 
   const visible = useMemo(() => {
-    return signals
+    const filtered = signals
       .filter((s) => (queue === "all" ? true : classify(s) === queue))
       .filter((s) => (fSource === ANY || s.source === fSource))
       .filter((s) => (fUrgency === ANY || s.urgency === fUrgency))
-      .filter((s) => (fRegion === ANY || s.region === fRegion))
-      .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [signals, caseStatus, queue, fSource, fUrgency, fRegion]);
+      .filter((s) => (fRegion === ANY || s.region === fRegion));
 
-  if (loading) return <LoadingState />;
+    return filtered.sort((a, b) => {
+      if (sortBy === "priority") {
+        const diff = signalPriorityScore(b, casePriority) - signalPriorityScore(a, casePriority);
+        if (diff !== 0) return diff;
+      }
+      return Date.parse(b.created_at) - Date.parse(a.created_at);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signals, caseStatus, casePriority, queue, fSource, fUrgency, fRegion, sortBy]);
+
+  if (loading && signals.length === 0) return <LoadingState label="Memuat Kotak Masuk Sinyal..." />;
 
   return (
     <div className="space-y-6">
@@ -97,7 +225,20 @@ export default function IntakePage() {
         breadcrumbs={[{ label: "Pusat Kendali", href: "/" }, { label: "Kotak Masuk Sinyal" }]}
         source={source}
         error={error}
+        action={
+          <button
+            type="button"
+            onClick={runScrape}
+            disabled={scraping}
+            className="rounded-md bg-brand-500 px-3 py-2 text-xs font-medium text-white hover:bg-brand-400 disabled:opacity-50"
+          >
+            {scraping ? "Scraping…" : "Scrape Sosmed"}
+          </button>
+        }
       />
+      <ScrapeProgress status={scrapeStatus} />
+      {scrapeMsg ? <p className="text-sm text-emerald-400">{scrapeMsg}</p> : null}
+      {scrapeError ? <p className="text-sm text-red-400">{scrapeError}</p> : null}
       <GovernanceNote compact />
       <HelperPanel>
         Sinyal yang sudah ditangani tidak dihapus dari antrean. Gunakan tab status untuk memisahkan yang{" "}
@@ -129,10 +270,17 @@ export default function IntakePage() {
         </div>
       </div>
 
-      <section className="grid grid-cols-1 gap-3 rounded-xl border border-border bg-surface-raised p-4 sm:grid-cols-3">
+      <section className="grid grid-cols-1 gap-3 rounded-xl border border-border bg-surface-raised p-4 sm:grid-cols-2 lg:grid-cols-4">
         <FilterSelect label="Sumber" value={fSource} options={options.sources} onChange={setFSource} />
         <FilterSelect label="Tingkat Urgensi" value={fUrgency} options={options.urgencies} onChange={setFUrgency} />
         <FilterSelect label="Wilayah" value={fRegion} options={options.regions} onChange={setFRegion} />
+        <FilterSelect
+          label="Urutkan"
+          value={sortBy}
+          options={SORT_OPTIONS.map((o) => o.id)}
+          optionLabels={Object.fromEntries(SORT_OPTIONS.map((o) => [o.id, o.label]))}
+          onChange={(v) => setSortBy(v as SortBy)}
+        />
       </section>
 
       <section className="min-w-0 overflow-hidden rounded-xl border border-border bg-surface-raised">
@@ -158,8 +306,9 @@ export default function IntakePage() {
                         <SourceIcon source={signal.source} />
                         <div>
                           <p className="line-clamp-2 break-words font-medium">{signal.summary}</p>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {signal.source} · {new Date(signal.created_at).toLocaleString("id-ID")}
+                          <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                            <span>{signal.source} · {new Date(signal.created_at).toLocaleString("id-ID")}</span>
+                            {intakeBadge(signal.intake_origin)}
                           </p>
                         </div>
                       </div>
@@ -211,6 +360,52 @@ export default function IntakePage() {
 // CTA mengikuti status: terhubung → Buka Kasus; selesai → Lihat Kasus;
 // belum terhubung → Tinjau & Bentuk Kasus. Tidak pernah menawarkan pembentukan
 // kasus baru untuk sinyal yang sudah terhubung.
+function ScrapeProgress({ status }: { status: ScrapeJobStatus }) {
+  const busy = isScrapeBusy(status);
+  const showError = status.phase === "error";
+  if (!busy && !showError) return null;
+
+  const total = status.total ?? 0;
+  const current = status.current ?? 0;
+  const pct =
+    status.phase === "scoring" && total > 0
+      ? Math.round((current / total) * 100)
+      : status.phase === "fetching"
+        ? null
+        : status.phase === "done"
+          ? 100
+          : 0;
+
+  return (
+    <div className="rounded-xl border border-brand-500/30 bg-brand-500/5 p-4">
+      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+        {busy ? <Loader2 className="h-4 w-4 shrink-0 animate-spin text-brand-300" /> : null}
+        <span>{status.label ?? "Memproses scrape..."}</span>
+        {status.phase === "scoring" && total > 0 ? (
+          <span className="text-muted-foreground">
+            ({current}/{total})
+          </span>
+        ) : null}
+      </div>
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-overlay">
+        {pct === null ? (
+          <div className="h-full w-1/3 animate-pulse rounded-full bg-brand-400" />
+        ) : (
+          <div
+            className="h-full rounded-full bg-brand-400 transition-all duration-500"
+            style={{ width: `${Math.max(pct, busy ? 8 : 0)}%` }}
+          />
+        )}
+      </div>
+      {busy ? (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Scrape berjalan di server — Anda bisa pindah tab; progress akan lanjut saat kembali ke halaman ini.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function CtaCell({ signalId, caseId, queue }: { signalId: number; caseId: string | null; queue: Queue }) {
   if (caseId && queue === "linked") {
     return (
@@ -237,11 +432,13 @@ function FilterSelect({
   label,
   value,
   options,
+  optionLabels,
   onChange,
 }: {
   label: string;
   value: string;
   options: string[];
+  optionLabels?: Record<string, string>;
   onChange: (value: string) => void;
 }) {
   return (
@@ -253,7 +450,7 @@ function FilterSelect({
         className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground"
       >
         {options.map((opt) => (
-          <option key={opt} value={opt}>{opt}</option>
+          <option key={opt} value={opt}>{optionLabels?.[opt] ?? opt}</option>
         ))}
       </select>
     </label>

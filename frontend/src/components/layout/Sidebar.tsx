@@ -28,7 +28,10 @@ const navGroups = [
   },
   {
     label: "Intake",
-    items: [{ name: "Kotak Masuk Sinyal", href: "/intake", icon: Inbox }],
+    items: [
+      { name: "Kotak Masuk Sinyal", href: "/intake", icon: Inbox },
+      { name: "Lapor MBG (Publik)", href: "/lapor", icon: ClipboardList },
+    ],
   },
   {
     label: "Kerja Kasus",

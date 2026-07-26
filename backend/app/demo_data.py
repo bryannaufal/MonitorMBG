@@ -209,6 +209,20 @@ def normalise_case_status(status: str | None) -> str:
     return LEGACY_CASE_STATUS.get(status, status)
 
 
+def _normalize_score(score: dict[str, Any]) -> dict[str, Any]:
+    """Pastikan skor kasus selalu punya field penuh (data lama / runtime)."""
+    out = dict(score)
+    if out.get("severity_score") is None:
+        out["severity_score"] = 0
+    if out.get("confidence_score") is None:
+        out["confidence_score"] = 0
+    if out.get("actionability_score") is None:
+        out["actionability_score"] = 0
+    if "nutrition_score" not in out:
+        out["nutrition_score"] = None
+    return out
+
+
 def _build_case(case: dict[str, Any]) -> dict[str, Any]:
     cid = case["case_id"]
     vendor = _vendor_lookup[case["vendor_id"]]
@@ -226,7 +240,7 @@ def _build_case(case: dict[str, Any]) -> dict[str, Any]:
     # alias for older frontend consumers.
     tickets = [ticket for ticket in TICKETS if ticket["case_id"] == cid]
     ticket = tickets[0] if tickets else None
-    score = sd.RISK_BY_CASE[cid]
+    score = _normalize_score(sd.RISK_BY_CASE[cid])
     audit_events = [a for a in AUDIT_TRAIL if a["case_id"] == cid]
     signals_count = len([s for s in SIGNALS if s.get("case_id") == cid])
     what_happened = (
@@ -327,7 +341,7 @@ def copilot_answer(message: str, conversation_id: str | None = None) -> dict[str
     sources: list[dict[str, Any]] = []
 
     if any(k in query for k in ("gizi", "protein", "nutrition")):
-        related = [s for s in SCORES if s["nutrition_concern_score"] >= 70][:3] or top
+        related = [s for s in SCORES if s["severity_score"] >= 70][:3] or top
         answer = (
             "Anomali terkait gizi terkonsentrasi pada kasus berisiko tinggi dengan estimasi protein rendah "
             "atau bukti menu belum lengkap. Sinyal terkuat adalah "

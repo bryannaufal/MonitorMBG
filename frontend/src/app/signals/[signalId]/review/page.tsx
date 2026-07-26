@@ -14,12 +14,14 @@ import {
 } from "lucide-react";
 
 import GovernanceNote from "@/components/monitoring/GovernanceNote";
+import GiziBar from "@/components/monitoring/GiziBar";
 import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
 import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 import { api } from "@/lib/api";
 import * as store from "@/lib/reviewStore";
 import * as overlay from "@/lib/runtimeOverlay";
+import { evidenceMediaUrl } from "@/lib/utils";
 import type { AssignmentOptions, Signal } from "@/types/monitoring";
 
 type Decision = "merge" | "create" | "defer";
@@ -361,7 +363,7 @@ export default function SignalReviewPage() {
             {sig.attachment_path ? (
               <div className="mt-4 max-w-md">
                 <div className="relative aspect-video w-full overflow-hidden rounded-md border border-border bg-surface-overlay">
-                  <Image src={sig.attachment_path} alt={sig.attachment_title ?? "Lampiran sinyal"} fill unoptimized className="object-cover" sizes="(max-width: 768px) 100vw, 400px" />
+                  <Image src={evidenceMediaUrl(sig.attachment_path)!} alt={sig.attachment_title ?? "Lampiran sinyal"} fill unoptimized className="object-cover" sizes="(max-width: 768px) 100vw, 400px" />
                 </div>
                 <p className="mt-2 break-words text-xs text-muted-foreground">
                   {sig.attachment_title} · Sumber: {sig.attachment_source ?? sig.source}
@@ -581,15 +583,30 @@ export default function SignalReviewPage() {
       {/* 4. Penilaian Awal & Override */}
       {assessment ? (
         <SectionCard icon={ShieldAlert} title="4. Penilaian Awal Sistem (Pra-Verifikasi)">
-          <HelperPanel>Nilai berikut adalah penilaian awal sistem, bukan keputusan final. Operator dapat menyesuaikan dengan justifikasi.</HelperPanel>
+          <HelperPanel>
+            Nilai berikut penilaian awal sistem (pra-verifikasi), bukan keputusan final — operator dapat menyesuaikan dengan justifikasi.
+            Skor prioritas suggested = 50% dampak isu + 25% kepercayaan sumber + 25% dapat ditindak. Gizi di bawah hanya informasi tambahan.
+          </HelperPanel>
           <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <ScoreBar label="Dampak / keparahan" value={assessment.severity_score} />
-              <ScoreBar label="Keyakinan" value={assessment.confidence_score} />
-              <ScoreBar label="Kecukupan menu / gizi" value={assessment.nutrition_concern_score} />
-              <ScoreBar label="Anomali biaya" value={assessment.cost_anomaly_score} />
-              <ScoreBar label="Pola / kejadian berulang" value={assessment.anomaly_score} />
-              <ScoreBar label="Skor prioritas awal" value={assessment.final_priority_score} />
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <ScoreBar label="Dampak isu (severity)" value={assessment.severity_score ?? 0} />
+                <ScoreBar label="Dapat ditindak (actionability)" value={assessment.actionability_score ?? 0} />
+                <ScoreBar label="Kepercayaan sumber (trust)" value={assessment.confidence_score ?? 0} />
+                <ScoreBar label="Skor prioritas suggested" value={assessment.final_priority_score} />
+              </div>
+              <GiziBar
+                value={assessment.nutrition_score}
+                hint="Belum dinilai (butuh lampiran foto)."
+                note="Informasi tambahan dari foto/deskripsi — tidak mempengaruhi skor prioritas suggested di atas."
+              />
+              {"reasons" in assessment && Array.isArray((assessment as { reasons?: string[] }).reasons) ? (
+                <ul className="space-y-1 text-xs text-muted-foreground">
+                  {Array.from(new Set((assessment as { reasons: string[] }).reasons)).map((r, i) => (
+                    <li key={`reason-${i}`} className="break-words">· {r}</li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
             <div className="min-w-0 rounded-lg border border-border bg-surface p-4">
               <p className="text-sm font-medium">Penyesuaian Operator</p>
@@ -743,7 +760,7 @@ function CandidateCard({
           <p className="mt-1 break-words text-xs text-muted-foreground">{meta}</p>
           {thumb ? (
             <div className="relative mt-2 aspect-video w-full max-w-[220px] overflow-hidden rounded-md border border-border">
-              <Image src={thumb} alt={title} fill unoptimized className="object-cover" sizes="220px" />
+              <Image src={evidenceMediaUrl(thumb)!} alt={title} fill unoptimized className="object-cover" sizes="220px" />
             </div>
           ) : null}
           <div className="mt-2 flex flex-wrap gap-2">
@@ -798,9 +815,9 @@ function Info({ label, value }: { label: string; value: string }) {
 function ScoreBar({ label, value }: { label: string; value: number }) {
   return (
     <div className="min-w-0 rounded-lg border border-border bg-surface p-4">
-      <div className="flex items-center justify-between gap-3">
-        <p className="break-words text-sm font-medium">{label}</p>
-        <p className="text-sm font-semibold">{value}</p>
+      <div className="flex items-start justify-between gap-2">
+        <p className="break-words text-sm font-medium leading-snug">{label}</p>
+        <p className="shrink-0 text-sm font-semibold">{value}</p>
       </div>
       <div className="mt-3 h-2 rounded-full bg-surface-overlay">
         <div className="h-2 rounded-full bg-brand-500" style={{ width: `${value}%` }} />

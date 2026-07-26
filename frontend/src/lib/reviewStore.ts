@@ -5,6 +5,7 @@
 // Jejak Audit dalam sesi yang sama. Tidak mengubah seed asli secara destruktif
 // (mutasi hanya pada salinan runtime di memori browser).
 
+import { SIGNAL_ASSESSMENT_SEED } from "@/lib/signalAssessmentSeed";
 import {
   fallbackAudit,
   fallbackCases,
@@ -15,6 +16,7 @@ import {
   fallbackUnits,
   fallbackVendors,
 } from "@/lib/demoFallback";
+import { normalizeCase } from "@/lib/scoreDisplay";
 import { caseNumber } from "@/lib/utils";
 import type {
   AuditTrailEvent,
@@ -154,11 +156,12 @@ export function getCase(caseId: string): OversightCase | null {
  * evidence sebelum endpoint review menyatakan fusion berhasil.
  */
 export function syncCase(caseData: OversightCase): void {
-  const index = fallbackCases.findIndex((c) => c.case_id === caseData.case_id);
-  if (index >= 0) fallbackCases[index] = caseData;
-  else fallbackCases.unshift(caseData);
+  const normalized = normalizeCase(caseData);
+  const index = fallbackCases.findIndex((c) => c.case_id === normalized.case_id);
+  if (index >= 0) fallbackCases[index] = normalized;
+  else fallbackCases.unshift(normalized);
 
-  for (const evidence of caseData.evidence) {
+  for (const evidence of normalized.evidence) {
     const existing = fallbackEvidence.findIndex((e) => e.id === evidence.id);
     if (existing >= 0) fallbackEvidence[existing] = evidence;
     else fallbackEvidence.push(evidence);
@@ -321,9 +324,8 @@ export function findRelated(signalId: number): RelatedResult {
 export interface Assessment {
   severity_score: number;
   confidence_score: number;
-  nutrition_concern_score: number;
-  cost_anomaly_score: number;
-  anomaly_score: number;
+  actionability_score: number;
+  nutrition_score?: number | null;
   final_priority_score: number;
   priority_label: string;
   explanation: string;
@@ -331,20 +333,52 @@ export interface Assessment {
   ai_notice: string;
 }
 
+function actionabilityFromSignal(sig: ReturnType<typeof getSignal>): number {
+  if (!sig) return 20;
+  let score = 0;
+  const unknown = "Belum teridentifikasi";
+  if (sig.region && sig.region !== unknown) score += 50;
+  if (sig.school && sig.school !== unknown) score += 50;
+  if (sig.attachment_path) score += 15;
+  return Math.min(100, score);
+}
+
+/** Estimasi gizi offline (selaras rules backend) bila ada lampiran. */
+function nutritionFromSignal(sig: ReturnType<typeof getSignal>): number | null {
+  if (!sig?.attachment_path) return null;
+  const blob = `${sig.summary} ${sig.text} ${sig.issue_category ?? ""}`.toLowerCase();
+  let score = 68;
+  const low = ["belatung", "keracunan", "kontaminasi", "busuk", "basi", "protein rendah", "porsi kecil"];
+  const high = ["protein", "sayur", "menu lengkap", "bergizi", "porsi cukup", "gizi baik"];
+  for (const kw of low) if (blob.includes(kw)) score -= 12;
+  for (const kw of high) if (blob.includes(kw)) score += 6;
+  if (blob.includes("keamanan pangan") || blob.includes("keracunan")) score -= 15;
+  return Math.max(15, Math.min(92, score));
+}
+
 export function initialAssessment(signalId: number): Assessment {
+  const seeded = SIGNAL_ASSESSMENT_SEED[signalId];
+  if (seeded) return { ...seeded };
+
   const sig = getSignal(signalId)!;
-  const conf = Math.round((sig.source_confidence ?? 0.4) * 100);
-  const base = PRIORITY_SCORE[sig.urgency] ?? 45;
-  const nutrition = (sig.issue_category || "").includes("protein") || (sig.summary || "").toLowerCase().includes("gizi") ? 50 : 30;
-  const cost = (sig.issue_category || "").includes("biaya") ? 40 : 20;
-  const recurrence = 30;
-  const final = Math.min(95, Math.round(base * 0.5 + conf * 0.2 + nutrition * 0.15 + cost * 0.1 + recurrence * 0.05));
+  const trust = Math.round((sig.source_confidence ?? 0.4) * 100);
+  const severity = PRIORITY_SCORE[sig.urgency] ?? 45;
+  const actionability = actionabilityFromSignal(sig);
+  const nutritionScore = nutritionFromSignal(sig);
+  const final = Math.min(
+    95,
+    Math.round(severity * 0.5 + trust * 0.25 + actionability * 0.25),
+  );
   const label = final >= 80 ? "Kritis" : final >= 65 ? "Tinggi" : final >= 45 ? "Sedang" : "Rendah";
   return {
-    severity_score: base, confidence_score: conf, nutrition_concern_score: nutrition,
-    cost_anomaly_score: cost, anomaly_score: recurrence, final_priority_score: final, priority_label: label,
+    severity_score: severity,
+    confidence_score: trust,
+    actionability_score: actionability,
+    nutrition_score: nutritionScore,
+    final_priority_score: final,
+    priority_label: label,
     explanation:
-      "Penilaian awal sistem (pra-verifikasi) berdasar sumber, keyakinan awal, dan kategori sinyal. Nilai ini bukan keputusan final; operator dapat menyesuaikan dengan justifikasi.",
+      "Penilaian awal sistem (pra-verifikasi): dampak isu, kepercayaan sumber, dan kesiapan tindak. Nilai ini bukan keputusan final; operator dapat menyesuaikan dengan justifikasi.",
     recommended_action: sig.vendor_id
       ? "Kumpulkan bukti tambahan sebelum verifikasi lapangan."
       : "Minta klarifikasi awal untuk mengidentifikasi vendor dan lokasi.",
@@ -379,8 +413,8 @@ export interface ReviewPayload {
   assignment?: { investigator?: string; unit?: string; urgency?: string; sla?: string; reviewer_note?: string; recommended_action?: string; secondary_owner?: string; watchers?: string[] };
   override?: {
     operator_adjusted?: boolean; priority_label?: string; final_priority_score?: number;
-    severity_score?: number; confidence_score?: number; nutrition_concern_score?: number;
-    cost_anomaly_score?: number; anomaly_score?: number; override_reason?: string;
+    severity_score?: number; confidence_score?: number; actionability_score?: number;
+    override_reason?: string;
   };
 }
 
@@ -691,9 +725,8 @@ export function reviewSignal(signalId: number, p: ReviewPayload): ReviewResult {
       case_id: cid, vendor_id: resolvedVendorId, vendor_name: vendorName || vendor.name, region,
       severity_score: ov.severity_score ?? assess.severity_score,
       confidence_score: ov.confidence_score ?? assess.confidence_score,
-      nutrition_concern_score: ov.nutrition_concern_score ?? assess.nutrition_concern_score,
-      cost_anomaly_score: ov.cost_anomaly_score ?? assess.cost_anomaly_score,
-      anomaly_score: ov.anomaly_score ?? assess.anomaly_score,
+      actionability_score: ov.actionability_score ?? assess.actionability_score ?? 0,
+      nutrition_score: ov.nutrition_score ?? assess.nutrition_score ?? null,
       final_priority_score: finalScore, priority_label: label,
       explanation: assess.explanation, recommended_action: assign.recommended_action ?? assess.recommended_action,
       computed_at: nowIso(), ai_notice: GOVERNANCE,

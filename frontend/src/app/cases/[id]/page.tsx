@@ -22,13 +22,15 @@ import {
 } from "lucide-react";
 
 import GovernanceNote from "@/components/monitoring/GovernanceNote";
+import GiziBar from "@/components/monitoring/GiziBar";
 import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
 import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 import { api } from "@/lib/api";
 import { getCase } from "@/lib/reviewStore";
 import * as overlay from "@/lib/runtimeOverlay";
-import { caseNumber } from "@/lib/utils";
+import { normalizeCase } from "@/lib/scoreDisplay";
+import { caseNumber, evidenceMediaUrl } from "@/lib/utils";
 import type { AuditTrailEvent, Evidence, OversightCase, Signal, Ticket } from "@/types/monitoring";
 
 // Aksi status tiket. Backend memvalidasi transisi; tombol yang tidak valid
@@ -117,6 +119,10 @@ export default function CaseDetailPage() {
   const [editingOwners, setEditingOwners] = useState(false);
   const [ownerDraft, setOwnerDraft] = useState({ primary_owner: "", handling_team: "", secondary_owner: "" });
   const [savingOwners, setSavingOwners] = useState(false);
+  // Phase-2: pembuatan tiket manual dengan prioritas otomatis/suggested.
+  const [ticketAuto, setTicketAuto] = useState(true);
+  const [ticketPriority, setTicketPriority] = useState("Sedang");
+  const [creatingTicket, setCreatingTicket] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -132,7 +138,7 @@ export default function CaseDetailPage() {
       // hilang dari API karena backend restart). Tanpa fallback ke kasus lain.
       const reconciled = overlay.reconcileCase(apiCase ?? fallback, params.id);
       if (reconciled) {
-        setItem(reconciled);
+        setItem(normalizeCase(reconciled));
         setCaseStatus(reconciled.status);
         setResolutionSummary(reconciled.resolution_summary ?? "");
         setSource(usedApi ? "api" : "fallback");
@@ -273,6 +279,50 @@ export default function CaseDetailPage() {
     );
     setSavingOwners(false);
     setEditingOwners(false);
+  }
+
+  /** Jalur cepat phase-2: buat tiket via ticket_service (auto/suggested priority). */
+  async function createManualTicket() {
+    if (!item) return;
+    setCreatingTicket(true);
+    try {
+      const result = await api.post<{ ticket: Ticket; case: OversightCase }, { case_id: string; auto_prioritize: boolean; priority_label?: string }>(
+        "/tickets",
+        { case_id: item.case_id, auto_prioritize: ticketAuto, priority_label: ticketAuto ? undefined : ticketPriority },
+      );
+      const next = normalizeCase(result.case);
+      setItem(next);
+      overlay.recordCase(next);
+      setActionNote(`Tiket ${result.ticket.id} dibuat (${result.ticket.priority_mode ?? "manual"}).`);
+    } catch {
+      setActionNote("Gagal membuat tiket — pastikan kasus belum punya tiket dan backend aktif.");
+    } finally {
+      setCreatingTicket(false);
+    }
+  }
+
+  /** Kunci prioritas hasil penilaian otomatis menjadi confirmed. */
+  async function confirmTicketPriority(target: Ticket) {
+    if (target.priority_mode !== "suggested") return;
+    try {
+      const result = await api.patch<{ ticket: Ticket }, Record<string, never>>(
+        `/tickets/${target.id}/priority/confirm`,
+        {},
+      );
+      setItem((cur) => {
+        if (!cur) return cur;
+        const next = {
+          ...cur,
+          ticket: cur.ticket?.id === result.ticket.id ? result.ticket : cur.ticket,
+          tickets: (cur.tickets ?? (cur.ticket ? [cur.ticket] : [])).map((t) => (t.id === result.ticket.id ? result.ticket : t)),
+        };
+        overlay.recordCase(next);
+        return next;
+      });
+      setActionNote("Prioritas suggested dikonfirmasi.");
+    } catch {
+      setActionNote("Gagal konfirmasi prioritas.");
+    }
   }
 
   async function createChildTicket() {
@@ -533,12 +583,11 @@ export default function CaseDetailPage() {
       <SectionCard icon={ShieldAlert} title="4. Penilaian Risiko">
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:col-span-2">
-            <ScoreBar label="Severity" value={item.score.severity_score} />
-            <ScoreBar label="Confidence (keyakinan)" value={item.score.confidence_score} />
-            <ScoreBar label="Kecukupan menu / gizi" value={item.score.nutrition_concern_score} />
-            <ScoreBar label="Anomali biaya" value={item.score.cost_anomaly_score} />
-            <ScoreBar label="Pola / kejadian berulang" value={item.score.anomaly_score} />
-            <ScoreBar label="Skor akhir" value={item.score.final_priority_score} />
+            <ScoreBar label="DAMPAK" value={item.score.severity_score ?? 0} />
+            <ScoreBar label="KEYAKINAN" value={item.score.confidence_score ?? 0} />
+            <ScoreBar label="DAPAT DITINDAK" value={item.score.actionability_score ?? 0} />
+            <GiziBar value={item.score.nutrition_score} />
+            <ScoreBar label="SKOR AKHIR" value={item.score.final_priority_score} />
           </div>
           <div className="min-w-0 rounded-lg border border-border bg-surface p-4">
             <StatusBadge label={item.priority_label} />
@@ -585,6 +634,15 @@ export default function CaseDetailPage() {
                 {ticket.sla_state ? <StatusBadge label={SLA_STATE_LABEL[ticket.sla_state] ?? ticket.sla_state} /> : null}
               </div>
             </div>
+            {/* Prioritas hasil penilaian otomatis (phase-2) menunggu konfirmasi operator. */}
+            {ticket.priority_mode === "suggested" ? (
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <StatusBadge label={`Suggested: ${ticket.suggested_priority_label ?? ticket.escalation_level} (${ticket.suggested_priority ?? ticket.priority})`} />
+                <button type="button" onClick={() => void confirmTicketPriority(ticket)} className="rounded-md border border-brand-500/40 bg-brand-500/10 px-3 py-1.5 text-xs font-medium">
+                  Konfirmasi Prioritas
+                </button>
+              </div>
+            ) : null}
             <p className="mt-2 text-sm text-muted-foreground">{ticket.recommended_action}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {TICKET_ACTIONS.filter((status) => (TICKET_TRANSITIONS[ticket.status] ?? TICKET_ACTIONS).includes(status)).map((status) => (
@@ -592,7 +650,34 @@ export default function CaseDetailPage() {
               ))}
             </div>
           </article>
-        ))}</div> : <HelperPanel>Belum ada tiket. Kasus ini tetap aktif dan dapat ditangani langsung.</HelperPanel>}
+        ))}</div> : (
+          <div className="mt-4 space-y-4">
+            <HelperPanel>Belum ada tiket. Kasus ini tetap aktif dan dapat ditangani langsung.</HelperPanel>
+            {/* Jalur cepat phase-2: buat tiket lewat ticket_service (auto/suggested). */}
+            <div className="rounded-lg border border-border bg-surface p-4">
+              <p className="text-sm font-medium">Buat Tiket Manual</p>
+              <label className="mt-3 flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={ticketAuto} onChange={(e) => setTicketAuto(e.target.checked)} className="accent-brand-500" />
+                Gunakan penilaian otomatis (Suggested)
+              </label>
+              {!ticketAuto ? (
+                <select value={ticketPriority} onChange={(e) => setTicketPriority(e.target.value)} className="mt-3 w-full max-w-xs rounded-md border border-border bg-surface px-3 py-2 text-sm">
+                  {SEVERITIES.map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              ) : null}
+              <button
+                type="button"
+                disabled={creatingTicket}
+                onClick={() => void createManualTicket()}
+                className="mt-4 rounded-md bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-400 disabled:opacity-50"
+              >
+                {creatingTicket ? "Membuat…" : "Buat Tiket"}
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="mt-5 space-y-3 rounded-lg border border-dashed border-border p-4">
           <p className="text-sm font-medium">Tambah tiket anak</p>
@@ -823,7 +908,8 @@ function SectionCard({
 }
 
 function EvidenceCard({ ev }: { ev: Evidence }) {
-  const isPhoto = ev.type === "photo" && ev.file_path;
+  const mediaUrl = evidenceMediaUrl(ev.file_path);
+  const isPhoto = ev.type === "photo" && mediaUrl;
   const typeLabel = ev.source?.toLowerCase().includes("media sosial")
     ? "Foto / Lampiran media sosial"
     : ev.type === "photo" ? "Foto" : ev.type;
@@ -838,7 +924,7 @@ function EvidenceCard({ ev }: { ev: Evidence }) {
       </div>
       {isPhoto ? (
         <div className="relative mt-3 aspect-video w-full overflow-hidden rounded-md border border-border bg-surface-overlay">
-          <Image src={ev.file_path!} alt={ev.title} fill unoptimized className="object-cover" sizes="(max-width: 768px) 100vw, 400px" />
+          <Image src={mediaUrl} alt={ev.title} fill unoptimized className="object-cover" sizes="(max-width: 768px) 100vw, 400px" />
         </div>
       ) : null}
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">

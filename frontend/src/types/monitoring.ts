@@ -104,6 +104,8 @@ export interface Signal {
   attachment_title?: string;
   attachment_source?: string;
   attachment_note?: string;
+  /** Runtime intake: public_form | scraper_fixture | scraper_live | scraper_twitter */
+  intake_origin?: string;
 }
 
 export interface Report {
@@ -215,9 +217,9 @@ export interface ScoreResult {
   region: string;
   severity_score: number;
   confidence_score: number;
-  nutrition_concern_score: number;
-  cost_anomaly_score: number;
-  anomaly_score: number;
+  actionability_score: number;
+  /** Estimasi kualitas gizi/porsi (0–100); null jika belum ada lampiran / penilaian vision. */
+  nutrition_score?: number | null;
   final_priority_score: number;
   priority_label: "Critical" | "High" | "Medium" | "Low" | string;
   explanation: string;
@@ -266,6 +268,12 @@ export interface Ticket {
   linked_vendor_name: string;
   linked_region: string;
   priority: number;
+  priority_label?: string;
+  priority_mode?: "suggested" | "manual" | "confirmed";
+  origin?: "auto" | "manual";
+  suggested_priority?: number;
+  suggested_priority_label?: string;
+  auto_ticket_reason?: string;
   recommended_action: string;
   linked_evidence_ids: number[];
   linked_report_ids?: number[];
@@ -303,8 +311,8 @@ export interface TicketSummary {
 
 export interface AuditTrailEvent {
   id: number;
-  case_id: string;
-  ticket_id: string;
+  case_id: string | null;
+  ticket_id: string | null;
   event_type: string;
   actor: string;
   role: string;

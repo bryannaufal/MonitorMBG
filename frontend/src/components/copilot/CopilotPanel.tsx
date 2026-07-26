@@ -5,6 +5,7 @@ import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import { Bot, ShieldCheck } from "lucide-react";
 import { api } from "@/lib/api";
+import { overlayCases } from "@/lib/runtimeOverlay";
 import type { CopilotResponse, CopilotSource } from "@/types/monitoring";
 
 interface Message {
@@ -40,7 +41,13 @@ export default function CopilotPanel() {
     setMessages((prev) => [...prev, { id: Date.now().toString(), role: "user", content: text }]);
     setLoading(true);
     try {
-      const response = await api.post<CopilotResponse, { message: string }>("/copilot/chat", { message: text });
+      const response = await api.post<
+        CopilotResponse,
+        { message: string; client_cases?: ReturnType<typeof overlayCases> }
+      >("/copilot/chat", {
+        message: text,
+        client_cases: overlayCases(),
+      });
       setMessages((prev) => [
         ...prev,
         {
@@ -57,7 +64,7 @@ export default function CopilotPanel() {
           id: (Date.now() + 1).toString(),
           role: "assistant",
           content:
-            "Saya tidak dapat menjangkau layanan asisten backend saat ini. Panduan demo offline: tinjau tiket Kritis dan Tinggi lebih dulu, verifikasi paket bukti, dan catat semua keputusan operator di jejak audit.\n\nSintesis berbantuan AI, memerlukan tinjauan operator.",
+            "Saya tidak dapat menjangkau layanan asisten backend saat ini. Panduan offline: tinjau tiket Kritis dan Tinggi lebih dulu, verifikasi paket bukti, dan catat semua keputusan operator di jejak audit.\n\nSintesis berbantuan AI, memerlukan tinjauan operator.",
         },
       ]);
     } finally {
@@ -73,13 +80,13 @@ export default function CopilotPanel() {
         </div>
         <div className="min-w-0">
           <h2 className="break-words text-lg font-semibold">Asisten Ringkasan Kasus</h2>
-          <p className="break-words text-xs text-brand-400">Sintesis demo terbatas &bull; sumber demo internal</p>
+          <p className="break-words text-xs text-brand-400">Sintesis terbatas &bull; sumber internal</p>
         </div>
       </div>
       <div className="border-b border-border bg-brand-500/10 px-4 py-3 text-xs text-brand-800 dark:text-brand-100">
         <div className="flex items-start gap-2">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-300" />
-          <span className="min-w-0 break-words">Sintesis berbantuan AI, memerlukan tinjauan operator. Tidak ada API eksternal yang dipanggil secara bawaan.</span>
+          <span className="min-w-0 break-words">Sintesis berbantuan AI, memerlukan tinjauan operator. RAG memakai Gemini bila key tersedia; fallback embedding lokal tanpa API. Chat sintesis memakai Kimi.</span>
         </div>
       </div>
       <div className="border-b border-border bg-surface-raised px-4 py-3">
@@ -102,7 +109,7 @@ export default function CopilotPanel() {
           <ChatMessage key={msg.id} role={msg.role} content={msg.content} sources={msg.sources} />
         ))}
         {loading ? (
-          <ChatMessage role="assistant" content="Menyusun ringkasan dari sumber demo internal..." />
+          <ChatMessage role="assistant" content="Menyusun ringkasan dari sumber internal..." />
         ) : null}
       </div>
 

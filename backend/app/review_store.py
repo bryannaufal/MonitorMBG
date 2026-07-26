@@ -21,6 +21,8 @@ from typing import Any
 from fastapi import HTTPException, status
 
 from app import persistence, seed_data as sd, ticketing
+from app.runtime_store import all_signals, get_signal as get_runtime_signal
+from app.services.scoring.risk_scorer import score_signal
 
 # Peta prioritas -> skor awal (selaras dengan _build_risk di seed_data).
 PRIORITY_SCORE = {"Kritis": 88, "Tinggi": 78, "Sedang": 58, "Rendah": 38}
@@ -41,9 +43,9 @@ def _now() -> str:
 
 
 def get_signal(signal_id: int) -> dict[str, Any]:
-    for sig in sd.SIGNALS:
-        if sig["id"] == signal_id:
-            return sig
+    sig = get_runtime_signal(signal_id)
+    if sig:
+        return sig
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Sinyal '{signal_id}' tidak ditemukan")
 
 
@@ -232,7 +234,7 @@ def find_related(signal_id: int) -> dict[str, Any]:
     sig_text = signal.get("text") or ""
     sig_district = signal.get("district") or ""
     signal_candidates = []
-    for other in sd.SIGNALS:
+    for other in all_signals():
         if other["id"] == signal_id or other.get("case_id"):
             continue
         score = 0
@@ -308,42 +310,26 @@ def find_related(signal_id: int) -> dict[str, Any]:
 
 # ── System pre-assessment (pra-verifikasi) untuk sinyal ──────────────────
 def initial_assessment(signal_id: int) -> dict[str, Any]:
-    signal = get_signal(signal_id)
-    conf = int(round((signal.get("source_confidence") or 0.4) * 100))
-    urgency = signal.get("urgency") or "Sedang"
-    base = PRIORITY_SCORE.get(urgency, 45)
-    # Sinyal minim data -> keyakinan & skor rendah.
-    severity = base
-    nutrition = 50 if "protein" in (signal.get("issue_category") or "") or "gizi" in (signal.get("summary") or "").lower() else 30
-    cost = 40 if "biaya" in (signal.get("issue_category") or "") else 20
-    recurrence = 30
-    final = min(95, int(severity * 0.5 + conf * 0.2 + nutrition * 0.15 + cost * 0.1 + recurrence * 0.05))
-    label = "Kritis" if final >= 80 else "Tinggi" if final >= 65 else "Sedang" if final >= 45 else "Rendah"
-    return {
-        "severity_score": severity,
-        "confidence_score": conf,
-        "nutrition_concern_score": nutrition,
-        "cost_anomaly_score": cost,
-        "anomaly_score": recurrence,
-        "final_priority_score": final,
-        "priority_label": label,
-        "explanation": (
-            "Penilaian awal sistem (pra-verifikasi) berdasar sumber, keyakinan awal, dan kategori sinyal. "
-            "Nilai ini bukan keputusan final; operator dapat menyesuaikan dengan justifikasi."
-        ),
-        "recommended_action": (
-            "Minta klarifikasi awal untuk mengidentifikasi vendor dan lokasi."
-            if not signal.get("vendor_id")
-            else "Kumpulkan bukti tambahan sebelum verifikasi lapangan."
-        ),
-        "ai_notice": sd.GOVERNANCE_NOTICE,
-    }
+    return score_signal(get_signal(signal_id))
 
 
 # ── Aksi review: merge / create / defer ──────────────────────────────────
 def _next_case_id() -> str:
     nums = [int("".join(ch for ch in c["case_id"] if ch.isdigit()) or 0) for c in sd.CASES]
     return f"case-{(max(nums, default=0) + 1):03d}"
+
+
+def _score_value(data: dict[str, Any], key: str, default: int) -> int:
+    """Ambil skor numerik; nilai ``None`` diperlakukan sebagai tidak ada (bukan 0)."""
+    val = data.get(key)
+    return default if val is None else int(val)
+
+
+def _merge_assessment(signal_id: int, override: dict[str, Any]) -> dict[str, Any]:
+    """Gabungkan penilaian awal dengan override operator tanpa menimpa dengan null."""
+    base = initial_assessment(signal_id)
+    clean = {k: v for k, v in override.items() if v is not None}
+    return {**base, **clean}
 
 
 def _register_risk(case_id: str, vendor: dict, override: dict[str, Any], *, region: str | None = None,
@@ -354,11 +340,12 @@ def _register_risk(case_id: str, vendor: dict, override: dict[str, Any], *, regi
         "vendor_id": vendor["id"],
         "vendor_name": vendor_name or vendor["name"],
         "region": region or vendor["region"],
-        "severity_score": override.get("severity_score", override.get("final_priority_score", 45)),
-        "confidence_score": override.get("confidence_score", 45),
-        "nutrition_concern_score": override.get("nutrition_concern_score", 30),
-        "cost_anomaly_score": override.get("cost_anomaly_score", 20),
-        "anomaly_score": override.get("anomaly_score", 30),
+        "severity_score": _score_value(
+            override, "severity_score", _score_value(override, "final_priority_score", 45),
+        ),
+        "confidence_score": _score_value(override, "confidence_score", 45),
+        "actionability_score": _score_value(override, "actionability_score", 30),
+        "nutrition_score": override.get("nutrition_score"),
         "final_priority_score": override["final_priority_score"],
         "priority_label": override["priority_label"],
         "explanation": override.get("explanation", "Penilaian ditetapkan saat pembentukan kasus."),
@@ -433,7 +420,7 @@ def _validate_selected_items(origin_signal_id: int, signal_ids: list[int],
     for sid in signal_ids:
         if sid == origin_signal_id:
             continue
-        match = next((s for s in sd.SIGNALS if s["id"] == sid), None)
+        match = next((s for s in all_signals() if s["id"] == sid), None)
         if match is None:
             raise HTTPException(status_code=422, detail=f"Sinyal terpilih '{sid}' tidak ditemukan.")
         if match.get("case_id"):
@@ -652,6 +639,8 @@ def review_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
                                     actor=actor))
         # Sinyal/bukti terkait yang dicentang ikut ditautkan ke kasus target.
         extra_linked, extra_evidence_ids = _link_selected_items(case, extra_signals, extra_evidence, audit, actor)
+        from app.services.copilot.service import index_case_for_copilot
+        index_case_for_copilot(target)
         return {"outcome": "merged", "case_id": target, "case_number": sd.case_number(target),
                 "redirect": f"/cases/{target}", "audit_events": audit,
                 "linked_signal_ids": [signal_id, *extra_linked],
@@ -712,7 +701,9 @@ def review_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
         sd.CASES.append(case)
         sd.CASE_BY_ID[cid] = case
         persistence.persist("case", case)
-        assess = {**initial_assessment(signal_id), **override}
+        # _merge_assessment already layers `override` onto initial_assessment()
+        # and adds the phase-2 risk scoring, so it supersedes the old dict spread.
+        assess = _merge_assessment(signal_id, override)
         if assignment.get("recommended_action"):
             assess["recommended_action"] = assignment["recommended_action"]
         _register_risk(
@@ -779,6 +770,8 @@ def review_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
             ))
         # Sinyal/bukti terkait yang dicentang ikut ditautkan ke kasus baru.
         extra_linked, extra_evidence_ids = _link_selected_items(case, extra_signals, extra_evidence, audit, actor)
+        from app.services.copilot.service import index_case_for_copilot
+        index_case_for_copilot(cid)
         # Tidak membuat tiket otomatis.
         return {"outcome": "created", "case_id": cid, "case_number": sd.case_number(cid),
                 "redirect": f"/cases/{cid}", "audit_events": audit,
@@ -828,7 +821,7 @@ def unlink_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
 
     # Bukti yang sumbernya semata-mata signal ini.
     other_linked_signals = {
-        s["id"] for s in sd.SIGNALS if s["id"] != signal_id and s.get("case_id") == case_id
+        s["id"] for s in all_signals() if s["id"] != signal_id and s.get("case_id") == case_id
     }
     unlinked_ev_ids: list[int] = []
     for ev in sd.EVIDENCE:
