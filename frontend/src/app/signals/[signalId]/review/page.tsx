@@ -58,6 +58,12 @@ export default function SignalReviewPage() {
   const [ncSchool, setNcSchool] = useState("");
   const [schoolManual, setSchoolManual] = useState(false);
   const [ncSummary, setNcSummary] = useState("");
+  const [ncCaseType, setNcCaseType] = useState("Oversight");
+  const [ncCaseSubtype, setNcCaseSubtype] = useState("");
+  const [ncImpact, setNcImpact] = useState("");
+  const [handlingStrategy, setHandlingStrategy] = useState<"direct" | "single_ticket" | "multi_ticket">("direct");
+  const [relatedCaseId, setRelatedCaseId] = useState("");
+  const [caseRelationship, setCaseRelationship] = useState("related");
   const [deferReason, setDeferReason] = useState("");
 
   // Penilaian & override
@@ -73,6 +79,8 @@ export default function SignalReviewPage() {
   const optionsRequest = useRef(0);
   const [investigator, setInvestigator] = useState("");
   const [unit, setUnit] = useState("");
+  const [secondaryOwner, setSecondaryOwner] = useState("");
+  const [watchers, setWatchers] = useState("");
   const [urgency, setUrgency] = useState("Sedang");
   const [reviewerNote, setReviewerNote] = useState("");
   const [recommended, setRecommended] = useState("");
@@ -168,7 +176,12 @@ export default function SignalReviewPage() {
     load();
   }, [signalId]);
 
-  const sla = useMemo(() => ({ Kritis: "24h", Tinggi: "24h", Sedang: "48h", Rendah: "72h" }[urgency] ?? "72h"), [urgency]);
+  // Mengikuti SLA_POLICIES di app/ticketing.py. Urgensi tak dikenal jatuh ke
+  // P3 (48h) — sama dengan default backend, bukan 72h.
+  const sla = useMemo(
+    () => ({ Kritis: "4h", Tinggi: "24h", Sedang: "48h", Rendah: "72h" }[urgency] ?? "48h"),
+    [urgency],
+  );
   const overrideAdjusted = useMemo(
     () => Boolean(assessment) && (ovPriority !== assessment!.priority_label || ovScore !== assessment!.final_priority_score),
     [assessment, ovPriority, ovScore],
@@ -227,11 +240,17 @@ export default function SignalReviewPage() {
         district: ncDistrict || UNKNOWN_LOCATION,
         school: ncSchool || UNKNOWN_LOCATION,
         summary: ncSummary,
+        case_type: ncCaseType,
+        case_subtype: ncCaseSubtype || undefined,
+        impact_summary: ncImpact || ncSummary,
+        handling_strategy: handlingStrategy,
+        related_case_id: relatedCaseId || undefined,
+        case_relationship: relatedCaseId ? caseRelationship : undefined,
       } : undefined,
       defer_reason: decision === "defer" ? deferReason : undefined,
       selected_signal_ids: [...selSignals],
       selected_evidence_ids: [...selEvidence],
-      assignment: { investigator: investigator || undefined, unit, urgency, sla, reviewer_note: reviewerNote, recommended_action: recommended },
+      assignment: { investigator: investigator || undefined, unit, urgency, sla, reviewer_note: reviewerNote, recommended_action: recommended, secondary_owner: secondaryOwner || undefined, watchers: watchers.split(",").map((value) => value.trim()).filter(Boolean) },
       override: {
         operator_adjusted: overrideAdjusted, priority_label: ovPriority, final_priority_score: ovScore,
         override_reason: ovReason || undefined,
@@ -471,6 +490,12 @@ export default function SignalReviewPage() {
             <div className="ml-7 grid grid-cols-1 gap-3 rounded-lg border border-border bg-surface p-4 sm:grid-cols-2">
               <Field label="Judul kasus"><input value={ncTitle} onChange={(e) => setNcTitle(e.target.value)} className={inputCls} /></Field>
               <Field label="Kategori isu"><input value={ncIssue} onChange={(e) => setNcIssue(e.target.value)} placeholder="mis. porsi protein kurang" className={inputCls} /></Field>
+              <Field label="Tipe kasus">
+                <select value={ncCaseType} onChange={(e) => setNcCaseType(e.target.value)} className={inputCls}>
+                  <option>Oversight</option><option>Keamanan pangan</option><option>Gizi & layanan</option><option>Kepatuhan vendor</option><option>Pengadaan</option>
+                </select>
+              </Field>
+              <Field label="Subtipe (opsional)"><input value={ncCaseSubtype} onChange={(e) => setNcCaseSubtype(e.target.value)} placeholder="mis. kualitas porsi" className={inputCls} /></Field>
               <Field label="Provinsi">
                 <select value={ncRegion} onChange={(e) => updateLocation(e.target.value, "", "")} className={inputCls}>
                   <option value="">Belum teridentifikasi</option>
@@ -520,8 +545,20 @@ export default function SignalReviewPage() {
               <div className="sm:col-span-2">
                 <Field label="Ringkasan kejadian"><textarea value={ncSummary} onChange={(e) => setNcSummary(e.target.value)} rows={3} className={inputCls} /></Field>
               </div>
+              <div className="sm:col-span-2">
+                <Field label="Ringkasan dampak"><textarea value={ncImpact} onChange={(e) => setNcImpact(e.target.value)} rows={2} placeholder="Dampak pada penerima layanan atau operasi yang perlu dipantau" className={inputCls} /></Field>
+              </div>
+              <Field label="Strategi penanganan">
+                <select value={handlingStrategy} onChange={(e) => setHandlingStrategy(e.target.value as typeof handlingStrategy)} className={inputCls}>
+                  <option value="direct">Tangani langsung (tanpa tiket)</option>
+                  <option value="single_ticket">Satu workstream tiket</option>
+                  <option value="multi_ticket">Beberapa workstream tiket</option>
+                </select>
+              </Field>
+              <Field label="Relasi dengan kasus lain (opsional)"><input value={relatedCaseId} onChange={(e) => setRelatedCaseId(e.target.value)} placeholder="mis. case-001" className={inputCls} /></Field>
+              {relatedCaseId ? <Field label="Jenis relasi"><select value={caseRelationship} onChange={(e) => setCaseRelationship(e.target.value)} className={inputCls}><option value="related">Terkait</option><option value="duplicate">Duplikat</option><option value="parent">Induk</option></select></Field> : null}
               <p className="text-xs text-muted-foreground sm:col-span-2">Sinyal dan bukti/laporan terpilih akan ditautkan ke kasus baru ini.</p>
-              <p className="text-xs text-muted-foreground sm:col-span-2">Tidak ada tiket yang dibuat otomatis saat kasus baru dibentuk.</p>
+              <p className="text-xs text-muted-foreground sm:col-span-2">Kasus langsung aktif sebagai “Open &amp; Monitored”. Strategi tiket hanya menentukan pola penanganan; tiket tidak dibuat otomatis.</p>
             </div>
           ) : null}
 
@@ -595,6 +632,8 @@ export default function SignalReviewPage() {
               {assignmentOptions.units.map((item) => <option key={item.id} value={item.name}>{item.name} · {item.role}</option>)}
             </select>
           </Field>
+          <Field label="Pemilik sekunder (opsional)"><input value={secondaryOwner} onChange={(e) => setSecondaryOwner(e.target.value)} placeholder="Nama pemilik pendamping" className={inputCls} /></Field>
+          <Field label="Watcher (opsional)"><input value={watchers} onChange={(e) => setWatchers(e.target.value)} placeholder="Nama 1, Nama 2" className={inputCls} /></Field>
           <Field label="Tingkat Urgensi">
             <select value={urgency} onChange={(e) => setUrgency(e.target.value)} className={inputCls}>
               {["Rendah", "Sedang", "Tinggi", "Kritis"].map((u) => <option key={u} value={u}>{u}</option>)}

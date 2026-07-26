@@ -10,26 +10,59 @@ import StatusBadge from "@/components/monitoring/StatusBadge";
 import { api, getWithFallback } from "@/lib/api";
 import { fallbackTickets } from "@/lib/demoFallback";
 import { caseNumber } from "@/lib/utils";
-import type { Ticket } from "@/types/monitoring";
+import type { Ticket, TicketSummary } from "@/types/monitoring";
 
-// Kolom board (Kanban) — hanya di halaman Tiket Tindak Lanjut.
-const COLUMNS = ["Baru", "Sedang Ditinjau", "Menunggu Klarifikasi Vendor", "Verifikasi Lapangan", "Selesai"];
+// Kolom board (Kanban). Mengikuti lifecycle di app/ticketing.py.
+const COLUMNS = [
+  "Baru",
+  "Sedang Ditinjau",
+  "Verifikasi Lapangan",
+  "Menunggu Klarifikasi Vendor",
+  "Ditahan / On Hold",
+  "Selesai",
+  "Ditutup",
+];
+
+// Transisi yang diizinkan backend; menu "Pindahkan ke" hanya menawarkan ini
+// supaya operator tidak menabrak 422.
+const TRANSITIONS: Record<string, string[]> = {
+  "Baru": ["Sedang Ditinjau", "Verifikasi Lapangan", "Menunggu Klarifikasi Vendor", "Ditahan / On Hold", "Dibatalkan"],
+  "Sedang Ditinjau": ["Verifikasi Lapangan", "Menunggu Klarifikasi Vendor", "Ditahan / On Hold", "Selesai", "Dibatalkan"],
+  "Verifikasi Lapangan": ["Sedang Ditinjau", "Menunggu Klarifikasi Vendor", "Ditahan / On Hold", "Selesai", "Dibatalkan"],
+  "Menunggu Klarifikasi Vendor": ["Sedang Ditinjau", "Verifikasi Lapangan", "Ditahan / On Hold", "Selesai", "Dibatalkan"],
+  "Ditahan / On Hold": ["Sedang Ditinjau", "Verifikasi Lapangan", "Menunggu Klarifikasi Vendor", "Dibatalkan"],
+  "Selesai": ["Ditutup", "Sedang Ditinjau"],
+  "Ditutup": ["Sedang Ditinjau"],
+  "Dibatalkan": [],
+};
+
+const SLA_STATE_LABEL: Record<string, string> = {
+  on_track: "On track", at_risk: "Berisiko", overdue: "Terlambat",
+  paused: "SLA dijeda", met: "Selesai dalam SLA", breached: "Melewati SLA",
+  unknown: "SLA tidak diketahui",
+};
+
 type TicketMessage = { tone: "success" | "warning"; text: string };
+type TicketsResponse = { items: Ticket[]; total: number; summary?: TicketSummary };
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [summary, setSummary] = useState<TicketSummary | null>(null);
   const [source, setSource] = useState<"api" | "fallback">("fallback");
   const [error, setError] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<TicketMessage | null>(null);
+  const [slaFilter, setSlaFilter] = useState("");
+  const [onlyUnassigned, setOnlyUnassigned] = useState(false);
 
   useEffect(() => {
     async function load() {
-      const result = await getWithFallback<{ items: Ticket[]; total: number }>("/tickets", {
+      const result = await getWithFallback<TicketsResponse>("/tickets", {
         items: fallbackTickets,
         total: fallbackTickets.length,
       });
       setTickets(result.data.items);
+      setSummary(result.data.summary ?? null);
       setSource(result.source);
       setError(result.error);
       setLoading(false);
@@ -37,15 +70,23 @@ export default function TicketsPage() {
     load();
   }, []);
 
+  const visible = useMemo(() => tickets.filter((t) => {
+    if (slaFilter && t.sla_state !== slaFilter) return false;
+    if (onlyUnassigned && (t.assignee ?? "").trim()) return false;
+    return true;
+  }), [tickets, slaFilter, onlyUnassigned]);
+
   const byColumn = useMemo(() => {
     const map = new Map<string, Ticket[]>(COLUMNS.map((c) => [c, []]));
-    for (const t of tickets) {
-      // Normalisasi status yang belum tercakup ke kolom "Sedang Ditinjau".
-      const col = COLUMNS.includes(t.status) ? t.status : "Sedang Ditinjau";
-      map.get(col)!.push(t);
+    for (const t of visible) {
+      // Status di luar board (mis. "Dibatalkan") mendapat kolomnya sendiri
+      // daripada disamarkan sebagai "Sedang Ditinjau" — status yang keliru
+      // tampil lebih berbahaya daripada kolom tambahan.
+      if (!map.has(t.status)) map.set(t.status, []);
+      map.get(t.status)!.push(t);
     }
     return map;
-  }, [tickets]);
+  }, [visible]);
 
   async function moveTicket(ticket: Ticket, status: string) {
     const updated = { ...ticket, status, updated_at: new Date().toISOString() };
@@ -67,6 +108,25 @@ export default function TicketsPage() {
     }
   }
 
+  // Backend is the source of truth for counters; the local tally is only for
+  // the offline demo fallback, and uses the same bucket definitions.
+  const counters: TicketSummary = summary ?? {
+    total: tickets.length,
+    open: tickets.filter((t) => t.status === "Baru").length,
+    in_progress: tickets.filter((t) => ["Sedang Ditinjau", "Verifikasi Lapangan"].includes(t.status)).length,
+    waiting: tickets.filter((t) => ["Menunggu Klarifikasi Vendor", "Ditahan / On Hold"].includes(t.status)).length,
+    resolved: tickets.filter((t) => t.status === "Selesai").length,
+    closed: tickets.filter((t) => ["Ditutup", "Dibatalkan"].includes(t.status)).length,
+    completed: tickets.filter((t) => ["Selesai", "Ditutup", "Dibatalkan"].includes(t.status)).length,
+    on_track: tickets.filter((t) => t.sla_state === "on_track").length,
+    at_risk: tickets.filter((t) => t.at_risk).length,
+    overdue: tickets.filter((t) => t.overdue).length,
+    paused: tickets.filter((t) => t.sla_state === "paused").length,
+    met_sla: tickets.filter((t) => t.sla_state === "met").length,
+    breached_sla: tickets.filter((t) => t.sla_state === "breached").length,
+    unassigned: tickets.filter((t) => !(t.assignee ?? "").trim()).length,
+  };
+
   if (loading) return <LoadingState />;
 
   return (
@@ -80,22 +140,45 @@ export default function TicketsPage() {
       />
       <GovernanceNote compact />
       <HelperPanel>
-        Tiket bukan tugas terpisah. Setiap tiket adalah catatan tindakan untuk satu kasus dan mempertahankan tautan bukti,
-        perubahan status, unit penanggung jawab, dan riwayat audit.
+        Tiket adalah workstream anak opsional di bawah kasus. Status tiket memberi visibilitas eksekusi dan masuk ke timeline kasus,
+        tetapi tidak mengubah lifecycle atau menutup kasus secara otomatis.
       </HelperPanel>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricTile label="Total Tiket" value={String(tickets.length)} />
-        <MetricTile label="Terbuka" value={String(tickets.filter((t) => t.status !== "Selesai").length)} />
-        <MetricTile label="Verifikasi Lapangan" value={String(tickets.filter((t) => t.status === "Verifikasi Lapangan").length)} />
-        <MetricTile label="Selesai" value={String(tickets.filter((t) => t.status === "Selesai").length)} />
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <MetricTile label="Total Tiket" value={String(counters.total)} />
+        <MetricTile label="Baru" value={String(counters.open)} />
+        <MetricTile label="Dikerjakan" value={String(counters.in_progress)} />
+        <MetricTile label="Menunggu" value={String(counters.waiting)} />
+        <MetricTile label="Selesai" value={String(counters.completed)} />
+        <MetricTile label="On track" value={String(counters.on_track)} />
+        <MetricTile label="Berisiko" value={String(counters.at_risk)} />
+        <MetricTile label="Terlambat" value={String(counters.overdue)} />
+        <MetricTile label="Belum ada pemilik" value={String(counters.unassigned)} />
+        <MetricTile label="Melewati SLA" value={String(counters.breached_sla)} />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-surface-raised p-3">
+        <label className="text-xs text-muted-foreground">
+          <span className="mr-2">Status SLA</span>
+          <select value={slaFilter} onChange={(e) => setSlaFilter(e.target.value)} className="rounded-md border border-border bg-surface px-2 py-1.5 text-xs text-foreground">
+            <option value="">Semua</option>
+            {Object.entries(SLA_STATE_LABEL).map(([value, label]) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+        </label>
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          <input type="checkbox" checked={onlyUnassigned} onChange={(e) => setOnlyUnassigned(e.target.checked)} className="rounded border-border" />
+          Hanya yang belum punya pemilik
+        </label>
+        <span className="text-xs text-muted-foreground">Menampilkan {visible.length} dari {tickets.length} tiket.</span>
       </div>
 
       {message ? <p className={messageClass(message.tone)}>{message.text}</p> : null}
 
       <div className="overflow-x-auto pb-2">
         <div className="flex min-w-max gap-4">
-          {COLUMNS.map((col) => {
+          {[...byColumn.keys()].map((col) => {
             const items = byColumn.get(col) ?? [];
             return (
               <div key={col} className="flex w-80 shrink-0 flex-col rounded-xl border border-border bg-surface-raised">
@@ -139,11 +222,23 @@ function TicketCard({
         <EntityChip label={caseNumber(ticket.case_id)} href={`/cases/${ticket.case_id}`} tone="case" />
       </div>
       <h3 className="mt-2 break-words text-sm font-semibold">{ticket.title}</h3>
-      <p className="mt-1 break-words text-xs text-muted-foreground">{ticket.linked_region} · {ticket.assigned_unit}</p>
+      <p className="mt-1 break-words text-xs text-muted-foreground">{ticket.linked_region} · {ticket.assignment_group ?? ticket.assigned_unit}</p>
+      <p className="mt-1 break-words text-xs text-muted-foreground">
+        Pemilik: {ticket.assignee ?? <span className="text-amber-600 dark:text-amber-400">belum ditetapkan</span>}
+      </p>
       <div className="mt-3 flex flex-wrap gap-2">
-        <StatusBadge label={`SLA ${ticket.sla}`} />
-        <StatusBadge label={ticket.escalation_level} />
+        <StatusBadge label={`SLA ${ticket.sla}${ticket.sla_policy ? ` · ${ticket.sla_policy}` : ""}`} />
+        <StatusBadge label={ticket.severity ?? ticket.escalation_level} />
+        {ticket.sla_state ? <StatusBadge label={SLA_STATE_LABEL[ticket.sla_state] ?? ticket.sla_state} /> : null}
       </div>
+      {typeof ticket.hours_remaining === "number" ? (
+        <p className="mt-2 break-words text-xs text-muted-foreground">
+          {ticket.hours_remaining >= 0
+            ? `${ticket.hours_remaining} jam tersisa`
+            : `Terlambat ${Math.abs(ticket.hours_remaining)} jam`}
+          {ticket.due_at ? ` · target ${new Date(ticket.due_at).toLocaleString("id-ID")}` : ""}
+        </p>
+      ) : null}
       <p className="mt-3 break-words text-xs text-muted-foreground">{ticket.recommended_action}</p>
       <div className="mt-3 flex flex-col gap-2">
         <Link href={`/cases/${ticket.case_id}`} className="inline-flex justify-center rounded-md bg-brand-500 px-3 py-2 text-xs font-medium text-white hover:bg-brand-400">
@@ -156,7 +251,8 @@ function TicketCard({
             onChange={(e) => onMove(ticket, e.target.value)}
             className="w-full rounded-md border border-border bg-surface-raised px-2 py-1.5 text-xs text-foreground"
           >
-            {columns.map((c) => (
+            <option value={current}>{current} (saat ini)</option>
+            {(TRANSITIONS[current] ?? columns).map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
           </select>

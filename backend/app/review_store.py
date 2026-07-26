@@ -7,8 +7,9 @@ mutable, menambah kasus/risiko dan menautkan sinyal ke list yang sama membuat
 perubahan langsung terlihat di Kotak Masuk Sinyal, Detail Kasus, dan Jejak Audit
 selama proses berjalan (satu sesi).
 
-Bila PostgreSQL aktif, perubahan yang sama juga ditulis ke DB (best-effort,
-tidak menggagalkan aksi bila DB tidak tersedia — mode demo tetap konsisten).
+Bila PostgreSQL aktif, perubahan yang sama juga ditulis ke DB lewat
+``app.persistence`` (best-effort, tidak menggagalkan aksi bila DB tidak
+tersedia — mode demo tetap konsisten).
 """
 
 from __future__ import annotations
@@ -19,11 +20,16 @@ from typing import Any
 
 from fastapi import HTTPException, status
 
-from app import seed_data as sd
+from app import persistence, seed_data as sd, ticketing
 
 # Peta prioritas -> skor awal (selaras dengan _build_risk di seed_data).
 PRIORITY_SCORE = {"Kritis": 88, "Tinggi": 78, "Sedang": 58, "Rendah": 38}
-URGENCY_TO_SLA = {"Kritis": "24h", "Tinggi": "24h", "Sedang": "48h", "Rendah": "72h"}
+# SLA usulan pada layar review. Diturunkan dari SLA_POLICIES agar tidak
+# menjadi tabel ketiga yang berbeda dari mesin SLA tiket.
+URGENCY_TO_SLA = {
+    label: ticketing.sla_label(ticketing.policy_for(label))
+    for label in ("Kritis", "Tinggi", "Sedang", "Rendah")
+}
 
 MANUAL_VENDOR_ID = "__manual__"
 UNKNOWN_LOCATION = "Belum teridentifikasi"
@@ -131,6 +137,7 @@ def _add_audit(case_id: str | None, event_type: str, description: str,
         "timestamp": _now(),
     }
     sd.AUDIT.insert(0, event)
+    persistence.persist("audit", event)
     return event
 
 
@@ -361,6 +368,7 @@ def _register_risk(case_id: str, vendor: dict, override: dict[str, Any], *, regi
     }
     sd.RISK.append(risk)
     sd.RISK_BY_CASE[case_id] = risk
+    persistence.persist("risk", risk)
     return risk
 
 
@@ -408,6 +416,7 @@ def _add_evidence_from_signal(case_id: str, signal: dict[str, Any]) -> dict[str,
         "created_at": _now(),
     }
     sd.EVIDENCE.append(ev)
+    persistence.persist("evidence", ev)
     return ev
 
 
@@ -461,11 +470,13 @@ def _link_selected_items(case: dict[str, Any], extra_signals: list[dict[str, Any
         ticket = sd.TICKET_BY_CASE.get(cid)
         if ticket and ev_id not in ticket["linked_evidence_ids"]:
             ticket["linked_evidence_ids"].append(ev_id)
+            persistence.persist("ticket", ticket)
 
     for sig in extra_signals:
         sig["case_id"] = cid
         sig["status"] = "Terhubung ke Kasus"
         sig["issue_category"] = case["issue_category"]
+        persistence.persist("signal", sig)
         linked_signal_ids.append(sig["id"])
         if "sosial" in (sig.get("source") or "").lower():
             audit.append(_add_audit(
@@ -510,6 +521,7 @@ def _link_selected_items(case: dict[str, Any], extra_signals: list[dict[str, Any
             "created_at": _now(),
         }
         sd.EVIDENCE.append(ev)
+        persistence.persist("evidence", ev)
         added_evidence_ids.append(ev["id"])
         track_ticket(ev["id"])
         audit.append(_add_audit(
@@ -519,6 +531,7 @@ def _link_selected_items(case: dict[str, Any], extra_signals: list[dict[str, Any
 
     if linked_signal_ids or added_evidence_ids:
         case["updated_at"] = _now()
+        persistence.persist("case", case)
     return linked_signal_ids, added_evidence_ids
 
 
@@ -527,6 +540,9 @@ def _case_snapshot(case_id: str) -> dict[str, Any]:
     # Import lokal menghindari circular import saat modul API memuat kedua store.
     from app import demo_data
 
+    # COMPLAINTS/REPORTS/DAILY_REPORTS adalah proyeksi atas kasus & sinyal;
+    # kasus/tautan baru harus tercermin sebelum snapshot dibaca.
+    demo_data.rebuild_derived()
     return demo_data.case_detail(case_id)
 
 
@@ -586,7 +602,9 @@ def review_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
         signal["case_id"] = target
         signal["status"] = "Terhubung ke Kasus"
         signal["issue_category"] = case["issue_category"]
+        persistence.persist("signal", signal)
         case["updated_at"] = _now()
+        persistence.persist("case", case)
         # signal_merged: penggabungan DILAKUKAN/DITERIMA operator (bukan otomatis).
         audit.append(_add_audit(
             target, "signal_merged",
@@ -600,6 +618,7 @@ def review_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
             ticket = sd.TICKET_BY_CASE.get(target)
             if ticket and ev["id"] not in ticket["linked_evidence_ids"]:
                 ticket["linked_evidence_ids"].append(ev["id"])
+                persistence.persist("ticket", ticket)
             audit.append(_add_audit(target, "evidence_added",
                                     f"Bukti '{ev['title']}' (sumber {ev['source']}) ditambahkan dari sinyal #{signal_id}. "
                                     f"Status: Perlu Ditinjau.", actor=actor))
@@ -609,6 +628,7 @@ def review_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
             if risk:
                 risk["final_priority_score"] = override["final_priority_score"]
                 risk["priority_label"] = override.get("priority_label", risk["priority_label"])
+                persistence.persist("risk", risk)
             audit.append(_add_audit(
                 target, "risk_reassessed",
                 f"Rekomendasi pra-verifikasi: skor diperbarui menjadi {override['final_priority_score']} "
@@ -619,12 +639,14 @@ def review_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
         if assignment.get("investigator"):
             before = case.get("assigned_investigator") or "Belum ditetapkan"
             case["assigned_investigator"] = assignment["investigator"]
+            persistence.persist("case", case)
             audit.append(_add_audit(target, "investigator_assigned",
                                     f"Investigator ditetapkan. Sebelum: {before}; sesudah: {assignment['investigator']}.",
                                     actor=actor))
         if assignment.get("unit"):
             before = case.get("assigned_unit") or "Belum ditetapkan"
             case["assigned_unit"] = assignment["unit"]
+            persistence.persist("case", case)
             audit.append(_add_audit(target, "responsible_unit_assigned",
                                     f"Unit penanggung jawab ditetapkan. Sebelum: {before}; sesudah: {assignment['unit']}.",
                                     actor=actor))
@@ -666,15 +688,30 @@ def review_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
             "school": school,
             "issue_category": new_case_data.get("issue_category") or signal.get("issue_category") or "belum diklasifikasi",
             "priority_label": override.get("priority_label", "Sedang"),
-            "status": "Sedang Ditinjau",
+            "severity": override.get("priority_label", "Sedang"),
+            # A case starts as an actively monitored aggregate; it can be
+            # handled directly without a child ticket.
+            "status": "Open & Monitored",
             "title": new_case_data.get("title") or f"Tinjauan sinyal: {signal['summary'][:80]}",
             "assigned_investigator": assignment.get("investigator") or None,
             "assigned_unit": assignment.get("unit") or None,
+            "primary_owner": assignment.get("investigator") or None,
+            "handling_team": assignment.get("unit") or None,
+            "secondary_owner": assignment.get("secondary_owner") or None,
+            "watchers": assignment.get("watchers") or [],
+            "case_type": new_case_data.get("case_type") or "Oversight",
+            "case_subtype": new_case_data.get("case_subtype") or None,
+            "impact_summary": new_case_data.get("impact_summary") or new_case_data.get("summary") or signal.get("summary"),
+            "handling_strategy": new_case_data.get("handling_strategy") or "direct",
+            "related_case_id": new_case_data.get("related_case_id") or None,
+            "case_relationship": new_case_data.get("case_relationship") or None,
+            "blockers": [],
             "created_at": _now(),
             "updated_at": _now(),
         }
         sd.CASES.append(case)
         sd.CASE_BY_ID[cid] = case
+        persistence.persist("case", case)
         assess = {**initial_assessment(signal_id), **override}
         if assignment.get("recommended_action"):
             assess["recommended_action"] = assignment["recommended_action"]
@@ -688,10 +725,15 @@ def review_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
         signal["case_id"] = cid
         signal["status"] = "Terhubung ke Kasus"
         signal["issue_category"] = case["issue_category"]
+        persistence.persist("signal", signal)
 
         audit.append(_add_audit(cid, "case_created",
                                 f"Kasus {sd.case_number(cid)} dibentuk dari sinyal #{signal_id}.",
                                 actor=actor))
+        audit.append(_add_audit(
+            cid, "case_monitoring_started",
+            "Kasus langsung berstatus Open & Monitored dan dapat ditangani tanpa tiket.", actor=actor,
+        ))
         audit.append(_add_audit(
             cid, "location_updated",
             f"Lokasi kasus ditetapkan. Sebelum: dari sinyal; sesudah: {region} → {district} → {school}.",
@@ -750,6 +792,7 @@ def review_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
         if not note:
             raise HTTPException(status_code=422, detail="Alasan/catatan reviewer wajib diisi saat menunda.")
         signal["reviewer_note"] = note
+        persistence.persist("signal", signal)
         audit.append(_add_audit(None, "review_deferred",
                                 f"Sinyal #{signal_id} disimpan sebagai perlu ditinjau. Catatan: {note}."))
         return {"outcome": "deferred", "signal_id": signal_id,
@@ -795,14 +838,17 @@ def unlink_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
         if ev_signal == signal_id and ev_signal not in other_linked_signals:
             ev["unlinked_from_case"] = True
             ev["review_status"] = "Dilepas dari kasus"
+            persistence.persist("evidence", ev)
             unlinked_ev_ids.append(ev["id"])
             ticket = sd.TICKET_BY_CASE.get(case_id)
             if ticket and ev["id"] in ticket.get("linked_evidence_ids", []):
                 ticket["linked_evidence_ids"].remove(ev["id"])
+                persistence.persist("ticket", ticket)
 
     # Putuskan relasi signal.
     signal["case_id"] = None
     signal["status"] = "Perlu Ditinjau"
+    persistence.persist("signal", signal)
 
     audit.append(_add_audit(
         case_id, "signal_unlinked",
@@ -818,6 +864,7 @@ def unlink_signal(signal_id: int, payload: dict[str, Any]) -> dict[str, Any]:
         ))
     if case is not None:
         case["updated_at"] = _now()
+        persistence.persist("case", case)
 
     return {
         "outcome": "unlinked",

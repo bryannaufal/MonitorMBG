@@ -12,7 +12,7 @@ from typing import Any
 
 from fastapi import HTTPException, status
 
-from app import seed_data as sd
+from app import seed_data as sd, ticketing
 
 DEMO_NOTICE = sd.GOVERNANCE_NOTICE
 
@@ -44,7 +44,8 @@ def _signal_as_complaint(sig: dict[str, Any]) -> dict[str, Any]:
         "text": sig["text"],
         "issue_category": sig.get("issue_category", "belum diklasifikasi"),
         "sentiment": "negative",
-        "severity_score": sd.RISK_BY_CASE[sig["case_id"]]["final_priority_score"] if sig.get("case_id") else 40,
+        "severity_score": (sd.RISK_BY_CASE.get(sig["case_id"]) or {}).get("final_priority_score", 40)
+        if sig.get("case_id") else 40,
         "region": sig.get("region", "Belum teridentifikasi"),
         "district": sig.get("district", "Belum teridentifikasi"),
         "school": sig.get("school", "Belum teridentifikasi"),
@@ -57,14 +58,14 @@ def _signal_as_complaint(sig: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-COMPLAINTS = [_signal_as_complaint(s) for s in SIGNALS]
+COMPLAINTS: list[dict[str, Any]] = [_signal_as_complaint(s) for s in SIGNALS]
 
 
 # ── Laporan resmi & laporan harian (satu per kasus) ──────────────────────
 def _build_reports() -> list[dict[str, Any]]:
     out = []
     for idx, case in enumerate(sd.CASES, start=1):
-        vendor = _vendor_lookup[case["vendor_id"]]
+        vendor = _vendor_lookup.get(case["vendor_id"], sd.UNIDENTIFIED_VENDOR)
         out.append({
             "id": idx,
             "case_id": case["case_id"],
@@ -80,19 +81,20 @@ def _build_reports() -> list[dict[str, Any]]:
             "evidence_count": len([e for e in EVIDENCE if e["case_id"] == case["case_id"]]),
             "status": case["status"],
             "completeness_score": max(45, 92 - idx * 4),
-            "linked_ticket_id": sd.TICKET_BY_CASE[case["case_id"]]["id"],
+            # Runtime-created cases start without a child ticket.
+            "linked_ticket_id": (sd.TICKET_BY_CASE.get(case["case_id"]) or {}).get("id"),
             "linked_risk_score": vendor["risk_score"],
         })
     return out
 
 
-REPORTS = _build_reports()
+REPORTS: list[dict[str, Any]] = _build_reports()
 
 
 def _build_daily_reports() -> list[dict[str, Any]]:
     out = []
     for idx, case in enumerate(sd.CASES, start=1):
-        vendor = _vendor_lookup[case["vendor_id"]]
+        vendor = _vendor_lookup.get(case["vendor_id"], sd.UNIDENTIFIED_VENDOR)
         mismatch = case["issue_category"] in {"ketidaksesuaian menu", "porsi protein kurang", "buah/susu tidak lengkap"}
         cost_flag = case["issue_category"] == "anomali biaya"
         out.append({
@@ -123,7 +125,20 @@ def _build_daily_reports() -> list[dict[str, Any]]:
     return out
 
 
-DAILY_REPORTS = _build_daily_reports()
+DAILY_REPORTS: list[dict[str, Any]] = _build_daily_reports()
+
+
+def rebuild_derived() -> None:
+    """Recompute the collections synthesised from cases/signals.
+
+    ``COMPLAINTS``/``REPORTS``/``DAILY_REPORTS`` have no tables of their own —
+    they are projections over ``seed_data``.  Startup hydration and any case or
+    signal mutation therefore has to refresh them, in place, because the API
+    modules bind these names at import time.
+    """
+    COMPLAINTS[:] = [_signal_as_complaint(s) for s in sd.SIGNALS]
+    REPORTS[:] = _build_reports()
+    DAILY_REPORTS[:] = _build_daily_reports()
 
 
 # ── Helper respons ───────────────────────────────────────────────────────
@@ -142,8 +157,10 @@ def get_or_404(items: list[dict[str, Any]], item_id: str | int, label: str = "It
 
 def overview() -> dict[str, Any]:
     high_risk = len([r for r in SCORES if r["final_priority_score"] >= 65])
-    open_tickets = len([t for t in TICKETS if t["status"] != "Selesai"])
+    tickets = ticketing.summarise(TICKETS)
+    open_tickets = tickets["total"] - tickets["completed"]
     return {
+        "ticket_summary": tickets,
         "total_reports": len(REPORTS) + len(DAILY_REPORTS),
         "public_signals": len(SIGNALS),
         "high_risk_cases": high_risk,
@@ -185,7 +202,11 @@ def _build_case(case: dict[str, Any]) -> dict[str, Any]:
     # Bukti yang relasinya dilepas dari kasus tidak lagi tampil pada daftar
     # aktif; barisnya tetap ada untuk audit dan asetnya tidak dihapus.
     evidence = [e for e in EVIDENCE if e["case_id"] == cid and not e.get("unlinked_from_case")]
-    ticket = sd.TICKET_BY_CASE.get(cid)
+    # Legacy seeds had one ticket per case.  The API now treats all matching
+    # rows as optional child workstreams and keeps `ticket` as a compatibility
+    # alias for older frontend consumers.
+    tickets = [ticket for ticket in TICKETS if ticket["case_id"] == cid]
+    ticket = tickets[0] if tickets else None
     score = sd.RISK_BY_CASE[cid]
     audit_events = [a for a in AUDIT_TRAIL if a["case_id"] == cid]
     signals_count = len([s for s in SIGNALS if s.get("case_id") == cid])
@@ -197,13 +218,27 @@ def _build_case(case: dict[str, Any]) -> dict[str, Any]:
         f"Kasus ini menyangkut {case['school']} di {district}, {region} dan dapat "
         f"mengindikasikan {case['issue_category']} terkait vendor dengan skor risiko {vendor['risk_score']}."
     )
+    legacy_status = {
+        "Sedang Ditinjau": "Assessing",
+        "Verifikasi Lapangan Terjadwal": "In Handling",
+        "Menunggu Klarifikasi Vendor": "Pending / Blocked",
+        "Selesai": "Resolved – Pending Verification",
+    }
+    case_status = case.get("status") or "Open & Monitored"
+    case_status = legacy_status.get(case_status, case_status)
+    handling_strategy = case.get("handling_strategy") or ("single_ticket" if tickets else "direct")
+    # Counters come from the shared ticketing engine so the case workspace and
+    # the ticket board can never report different numbers for the same rows.
+    ticket_summary = ticketing.summarise(tickets)
+    tickets = [ticketing.enrich(t) for t in tickets]
+    ticket = tickets[0] if tickets else None
     return {
         "id": cid,
         "case_id": cid,
         "case_number": sd.case_number(cid),
         "title": case["title"],
         "priority_label": case["priority_label"],
-        "status": case["status"],
+        "status": case_status,
         "vendor_id": vendor["id"],
         "vendor_name": vendor_name,
         "vendor_source_note": case.get("vendor_source_note"),
@@ -211,9 +246,11 @@ def _build_case(case: dict[str, Any]) -> dict[str, Any]:
         "district": district,
         "school": case["school"],
         "issue_category": case["issue_category"],
-        "sla_status": f"SLA {ticket['sla']}" if ticket else "SLA 72h",
-        "assigned_unit": case.get("assigned_unit") or (ticket["assigned_unit"] if ticket else "Unit Pengawasan Vendor MBG Nasional"),
-        "assigned_investigator": case.get("assigned_investigator"),
+        # No child ticket means the case has no ticket SLA — say so rather than
+        # inventing a 72h target the case was never actually held to.
+        "sla_status": case.get("sla_status") or (f"SLA {ticket['sla']}" if ticket else "Tanpa SLA tiket"),
+        "assigned_unit": case.get("handling_team") or case.get("assigned_unit") or (ticket["assigned_unit"] if ticket else "Unit Pengawasan Vendor MBG Nasional"),
+        "assigned_investigator": case.get("primary_owner") or case.get("assigned_investigator"),
         "recommended_action": score["recommended_action"],
         "summary": what_happened,
         "what_happened": what_happened,
@@ -232,6 +269,22 @@ def _build_case(case: dict[str, Any]) -> dict[str, Any]:
         "evidence": evidence,
         "score": score,
         "ticket": ticket,
+        "tickets": tickets,
+        "ticket_summary": ticket_summary,
+        "case_type": case.get("case_type") or "Oversight",
+        "case_subtype": case.get("case_subtype"),
+        "impact_summary": case.get("impact_summary") or f"Dampak potensial pada penerima layanan di {case['school']}.",
+        "severity": case.get("severity") or case["priority_label"],
+        "primary_owner": case.get("primary_owner") or case.get("assigned_investigator"),
+        "handling_team": case.get("handling_team") or case.get("assigned_unit"),
+        "secondary_owner": case.get("secondary_owner"),
+        "watchers": case.get("watchers") or [],
+        "due_at": case.get("due_at"),
+        "handling_strategy": handling_strategy,
+        "related_case_id": case.get("related_case_id"),
+        "case_relationship": case.get("case_relationship"),
+        "blockers": case.get("blockers") or [],
+        "resolution_summary": case.get("resolution_summary"),
         "copilot_sources": [
             {"label": "Kasus", "source_type": "case", "source_id": cid, "title": sd.case_number(cid)},
             {"label": "Vendor", "source_type": "vendor", "source_id": vendor["id"], "title": vendor["name"]},

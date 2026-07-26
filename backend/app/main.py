@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app import demo_data, persistence
 from app.config import settings
 from app.api.v1.router import api_v1_router
 
@@ -18,7 +19,15 @@ _EVIDENCE_DIR = Path(__file__).resolve().parents[2] / "Dataset Gambar"
 async def lifespan(app: FastAPI):
     """Application lifespan: startup and shutdown events."""
     # ── Startup ──
-    # TODO: Initialize DB connection pool, load ML models, etc.
+    # Load persisted state over the seed literals so operator changes from a
+    # previous run survive.  Falls back to in-memory demo data if the DB is
+    # unavailable or has never been seeded.
+    if persistence.hydrate():
+        demo_data.rebuild_derived()
+        print(f"🗄️  Persistensi aktif — {len(demo_data.oversight_cases())} kasus dimuat dari database.")
+    else:
+        print("💾 Persistensi nonaktif — memakai data demo in-memory. "
+              "Jalankan `python -m app.dbctl seed` untuk mengaktifkan.")
     print("🚀 MonitorMBG backend starting up...")
     yield
     # ── Shutdown ──

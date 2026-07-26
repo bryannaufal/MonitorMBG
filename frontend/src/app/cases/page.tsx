@@ -71,10 +71,10 @@ export default function CasesPage() {
       </HelperPanel>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricTile label="Kasus Aktif" value={String(cases.length)} detail="Dibentuk dari sinyal intake terhubung" />
+        <MetricTile label="Kasus Aktif" value={String(cases.filter((item) => !["Closed", "Merged / Invalid"].includes(item.status)).length)} detail="Dibentuk dari sinyal intake terhubung" />
         <MetricTile label="Kritis/Tinggi" value={String(highRisk)} detail="Perlu ditinjau segera" />
         <MetricTile label="Butir Bukti" value={String(cases.reduce((sum, item) => sum + item.evidence_count, 0))} detail="Terlampir pada kasus" />
-        <MetricTile label="Tiket Terbuka" value={String(cases.filter((item) => item.ticket && item.ticket.status !== "Selesai").length)} detail="Lapisan tindakan" />
+        <MetricTile label="Workstream terbuka" value={String(cases.reduce((sum, item) => sum + (item.tickets ?? (item.ticket ? [item.ticket] : [])).filter((ticket) => ticket.status !== "Selesai").length, 0))} detail="Tiket anak opsional" />
       </div>
 
       <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
@@ -104,7 +104,7 @@ export default function CasesPage() {
                 <div className="flex flex-wrap gap-2">
                   <EntityChip label={item.case_number} href={`/cases/${item.case_id}`} tone="case" />
                   <EntityChip label={item.vendor_name} href={`/vendors/${item.vendor_id}`} tone="vendor" />
-                  {item.ticket_id ? <EntityChip label={item.ticket_id} tone="ticket" /> : null}
+                  {(item.tickets?.length ?? (item.ticket_id ? 1 : 0)) ? <EntityChip label={`${item.tickets?.length ?? 1} workstream`} tone="ticket" /> : <StatusBadge label="Tangani langsung" />}
                 </div>
                 <h2 className="mt-3 break-words text-lg font-semibold">{item.title}</h2>
                 <p className="mt-1 break-words text-sm text-muted-foreground">

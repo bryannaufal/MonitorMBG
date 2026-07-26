@@ -21,6 +21,8 @@ class Assignment(BaseModel):
     sla: str | None = None
     reviewer_note: str | None = None
     recommended_action: str | None = None
+    secondary_owner: str | None = None
+    watchers: list[str] | None = None
 
 
 class Override(BaseModel):
@@ -45,6 +47,12 @@ class NewCase(BaseModel):
     district: str | None = None
     school: str | None = None
     summary: str | None = None
+    case_type: str | None = None
+    case_subtype: str | None = None
+    impact_summary: str | None = None
+    handling_strategy: str | None = None
+    related_case_id: str | None = None
+    case_relationship: str | None = None
 
 
 class ReviewAction(BaseModel):

@@ -25,8 +25,16 @@ import type {
   OversightCase,
   ScoreResult,
   Signal,
+  TicketSummary,
   Vendor,
 } from "@/types/monitoring";
+
+/** A case with no child tickets: every counter is zero, not undefined. */
+const EMPTY_TICKET_SUMMARY: TicketSummary = {
+  total: 0, open: 0, in_progress: 0, waiting: 0, resolved: 0, closed: 0,
+  completed: 0, on_track: 0, at_risk: 0, overdue: 0, paused: 0,
+  met_sla: 0, breached_sla: 0, unassigned: 0,
+};
 
 const GOVERNANCE =
   "Data dan analisis pada halaman ini merupakan sinyal pra-verifikasi untuk membantu prioritisasi. Verifikasi lapangan dan keputusan akhir tetap dilakukan oleh operator berwenang.";
@@ -358,11 +366,17 @@ export interface ReviewPayload {
     district?: string;
     school?: string;
     summary?: string;
+    case_type?: string;
+    case_subtype?: string;
+    impact_summary?: string;
+    handling_strategy?: "direct" | "single_ticket" | "multi_ticket";
+    related_case_id?: string;
+    case_relationship?: string;
   };
   defer_reason?: string;
   selected_signal_ids?: number[];
   selected_evidence_ids?: number[];
-  assignment?: { investigator?: string; unit?: string; urgency?: string; sla?: string; reviewer_note?: string; recommended_action?: string };
+  assignment?: { investigator?: string; unit?: string; urgency?: string; sla?: string; reviewer_note?: string; recommended_action?: string; secondary_owner?: string; watchers?: string[] };
   override?: {
     operator_adjusted?: boolean; priority_label?: string; final_priority_score?: number;
     severity_score?: number; confidence_score?: number; nutrition_concern_score?: number;
@@ -687,6 +701,8 @@ export function reviewSignal(signalId: number, p: ReviewPayload): ReviewResult {
     const createdEv = addAudit(cid, "case_created", `Kasus ${caseNumber(cid)} dibentuk dari sinyal #${signalId}.`, actor);
     audit.push(createdEv);
     const caseAudit: AuditTrailEvent[] = [createdEv];
+    const monitoringEv = addAudit(cid, "case_monitoring_started", "Kasus langsung Open & Monitored dan dapat ditangani tanpa tiket.", actor);
+    audit.push(monitoringEv); caseAudit.unshift(monitoringEv);
     // Lampiran laporan resmi menjadi bukti utama kasus.
     const reportEv = evidenceFromSignal(cid, sig);
     if (reportEv) {
@@ -727,12 +743,14 @@ export function reviewSignal(signalId: number, p: ReviewPayload): ReviewResult {
     const newCase: OversightCase = {
       id: cid, case_id: cid, case_number: caseNumber(cid),
       title: nc.title || `Tinjauan sinyal: ${sig.summary.slice(0, 80)}`,
-      priority_label: label, status: "Sedang Ditinjau",
+      priority_label: label, status: "Open & Monitored",
       vendor_id: resolvedVendorId, vendor_name: vendorName || vendor.name, vendor_source_note: manualVendor ? (nc.vendor_source_note?.trim() || null) : null,
       region, district,
       school,
       issue_category: issueCategory,
-      sla_status: "SLA 72h", assigned_unit: assign.unit || "Unit Pengawasan Vendor MBG Nasional", assigned_investigator: assign.investigator || null,
+      // Kasus baru belum punya tiket anak, jadi belum ada SLA tiket. Jangan
+      // mengarang target 72h yang tidak pernah ditetapkan.
+      sla_status: "Tanpa SLA tiket", assigned_unit: assign.unit || "Unit Pengawasan Vendor MBG Nasional", assigned_investigator: assign.investigator || null,
       recommended_action: score.recommended_action,
       summary: nc.summary || sig.text || sig.summary,
       what_happened: `Kasus ${caseNumber(cid)} dibentuk dari sinyal intake #${signalId} setelah tinjauan operator.`,
@@ -741,7 +759,13 @@ export function reviewSignal(signalId: number, p: ReviewPayload): ReviewResult {
       signals_count: caseSignals.length, evidence_count: caseEvidence.length, ticket_id: null,
       created_at: nowIso(), updated_at: nowIso(),
       vendor: manualVendor ? UNKNOWN_VENDOR : vendor, signals: caseSignals, complaints: [], reports: [], daily_reports: [], evidence: caseEvidence,
-      score, ticket: null,
+      score, ticket: null, tickets: [], ticket_summary: EMPTY_TICKET_SUMMARY,
+      case_type: nc.case_type || "Oversight", case_subtype: nc.case_subtype || null,
+      impact_summary: nc.impact_summary || nc.summary || sig.summary,
+      severity: label, primary_owner: assign.investigator || null, handling_team: assign.unit || null,
+      secondary_owner: assign.secondary_owner || null, watchers: assign.watchers || [], due_at: null,
+      handling_strategy: nc.handling_strategy || "direct", related_case_id: nc.related_case_id || null,
+      case_relationship: nc.case_relationship || null, blockers: [], resolution_summary: null,
       copilot_sources: [{ label: "Kasus", source_type: "case", source_id: cid, title: caseNumber(cid) }],
       audit_events: caseAudit, ai_notice: GOVERNANCE,
     };

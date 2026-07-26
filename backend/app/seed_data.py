@@ -785,43 +785,75 @@ RISK_BY_CASE = {r["case_id"]: r for r in RISK}
 # ── Tiket (satu aktif per kasus yang butuh tindakan) ─────────────────────
 # Status board: Baru, Sedang Ditinjau, Menunggu Klarifikasi Vendor,
 # Verifikasi Lapangan, Selesai.
+#
+# SLA sengaja TIDAK didaftarkan di sini: nilainya diturunkan dari keparahan
+# kasus lewat ``app.ticketing`` supaya seed tidak lagi bisa memasangkan kasus
+# Kritis dengan SLA 72h. Kolom di bawah hanya berisi data operasional yang
+# memang khas per kasus.
 _CASE_TICKET = {
-    "case-001": ("Baru", "24h", "Dinas Kesehatan Jakarta Timur", "Verifikasi Lapangan"),
-    "case-002": ("Verifikasi Lapangan", "24h", "Dinas Kesehatan Kota Bandung", "Verifikasi Lapangan"),
-    "case-003": ("Menunggu Klarifikasi Vendor", "48h", "Meja Tinjauan Pengadaan", "Klarifikasi menu & biaya"),
-    "case-004": ("Menunggu Klarifikasi Vendor", "48h", "Unit Pengawasan Vendor MBG", "Perbaikan faktur & dokumen"),
-    "case-005": ("Sedang Ditinjau", "72h", "Tim Kepatuhan Gizi", "Konfirmasi substitusi menu"),
-    "case-006": ("Sedang Ditinjau", "72h", "Unit Pengawasan Vendor MBG", "Pantau rute distribusi"),
-    "case-007": ("Menunggu Klarifikasi Vendor", "48h", "Tim Kepatuhan Gizi", "Verifikasi menu aktual"),
-    "case-008": ("Verifikasi Lapangan", "24h", "Dinas Kesehatan Kota Bandung", "Inspeksi higiene dapur"),
-    "case-009": ("Selesai", "72h", "Unit Pengawasan Vendor MBG", "Checklist telah dilengkapi"),
-    "case-010": ("Selesai", "72h", "Unit Pengawasan Vendor MBG", "Isu operasional teratasi"),
+    "case-001": ("Baru", "Dinas Kesehatan Jakarta Timur", "Rina Kartika", "Verifikasi Lapangan"),
+    "case-002": ("Verifikasi Lapangan", "Dinas Kesehatan Kota Bandung", "Andi Prasetyo", "Verifikasi Lapangan"),
+    "case-003": ("Menunggu Klarifikasi Vendor", "Meja Tinjauan Pengadaan", "Siti Rahayu", "Klarifikasi menu & biaya"),
+    "case-004": ("Menunggu Klarifikasi Vendor", "Unit Pengawasan Vendor MBG", "Budi Santoso", "Perbaikan faktur & dokumen"),
+    "case-005": ("Sedang Ditinjau", "Tim Kepatuhan Gizi", "Maya Lestari", "Konfirmasi substitusi menu"),
+    "case-006": ("Sedang Ditinjau", "Unit Pengawasan Vendor MBG", None, "Pantau rute distribusi"),
+    "case-007": ("Menunggu Klarifikasi Vendor", "Tim Kepatuhan Gizi", "Maya Lestari", "Verifikasi menu aktual"),
+    "case-008": ("Verifikasi Lapangan", "Dinas Kesehatan Kota Bandung", "Andi Prasetyo", "Inspeksi higiene dapur"),
+    "case-009": ("Selesai", "Unit Pengawasan Vendor MBG", "Budi Santoso", "Checklist telah dilengkapi"),
+    "case-010": ("Selesai", "Unit Pengawasan Vendor MBG", "Budi Santoso", "Isu operasional teratasi"),
+}
+
+_IMPACT_BY_ISSUE = {
+    "indikasi keracunan makanan": "Luas",
+    "porsi protein kurang": "Sedang",
+    "anomali biaya": "Sedang",
 }
 
 
 def _build_tickets() -> list[dict[str, Any]]:
+    from app import ticketing  # local import: ticketing has no seed_data dependency
+
     out: list[dict[str, Any]] = []
     for idx, case in enumerate(CASES, start=1):
         cid = case["case_id"]
         vendor = VENDOR_BY_ID[case["vendor_id"]]
         risk = RISK_BY_CASE[cid]
-        status, sla, unit, action = _CASE_TICKET[cid]
+        status, unit, assignee, action = _CASE_TICKET[cid]
         ev_ids = [e["id"] for e in EVIDENCE if e["case_id"] == cid]
+        # Severity inherited from the case; SLA derived from it.
+        severity = case.get("severity") or case["priority_label"]
+        impact = _IMPACT_BY_ISSUE.get(case["issue_category"], ticketing.DEFAULT_IMPACT)
+        urgency = "Segera" if severity == "Kritis" else ticketing.DEFAULT_URGENCY
+        policy = ticketing.policy_for(severity, impact, urgency)
+        resolved = status in ticketing.TERMINAL_STATUSES
         out.append({
             "id": f"tkt-{idx:03d}",
             "case_id": cid,
             "title": f"Tinjauan {case['priority_label'].lower()}: {vendor['name']}",
+            "description": f"Tindak lanjut {case['issue_category']} pada {case['school']}.",
             "status": status,
-            "sla": sla,
+            "severity": severity,
+            "impact": impact,
+            "urgency": urgency,
+            "sla_policy": policy,
+            "sla": ticketing.sla_label(policy),
+            "due_at": ticketing.due_at(case["created_at"], policy),
+            "resolved_at": case["updated_at"] if resolved else None,
+            "assignee": assignee,
+            "assignment_group": unit,
             "assigned_unit": unit,
-            "escalation_level": case["priority_label"],
+            "escalation_level": severity,
             "linked_vendor_id": vendor["id"],
             "linked_vendor_name": vendor["name"],
             "linked_region": vendor["region"],
             "priority": risk["final_priority_score"],
+            "category": case["issue_category"],
+            "labels": [],
+            "notes": [],
             "recommended_action": action if cid != "case-001" else "Jadwalkan verifikasi lapangan dan minta klarifikasi vendor.",
             "linked_evidence_ids": ev_ids,
             "audit_preview": "Tiket dibuat dari peninjauan bukti dan diantrekan untuk tinjauan manusia.",
+            "workstream": "Tindak lanjut",
             "created_at": case["created_at"],
             "updated_at": case["updated_at"],
         })
