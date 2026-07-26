@@ -40,7 +40,10 @@ class Retriever:
                 "id": r.get("id", ""),
                 "content": r.get("text", ""),
                 "metadata": r.get("metadata", {}),
-                "relevance_score": 1 - r.get("distance", 1),  # Convert distance to similarity
+                "relevance_score": float(
+                    r.get("relevance_score") if r.get("relevance_score") is not None
+                    else 1 - r.get("distance", 1)
+                ),
             }
             for r in results
         ]

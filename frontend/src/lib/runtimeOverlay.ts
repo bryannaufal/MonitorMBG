@@ -15,6 +15,7 @@
 // relasi berakhir dan menambah audit event.
 
 import type { AuditTrailEvent, Evidence, OversightCase, Signal } from "@/types/monitoring";
+import { normalizeCase } from "@/lib/scoreDisplay";
 
 const KEY = "mbg.runtimeOverlay.v1";
 
@@ -66,8 +67,9 @@ function write(state: OverlayState): void {
 /** Simpan/segarkan snapshot kasus (create atau hasil merge) + relasi sinyalnya. */
 export function recordCase(caseData: OversightCase): void {
   const state = read();
-  state.cases[caseData.case_id] = caseData;
-  for (const sig of caseData.signals ?? []) {
+  const normalized = normalizeCase(caseData);
+  state.cases[normalized.case_id] = normalized;
+  for (const sig of normalized.signals ?? []) {
     state.signalLinks[sig.id] = {
       case_id: caseData.case_id,
       case_number: caseData.case_number ?? null,
@@ -134,7 +136,8 @@ export function overlayCases(): OversightCase[] {
 
 /** Ambil snapshot kasus runtime bila ada (dipakai halaman detail). */
 export function getOverlayCase(caseId: string): OversightCase | null {
-  return read().cases[caseId] ?? null;
+  const raw = read().cases[caseId];
+  return raw ? normalizeCase(raw) : null;
 }
 
 /**

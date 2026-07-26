@@ -29,6 +29,10 @@ const nextConfig: NextConfig = {
         source: "/evidence-media/:path*",
         destination: "http://localhost:8000/evidence-media/:path*",
       },
+      {
+        source: "/intake-media/:path*",
+        destination: "http://localhost:8000/intake-media/:path*",
+      },
     ];
   },
 };

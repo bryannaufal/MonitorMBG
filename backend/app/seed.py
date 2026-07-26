@@ -84,8 +84,10 @@ async def seed() -> None:
             session.add(RiskAssessment(
                 id=r["id"], case_id=r["case_id"], vendor_id=r["vendor_id"], vendor_name=r["vendor_name"],
                 region=r["region"], severity_score=r["severity_score"], confidence_score=r["confidence_score"],
-                nutrition_concern_score=r["nutrition_concern_score"], cost_anomaly_score=r["cost_anomaly_score"],
-                anomaly_score=r["anomaly_score"], final_priority_score=r["final_priority_score"],
+                nutrition_concern_score=r.get("actionability_score", 0),
+                cost_anomaly_score=0,
+                anomaly_score=0,
+                final_priority_score=r["final_priority_score"],
                 priority_label=r["priority_label"], explanation=r["explanation"],
                 recommended_action=r["recommended_action"], computed_at=_dt(r["computed_at"]),
             ))

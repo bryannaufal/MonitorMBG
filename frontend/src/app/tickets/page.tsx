@@ -9,12 +9,17 @@ import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 import { api, getWithFallback } from "@/lib/api";
 import { fallbackTickets } from "@/lib/demoFallback";
-import { caseNumber } from "@/lib/utils";
+import { caseNumber, ticketEffectivePriority } from "@/lib/utils";
 import type { Ticket } from "@/types/monitoring";
 
 // Kolom board (Kanban) — hanya di halaman Tiket Tindak Lanjut.
 const COLUMNS = ["Baru", "Sedang Ditinjau", "Menunggu Klarifikasi Vendor", "Verifikasi Lapangan", "Selesai"];
 type TicketMessage = { tone: "success" | "warning"; text: string };
+type TicketSortBy = "priority" | "recent";
+const TICKET_SORT_OPTIONS: { id: TicketSortBy; label: string }[] = [
+  { id: "priority", label: "Prioritas tertinggi" },
+  { id: "recent", label: "Terbaru diperbarui" },
+];
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -22,6 +27,7 @@ export default function TicketsPage() {
   const [error, setError] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<TicketMessage | null>(null);
+  const [sortBy, setSortBy] = useState<TicketSortBy>("priority");
 
   useEffect(() => {
     async function load() {
@@ -44,8 +50,17 @@ export default function TicketsPage() {
       const col = COLUMNS.includes(t.status) ? t.status : "Sedang Ditinjau";
       map.get(col)!.push(t);
     }
+    for (const col of COLUMNS) {
+      map.get(col)!.sort((a, b) => {
+        if (sortBy === "priority") {
+          const diff = ticketEffectivePriority(b) - ticketEffectivePriority(a);
+          if (diff !== 0) return diff;
+        }
+        return Date.parse(b.updated_at) - Date.parse(a.updated_at);
+      });
+    }
     return map;
-  }, [tickets]);
+  }, [tickets, sortBy]);
 
   async function moveTicket(ticket: Ticket, status: string) {
     const updated = { ...ticket, status, updated_at: new Date().toISOString() };
@@ -64,6 +79,16 @@ export default function TicketsPage() {
       setMessage({ tone: "success", text: `${ticket.id} dipindahkan ke "${status}". Jejak audit diperbarui di API demo.` });
     } catch {
       setMessage({ tone: "warning", text: `${ticket.id} gagal diperbarui. Pembaruan backend gagal, jejak audit tidak tercatat. Coba lagi.` });
+    }
+  }
+
+  async function confirmSuggested(ticket: Ticket) {
+    try {
+      const result = await api.patch<{ ticket: Ticket }, Record<string, never>>(`/tickets/${ticket.id}/priority/confirm`, {});
+      setTickets((cur) => cur.map((t) => (t.id === ticket.id ? result.ticket : t)));
+      setMessage({ tone: "success", text: `Prioritas suggested dikonfirmasi untuk ${ticket.id}.` });
+    } catch {
+      setMessage({ tone: "warning", text: "Gagal konfirmasi prioritas." });
     }
   }
 
@@ -93,6 +118,21 @@ export default function TicketsPage() {
 
       {message ? <p className={messageClass(message.tone)}>{message.text}</p> : null}
 
+      <section className="rounded-xl border border-border bg-surface-raised p-4">
+        <label className="block min-w-[12rem] max-w-xs text-xs">
+          <span className="mb-1 block uppercase text-muted-foreground">Urutkan tiket</span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as TicketSortBy)}
+            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground"
+          >
+            {TICKET_SORT_OPTIONS.map((opt) => (
+              <option key={opt.id} value={opt.id}>{opt.label}</option>
+            ))}
+          </select>
+        </label>
+      </section>
+
       <div className="overflow-x-auto pb-2">
         <div className="flex min-w-max gap-4">
           {COLUMNS.map((col) => {
@@ -108,7 +148,7 @@ export default function TicketsPage() {
                     <p className="px-1 py-6 text-center text-xs text-muted-foreground">Tidak ada tiket.</p>
                   ) : (
                     items.map((ticket) => (
-                      <TicketCard key={ticket.id} ticket={ticket} columns={COLUMNS} current={col} onMove={moveTicket} />
+                      <TicketCard key={ticket.id} ticket={ticket} columns={COLUMNS} current={col} onMove={moveTicket} onConfirm={confirmSuggested} />
                     ))
                   )}
                 </div>
@@ -126,25 +166,44 @@ function TicketCard({
   columns,
   current,
   onMove,
+  onConfirm,
 }: {
   ticket: Ticket;
   columns: string[];
   current: string;
   onMove: (ticket: Ticket, status: string) => void;
+  onConfirm: (ticket: Ticket) => void;
 }) {
+  const priorityLabel =
+    ticket.priority_mode === "suggested"
+      ? `Suggested: ${ticket.suggested_priority_label ?? ticket.escalation_level} (${ticket.suggested_priority ?? ticket.priority})`
+      : ticket.priority_mode === "manual"
+        ? `Manual: ${ticket.priority_label ?? ticket.escalation_level}`
+        : ticket.escalation_level;
+
   return (
     <article className="min-w-0 rounded-lg border border-border bg-surface p-4">
       <div className="flex flex-wrap gap-2">
         <EntityChip label={ticket.id} tone="ticket" />
         <EntityChip label={caseNumber(ticket.case_id)} href={`/cases/${ticket.case_id}`} tone="case" />
+        {ticket.origin === "auto" ? <StatusBadge label="Auto" /> : null}
       </div>
       <h3 className="mt-2 break-words text-sm font-semibold">{ticket.title}</h3>
       <p className="mt-1 break-words text-xs text-muted-foreground">{ticket.linked_region} · {ticket.assigned_unit}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         <StatusBadge label={`SLA ${ticket.sla}`} />
-        <StatusBadge label={ticket.escalation_level} />
+        <StatusBadge label={priorityLabel} />
       </div>
       <p className="mt-3 break-words text-xs text-muted-foreground">{ticket.recommended_action}</p>
+      {ticket.priority_mode === "suggested" ? (
+        <button
+          type="button"
+          onClick={() => onConfirm(ticket)}
+          className="mt-3 w-full rounded-md border border-brand-500/40 bg-brand-500/10 px-3 py-2 text-xs font-medium text-brand-800 dark:text-brand-200"
+        >
+          Konfirmasi Prioritas Suggested
+        </button>
+      ) : null}
       <div className="mt-3 flex flex-col gap-2">
         <Link href={`/cases/${ticket.case_id}`} className="inline-flex justify-center rounded-md bg-brand-500 px-3 py-2 text-xs font-medium text-white hover:bg-brand-400">
           Buka Kasus

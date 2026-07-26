@@ -1,6 +1,6 @@
 "use client";
 
-export function LoadingState({ label = "Memuat data demo..." }: { label?: string }) {
+export function LoadingState({ label = "Memuat data..." }: { label?: string }) {
   return (
     <div className="min-w-0 rounded-lg border border-border bg-surface-raised p-4 text-sm text-muted-foreground sm:p-6">
       {label}

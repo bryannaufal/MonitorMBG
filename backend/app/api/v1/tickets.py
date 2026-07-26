@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from app import demo_data
+from app.services.ticketing import ticket_service
 
 router = APIRouter()
 
@@ -14,6 +15,12 @@ class TicketStatusUpdate(BaseModel):
     status: str
     actor: str = "Demo Operator"
     note: str | None = None
+
+
+class TicketCreate(BaseModel):
+    case_id: str
+    auto_prioritize: bool = False
+    priority_label: str | None = None
 
 
 @router.get("")
@@ -28,6 +35,23 @@ async def list_tickets():
 async def get_ticket(ticket_id: str):
     """Get a single ticket."""
     return demo_data.get_or_404(demo_data.TICKETS, ticket_id, "Ticket")
+
+
+@router.post("")
+@router.post("/")
+async def create_ticket(payload: TicketCreate):
+    """Buat tiket manual untuk kasus yang belum punya tiket."""
+    return ticket_service.create_manual(
+        payload.case_id,
+        auto_prioritize=payload.auto_prioritize,
+        priority_label=payload.priority_label,
+    )
+
+
+@router.patch("/{ticket_id}/priority/confirm")
+async def confirm_ticket_priority(ticket_id: str):
+    """Konfirmasi prioritas suggested pada tiket."""
+    return ticket_service.confirm_priority(ticket_id)
 
 
 @router.patch("/{ticket_id}/status")

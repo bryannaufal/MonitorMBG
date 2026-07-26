@@ -1,10 +1,17 @@
 """Complaints API — Public Signal Intelligence endpoints."""
 
-from fastapi import APIRouter, Query
+from typing import Any
+
+from fastapi import APIRouter, HTTPException, Query
 
 from app import demo_data
+from app.runtime_store import all_signals
 
 router = APIRouter()
+
+
+def _signal_as_complaint(sig: dict[str, Any]) -> dict[str, Any]:
+    return demo_data._signal_as_complaint(sig)
 
 
 @router.get("")
@@ -16,7 +23,7 @@ async def list_complaints(
     source: str | None = None,
 ):
     """List complaints with filtering and pagination."""
-    items = demo_data.COMPLAINTS
+    items = [_signal_as_complaint(s) for s in all_signals()]
     if sentiment:
         items = [item for item in items if item["sentiment"] == sentiment]
     if source:
@@ -36,19 +43,18 @@ async def stream_complaints():
 @router.get("/{complaint_id}")
 async def get_complaint(complaint_id: int):
     """Get a single complaint by ID."""
-    return demo_data.get_or_404(demo_data.COMPLAINTS, complaint_id, "Complaint")
+    for sig in all_signals():
+        if sig["id"] == complaint_id:
+            return demo_data._signal_as_complaint(sig)
+    raise HTTPException(status_code=404, detail=f"Complaint '{complaint_id}' tidak ditemukan")
 
 
 @router.post("/scrape")
 async def trigger_scraping(
     source: str = Query(..., description="Social media platform to scrape"),
 ):
-    """Return a safe demo response for scraping.
-
-    Real scraping is intentionally not performed in the MVP.
-    """
-    return {
-        "message": f"Demo scraping simulation for '{source}' queued.",
-        "task_id": "demo-scrape",
-        "ai_notice": demo_data.DEMO_NOTICE,
-    }
+    """Delegasi ke intake scraper (fixture/live). Parameter source retained for compatibility."""
+    from app.api.v1.intake import trigger_scrape
+    result = await trigger_scrape()
+    result["requested_source"] = source
+    return result

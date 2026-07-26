@@ -237,8 +237,12 @@ async def test_signal_review_create_case_and_audit():
         assert sig["case_id"] == cid
         detail = await client.get(f"/api/v1/cases/{cid}")
         assert detail.status_code == 200
-        types = {e["event_type"] for e in detail.json()["audit_events"]}
+        case = detail.json()
+        types = {e["event_type"] for e in case["audit_events"]}
         assert "case_created" in types and "risk_overridden" in types
+        assert case["score"]["severity_score"] is not None
+        assert case["score"]["confidence_score"] is not None
+        assert case["score"]["final_priority_score"] == 70
 
         # Meninjau ulang sinyal yang sudah tertaut -> 409.
         again = await client.post("/api/v1/signals/18/review", json={"decision": "defer", "defer_reason": "x"})

@@ -10,6 +10,8 @@ import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 import { getWithFallback } from "@/lib/api";
 import { asList, fallbackCases } from "@/lib/demoFallback";
+import { overlayCases } from "@/lib/runtimeOverlay";
+import { fmtGizi, fmtScore, normalizeCase } from "@/lib/scoreDisplay";
 import type { ListResponse, OversightCase } from "@/types/monitoring";
 
 export default function CasesPage() {
@@ -25,7 +27,14 @@ export default function CasesPage() {
   useEffect(() => {
     async function load() {
       const result = await getWithFallback<ListResponse<OversightCase>>("/cases", asList(fallbackCases));
-      setCases(result.data.items);
+      const merged = [...result.data.items.map(normalizeCase)];
+      for (const c of overlayCases()) {
+        const normalized = normalizeCase(c);
+        const idx = merged.findIndex((item) => item.case_id === normalized.case_id);
+        if (idx >= 0) merged[idx] = normalizeCase({ ...merged[idx], ...normalized, score: normalized.score });
+        else merged.push(normalized);
+      }
+      setCases(merged);
       setSource(result.source);
       setError(result.error);
       setLoading(false);
@@ -117,10 +126,12 @@ export default function CasesPage() {
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-5">
-              <Mini label="Severity" value={String(item.score.severity_score)} />
-              <Mini label="Keyakinan" value={String(item.score.confidence_score)} />
-              <Mini label="Skor Akhir" value={String(item.score.final_priority_score)} />
+            <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-7">
+              <Mini label="DAMPAK" value={fmtScore(item.score.severity_score)} />
+              <Mini label="KEYAKINAN" value={fmtScore(item.score.confidence_score)} />
+              <Mini label="DAPAT DITINDAK" value={fmtScore(item.score.actionability_score)} />
+              <Mini label="GIZI" value={fmtGizi(item.score.nutrition_score)} />
+              <Mini label="Skor Akhir" value={fmtScore(item.score.final_priority_score)} />
               <Mini label="Sinyal" value={String(item.signals_count)} />
               <Mini label="SLA" value={item.sla_status} />
             </div>

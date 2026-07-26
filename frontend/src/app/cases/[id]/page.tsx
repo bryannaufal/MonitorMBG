@@ -16,12 +16,14 @@ import {
 } from "lucide-react";
 
 import GovernanceNote from "@/components/monitoring/GovernanceNote";
+import GiziBar from "@/components/monitoring/GiziBar";
 import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
 import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 import { api } from "@/lib/api";
 import { getCase } from "@/lib/reviewStore";
 import * as overlay from "@/lib/runtimeOverlay";
+import { normalizeCase } from "@/lib/scoreDisplay";
 import { caseNumber, evidenceMediaUrl } from "@/lib/utils";
 import type { AuditTrailEvent, Evidence, OversightCase, Signal, Ticket } from "@/types/monitoring";
 
@@ -49,6 +51,9 @@ export default function CaseDetailPage() {
   const [unlinkTarget, setUnlinkTarget] = useState<Signal | null>(null);
   const [unlinkReason, setUnlinkReason] = useState("");
   const [unlinking, setUnlinking] = useState(false);
+  const [ticketAuto, setTicketAuto] = useState(true);
+  const [ticketPriority, setTicketPriority] = useState("Sedang");
+  const [creatingTicket, setCreatingTicket] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -64,7 +69,7 @@ export default function CaseDetailPage() {
       // hilang dari API karena backend restart). Tanpa fallback ke kasus lain.
       const reconciled = overlay.reconcileCase(apiCase ?? fallback, params.id);
       if (reconciled) {
-        setItem(reconciled);
+        setItem(normalizeCase(reconciled));
         setSource(usedApi ? "api" : "fallback");
         if (!usedApi) setError("Backend tidak tersedia; menampilkan data demo lokal untuk kasus ini.");
       } else {
@@ -114,6 +119,41 @@ export default function CaseDetailPage() {
       );
     } catch {
       setSource("fallback");
+    }
+  }
+
+  async function createManualTicket() {
+    if (!item) return;
+    setCreatingTicket(true);
+    try {
+      const result = await api.post<{ ticket: Ticket; case: OversightCase }, { case_id: string; auto_prioritize: boolean; priority_label?: string }>(
+        "/tickets",
+        {
+          case_id: item.case_id,
+          auto_prioritize: ticketAuto,
+          priority_label: ticketAuto ? undefined : ticketPriority,
+        },
+      );
+      setItem({ ...result.case, ticket: result.ticket });
+      setActionNote(`Tiket ${result.ticket.id} dibuat (${result.ticket.priority_mode ?? "manual"}).`);
+    } catch {
+      setActionNote("Gagal membuat tiket — pastikan kasus belum punya tiket dan backend aktif.");
+    } finally {
+      setCreatingTicket(false);
+    }
+  }
+
+  async function confirmTicketPriority() {
+    if (!item?.ticket || item.ticket.priority_mode !== "suggested") return;
+    try {
+      const result = await api.patch<{ ticket: Ticket }, Record<string, never>>(
+        `/tickets/${item.ticket.id}/priority/confirm`,
+        {},
+      );
+      setItem({ ...item, ticket: result.ticket });
+      setActionNote("Prioritas suggested dikonfirmasi.");
+    } catch {
+      setActionNote("Gagal konfirmasi prioritas.");
     }
   }
 
@@ -301,12 +341,11 @@ export default function CaseDetailPage() {
       <SectionCard icon={ShieldAlert} title="4. Penilaian Risiko">
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:col-span-2">
-            <ScoreBar label="Severity" value={item.score.severity_score} />
-            <ScoreBar label="Confidence (keyakinan)" value={item.score.confidence_score} />
-            <ScoreBar label="Kecukupan menu / gizi" value={item.score.nutrition_concern_score} />
-            <ScoreBar label="Anomali biaya" value={item.score.cost_anomaly_score} />
-            <ScoreBar label="Pola / kejadian berulang" value={item.score.anomaly_score} />
-            <ScoreBar label="Skor akhir" value={item.score.final_priority_score} />
+            <ScoreBar label="DAMPAK" value={item.score.severity_score ?? 0} />
+            <ScoreBar label="KEYAKINAN" value={item.score.confidence_score ?? 0} />
+            <ScoreBar label="DAPAT DITINDAK" value={item.score.actionability_score ?? 0} />
+            <GiziBar value={item.score.nutrition_score} />
+            <ScoreBar label="SKOR AKHIR" value={item.score.final_priority_score} />
           </div>
           <div className="min-w-0 rounded-lg border border-border bg-surface p-4">
             <StatusBadge label={item.priority_label} />
@@ -329,9 +368,17 @@ export default function CaseDetailPage() {
             <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <Info label="SLA" value={item.ticket.sla} />
               <Info label="Tingkat Eskalasi" value={item.ticket.escalation_level} />
+              <Info label="Mode Prioritas" value={item.ticket.priority_mode ?? "confirmed"} />
               <Info label="Bukti Tertaut" value={`${item.ticket.linked_evidence_ids.length} bukti`} />
-              <Info label="Pembaruan Terakhir" value={fmt(item.ticket.updated_at)} />
             </div>
+            {item.ticket.priority_mode === "suggested" ? (
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <StatusBadge label={`Suggested: ${item.ticket.suggested_priority_label ?? item.ticket.escalation_level} (${item.ticket.suggested_priority ?? item.ticket.priority})`} />
+                <button type="button" onClick={confirmTicketPriority} className="rounded-md border border-brand-500/40 bg-brand-500/10 px-3 py-1.5 text-xs font-medium">
+                  Konfirmasi Prioritas
+                </button>
+              </div>
+            ) : null}
             <p className="mt-4 break-words text-sm text-muted-foreground">
               <span className="font-medium text-foreground">Tindakan yang direkomendasikan: </span>{item.ticket.recommended_action}
             </p>
@@ -349,7 +396,31 @@ export default function CaseDetailPage() {
             </div>
           </>
         ) : (
-          <HelperPanel>Belum ada tiket tindak lanjut untuk kasus ini.</HelperPanel>
+          <div className="space-y-4">
+            <HelperPanel>Belum ada tiket tindak lanjut untuk kasus ini.</HelperPanel>
+            <div className="rounded-lg border border-border bg-surface p-4">
+              <p className="text-sm font-medium">Buat Tiket Manual</p>
+              <label className="mt-3 flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={ticketAuto} onChange={(e) => setTicketAuto(e.target.checked)} className="accent-brand-500" />
+                Gunakan penilaian otomatis (Suggested)
+              </label>
+              {!ticketAuto ? (
+                <select value={ticketPriority} onChange={(e) => setTicketPriority(e.target.value)} className="mt-3 w-full max-w-xs rounded-md border border-border bg-surface px-3 py-2 text-sm">
+                  {["Kritis", "Tinggi", "Sedang", "Rendah"].map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              ) : null}
+              <button
+                type="button"
+                disabled={creatingTicket}
+                onClick={createManualTicket}
+                className="mt-4 rounded-md bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-400 disabled:opacity-50"
+              >
+                {creatingTicket ? "Membuat…" : "Buat Tiket"}
+              </button>
+            </div>
+          </div>
         )}
       </SectionCard>
 
