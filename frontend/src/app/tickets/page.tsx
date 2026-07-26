@@ -124,7 +124,6 @@ export default function TicketsPage() {
     }
   }
 
-<<<<<<< HEAD
   // Backend is the source of truth for counters; the local tally is only for
   // the offline demo fallback, and uses the same bucket definitions.
   const counters: TicketSummary = summary ?? {

@@ -331,6 +331,11 @@ export interface Assessment {
   explanation: string;
   recommended_action: string;
   ai_notice: string;
+  // Ditulis oleh scoring engine phase-2 (scripts/bake_signal_assessments.py):
+  // prioritas hasil penilaian otomatis menunggu konfirmasi operator.
+  priority_mode?: "suggested" | "confirmed";
+  scoring_engine?: string;
+  reasons?: string[];
 }
 
 function actionabilityFromSignal(sig: ReturnType<typeof getSignal>): number {
@@ -414,6 +419,7 @@ export interface ReviewPayload {
   override?: {
     operator_adjusted?: boolean; priority_label?: string; final_priority_score?: number;
     severity_score?: number; confidence_score?: number; actionability_score?: number;
+    nutrition_score?: number | null;
     override_reason?: string;
   };
 }
