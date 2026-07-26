@@ -83,6 +83,8 @@ async def test_create_case_with_selected_signal_fuses_fully():
         data = res.json()
         assert data["outcome"] == "created"
         cid = data["case_id"]
+        assert data["case"]["status"] == "Open & Monitored"
+        assert data["case"]["handling_strategy"] == "direct"
 
         # E.1 — response memuat kasus baru + daftar sinyal/bukti hasil fusion.
         assert data["linked_signal_ids"] == [19, 20]
@@ -126,6 +128,43 @@ async def test_create_case_with_selected_signal_fuses_fully():
         linked = (await client.get("/api/v1/signals?linked=linked")).json()["items"]
         sig20_linked = next((s for s in linked if s["id"] == 20), None)
         assert sig20_linked is not None and sig20_linked["case_id"] == cid
+
+
+@pytest.mark.asyncio
+async def test_case_lifecycle_is_independent_from_child_ticket_status():
+    """Closing a workstream does not close the case; closure needs verification."""
+    async with await make_client() as client:
+        created = (await client.post(
+            "/api/v1/signals/19/review",
+            json=create_payload(selected_signal_ids=[], selected_evidence_ids=[]),
+        )).json()
+        cid = created["case_id"]
+        ticket_response = await client.post(
+            f"/api/v1/cases/{cid}/tickets",
+            json={"title": "Verifikasi lapangan", "workstream": "Lapangan"},
+        )
+        assert ticket_response.status_code == 200
+        ticket = ticket_response.json()["ticket"]
+        assert ticket_response.json()["case"]["tickets"][0]["id"] == ticket["id"]
+
+        # "Baru" cannot jump straight to "Selesai"; work is picked up first.
+        assert (await client.patch(f"/api/v1/tickets/{ticket['id']}/status",
+                                   json={"status": "Selesai"})).status_code == 422
+        assert (await client.patch(f"/api/v1/tickets/{ticket['id']}/status",
+                                   json={"status": "Sedang Ditinjau"})).status_code == 200
+        updated_ticket = await client.patch(f"/api/v1/tickets/{ticket['id']}/status", json={"status": "Selesai"})
+        assert updated_ticket.status_code == 200
+        detail = (await client.get(f"/api/v1/cases/{cid}")).json()
+        assert detail["status"] == "Open & Monitored"
+
+        rejected = await client.patch(f"/api/v1/cases/{cid}", json={"status": "Closed"})
+        assert rejected.status_code == 422
+        closed = await client.patch(
+            f"/api/v1/cases/{cid}",
+            json={"status": "Closed", "resolution_summary": "Verifikasi lapangan mengonfirmasi tindakan perbaikan."},
+        )
+        assert closed.status_code == 200
+        assert closed.json()["case"]["status"] == "Closed"
 
 
 @pytest.mark.asyncio

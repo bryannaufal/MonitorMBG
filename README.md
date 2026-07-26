@@ -11,7 +11,7 @@ The current prototype uses fictional, privacy-safe Indonesian demo data and dete
 MonitorMBG is organized around one operational workflow:
 
 ```text
-Monitor -> Intake -> Case Creation -> Evidence Review -> Risk Scoring -> Ticket Action -> Audit Trail -> Vendor Risk Learning
+Monitor -> Intake -> Case Creation & Monitoring -> Evidence Review -> Risk Scoring -> Direct Handling or Child Workstreams -> Audit Trail -> Vendor Risk Learning
 ```
 
 Public signals, official reports, and daily vendor reports enter the Signal Inbox. Related signals are grouped into oversight cases. Each case connects evidence, nutrition/cost checks, scoring, ticketing, copilot synthesis, and audit trail. Vendor profiles accumulate historical risk patterns. Operators use the system for pre-verification and prioritization, while final decisions remain human-led.
@@ -19,7 +19,7 @@ Public signals, official reports, and daily vendor reports enter the Signal Inbo
 Core product story:
 
 ```text
-Signal -> Case -> Evidence -> Score -> Ticket -> Audit -> Vendor Learning
+Signal -> Case (Open & Monitored) -> Evidence -> Score -> Direct Handling or Optional Child Tickets -> Verified Resolution -> Audit -> Vendor Learning
 ```
 
 ## Product Positioning
@@ -43,8 +43,8 @@ Implemented demo workflows:
 - Oversight Flow Simulator that walks through report intake, AI-assisted pre-verification, evidence fusion, risk scoring, case creation, ticket orchestration, human review, audit trail, Command Center update, and vendor risk learning.
 - Signal Inbox that unifies public complaints, official reports, and daily vendor reports.
 - Case Work Queue with filters, SLA indicators, recommended actions, and direct case links.
-- Case Detail / Investigation Hub with Overview, Signals, Evidence, Scoring, Ticket, Copilot, and Audit Trail tabs.
-- Ticket Queue as the operational action layer for linked cases.
+- Case Detail / Investigation Hub as the main handling workspace: case lifecycle, ownership, progress, blockers, evidence, scoring, optional child workstreams, and audit trail.
+- Ticket Queue as an optional child-workstream execution layer for linked cases; ticket status does not close a case automatically.
 - Risk Prioritization page with explainable final priority scores linked back to cases.
 - Nutrition & Cost Intelligence page connected to cases and vendors.
 - Regional Risk Intelligence page with ranked regional concentration signals.
@@ -81,7 +81,7 @@ Not production-ready:
 - No real social scraping.
 - No deployed ML/CV/OCR/RAG models.
 - No formal identity provider or full RBAC enforcement.
-- No persistent ticket mutation across restarts.
+- No production-grade migration/rollback policy yet (schema is additive-only so far).
 - No production audit/legal workflow.
 
 ## Architecture
@@ -93,10 +93,10 @@ Next.js Dashboard (3000)
      -> deterministic demo data service
      -> simulated intelligence/scoring helpers
      -> optional Celery/Redis scaffold
-     -> optional PostgreSQL scaffold
+     -> PostgreSQL (write-through persistence, SQLAlchemy + Alembic)
 ```
 
-The MVP is intentionally demo-data driven. PostgreSQL, Redis, SQLAlchemy, Alembic, and Celery scaffolds remain in place for the next production phase.
+Read paths serve dict-shaped domain objects loaded from PostgreSQL at startup; every operator mutation is written back through `app/persistence.py`, so runtime state survives restarts. Redis and Celery scaffolds remain in place for the next production phase.
 
 ## UX Structure
 
@@ -122,6 +122,11 @@ python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
+
+# Persistensi: buat skema lalu muat data demo (sekali saja).
+alembic upgrade head
+python -m app.dbctl seed --scenario belatung
+
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
@@ -140,6 +145,44 @@ URLs:
 - Frontend: http://localhost:3000
 - Backend health: http://localhost:8000/health
 - Backend docs: http://localhost:8000/docs
+
+## Database & Seed Workflow
+
+Perubahan operator (kasus baru dari fusion, status tiket, tautan sinyal/bukti,
+kepemilikan, jejak audit) **disimpan ke PostgreSQL dan bertahan setelah restart**.
+Saat startup backend memuat state dari DB; bila DB tidak tersedia atau belum
+di-seed, aplikasi otomatis kembali ke data demo in-memory (demo tetap jalan).
+
+Semua perintah dijalankan dari `backend/` dengan virtualenv aktif.
+
+```bash
+alembic upgrade head                        # buat/perbarui skema
+python -m app.dbctl seed                    # baseline demo (MBG-001..010)
+python -m app.dbctl seed --scenario belatung  # baseline + skenario kontaminasi
+python -m app.dbctl reset                   # kembali ke baseline (buang data runtime)
+python -m app.dbctl reset --scenario belatung
+python -m app.dbctl reset --empty           # kosongkan DB, tanpa seed
+python -m app.dbctl status                  # jumlah baris + pembagian seed/runtime
+```
+
+Mode pengembangan:
+
+| Mode | Perintah | Kegunaan |
+| --- | --- | --- |
+| Baseline demo | `dbctl seed` | Demo standar, data selalu sama |
+| Baseline + skenario | `dbctl seed --scenario belatung` | Latihan alur evidence fusion |
+| Kosong | `dbctl reset --empty` | Uji alur dari nol tanpa data bawaan |
+| Live persistent | jalankan backend seperti biasa | Perubahan operator terakumulasi lintas restart |
+
+Baris seed ditandai `is_seeded=True` beserta `seed_group` (`baseline`,
+`belatung`), sedangkan baris hasil aksi operator bernilai `is_seeded=False`.
+`dbctl status` menampilkan pemisahan itu. `reset` bersifat menyeluruh: baris
+runtime mereferensikan baris seed (bukti hasil fusion menunjuk sinyal seed),
+sehingga satu lapis tidak dapat dihapus sendiri tanpa melanggar foreign key.
+
+Skenario `belatung` memuat sinyal #19 (laporan pengawas, lampiran `4.jpg`) dan
+#20 (unggahan media sosial, lampiran `26.jpg`) dalam status belum dibentuk
+kasus, siap dipakai untuk mendemokan penggabungan sinyal menjadi satu kasus.
 
 ## Docker Setup
 
@@ -284,15 +327,15 @@ AI output is a pre-verification signal. Final decisions remain with authorized o
 
 ## Known Limitations
 
-- Data is deterministic and in memory.
-- Ticket status updates are not persisted after restart.
-- Database migrations are not required for the MVP flow.
+- Seed data is deterministic; run `alembic upgrade head` + `python -m app.dbctl seed` once to enable persistence.
+- Without a reachable database the app falls back to in-memory demo data and runtime changes are lost on restart.
+- Reports/daily reports remain derived projections over cases (no tables of their own).
 - Celery tasks are scaffolded but not required for the current demo.
 - Real model inference is intentionally excluded from default setup.
 
 ## Next Development Phase
 
-- Add persisted PostgreSQL demo seed and migrations.
+- Move read paths onto async ORM queries so the process holds no shared mutable state.
 - Add authentication, RBAC, and operator identity.
 - Add vendor licensing/perizinan workflows.
 - Add production evidence storage and chain-of-custody controls.

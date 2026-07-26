@@ -226,13 +226,41 @@ export interface ScoreResult {
   ai_notice: string;
 }
 
+/** Live SLA indicator, derived on read by the backend ticketing engine. */
+export type SlaState =
+  | "on_track"
+  | "at_risk"
+  | "overdue"
+  | "paused"
+  | "met"
+  | "breached"
+  | "unknown";
+
+export interface TicketNote {
+  actor: string;
+  note: string;
+  at: string;
+}
+
 export interface Ticket {
   id: string;
   case_id: string;
   title: string;
+  description?: string | null;
   status: string;
+  /** Inherited from the parent case unless explicitly overridden. */
+  severity?: string;
+  impact?: string;
+  urgency?: string;
+  /** P1..P4; drives the SLA target and the due date. */
+  sla_policy?: string;
   sla: string;
+  assignee?: string | null;
+  assignment_group?: string | null;
   assigned_unit: string;
+  category?: string | null;
+  labels?: string[];
+  notes?: TicketNote[];
   escalation_level: string;
   linked_vendor_id: string;
   linked_vendor_name: string;
@@ -244,6 +272,33 @@ export interface Ticket {
   audit_preview: string;
   created_at: string;
   updated_at: string;
+  resolved_at?: string | null;
+  /** Optional workstream label for a child ticket. */
+  workstream?: string;
+  due_at?: string | null;
+  /** Derived fields from the SLA engine — present on API responses. */
+  sla_state?: SlaState;
+  hours_remaining?: number | null;
+  overdue?: boolean;
+  at_risk?: boolean;
+  breached?: boolean;
+}
+
+export interface TicketSummary {
+  total: number;
+  open: number;
+  in_progress: number;
+  waiting: number;
+  resolved: number;
+  closed: number;
+  completed: number;
+  on_track: number;
+  at_risk: number;
+  overdue: number;
+  paused: number;
+  met_sla: number;
+  breached_sla: number;
+  unassigned: number;
 }
 
 export interface AuditTrailEvent {
@@ -302,6 +357,23 @@ export interface OversightCase {
   copilot_sources: CaseSource[];
   audit_events: AuditTrailEvent[];
   ai_notice: string;
+  /** Case-centric fields. Optional so legacy demo snapshots remain readable. */
+  case_type?: string;
+  case_subtype?: string | null;
+  impact_summary?: string;
+  severity?: string;
+  primary_owner?: string | null;
+  handling_team?: string | null;
+  secondary_owner?: string | null;
+  watchers?: string[];
+  due_at?: string | null;
+  handling_strategy?: "direct" | "single_ticket" | "multi_ticket" | string;
+  related_case_id?: string | null;
+  case_relationship?: string | null;
+  blockers?: string[];
+  resolution_summary?: string | null;
+  tickets?: Ticket[];
+  ticket_summary?: TicketSummary;
 }
 
 export interface AnalyticsOverview {
@@ -315,6 +387,8 @@ export interface AnalyticsOverview {
   vendors_on_watchlist: number;
   ai_notice: string;
   top_region: string;
+  /** Full ticket counters from the shared SLA engine. */
+  ticket_summary?: TicketSummary;
 }
 
 export interface HeatmapRegion {
