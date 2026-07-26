@@ -1152,6 +1152,7 @@ export const fallbackSignals: Signal[] = [
     "attachment_title": "Lampiran unggahan media sosial terkait dugaan keamanan pangan",
     "attachment_source": "Media Sosial",
     "attachment_note": "Sinyal pendukung dari wilayah Lampung; hubungan dengan SDN 1 Karang Agung belum terkonfirmasi dan memerlukan verifikasi operator.",
+    "intake_origin": "scraper_twitter",
     "created_at": "2026-06-04T11:40:00+00:00"
   }
 ];
@@ -3841,7 +3842,7 @@ export const fallbackCases: OversightCase[] = [
       "created_at": "2026-06-02T08:15:00+00:00",
       "updated_at": "2026-06-04T15:30:00+00:00",
       "sla_state": "overdue",
-      "hours_remaining": -1274.1,
+      "hours_remaining": -1278.1,
       "overdue": true,
       "at_risk": false,
       "breached": true
@@ -3882,7 +3883,7 @@ export const fallbackCases: OversightCase[] = [
         "created_at": "2026-06-02T08:15:00+00:00",
         "updated_at": "2026-06-04T15:30:00+00:00",
         "sla_state": "overdue",
-        "hours_remaining": -1274.1,
+        "hours_remaining": -1278.1,
         "overdue": true,
         "at_risk": false,
         "breached": true
@@ -4285,7 +4286,7 @@ export const fallbackCases: OversightCase[] = [
       "created_at": "2026-06-01T09:20:00+00:00",
       "updated_at": "2026-06-04T11:00:00+00:00",
       "sla_state": "paused",
-      "hours_remaining": -1317.0,
+      "hours_remaining": -1321.1,
       "overdue": false,
       "at_risk": false,
       "breached": false
@@ -4326,7 +4327,7 @@ export const fallbackCases: OversightCase[] = [
         "created_at": "2026-06-01T09:20:00+00:00",
         "updated_at": "2026-06-04T11:00:00+00:00",
         "sla_state": "paused",
-        "hours_remaining": -1317.0,
+        "hours_remaining": -1321.1,
         "overdue": false,
         "at_risk": false,
         "breached": false
@@ -4711,7 +4712,7 @@ export const fallbackCases: OversightCase[] = [
       "created_at": "2026-06-02T10:15:00+00:00",
       "updated_at": "2026-06-04T12:00:00+00:00",
       "sla_state": "overdue",
-      "hours_remaining": -1292.1,
+      "hours_remaining": -1296.1,
       "overdue": true,
       "at_risk": false,
       "breached": true
@@ -4751,7 +4752,7 @@ export const fallbackCases: OversightCase[] = [
         "created_at": "2026-06-02T10:15:00+00:00",
         "updated_at": "2026-06-04T12:00:00+00:00",
         "sla_state": "overdue",
-        "hours_remaining": -1292.1,
+        "hours_remaining": -1296.1,
         "overdue": true,
         "at_risk": false,
         "breached": true
@@ -5135,7 +5136,7 @@ export const fallbackCases: OversightCase[] = [
       "created_at": "2026-06-01T08:40:00+00:00",
       "updated_at": "2026-06-03T16:00:00+00:00",
       "sla_state": "paused",
-      "hours_remaining": -1297.7,
+      "hours_remaining": -1301.7,
       "overdue": false,
       "at_risk": false,
       "breached": false
@@ -5175,7 +5176,7 @@ export const fallbackCases: OversightCase[] = [
         "created_at": "2026-06-01T08:40:00+00:00",
         "updated_at": "2026-06-03T16:00:00+00:00",
         "sla_state": "paused",
-        "hours_remaining": -1297.7,
+        "hours_remaining": -1301.7,
         "overdue": false,
         "at_risk": false,
         "breached": false
@@ -5523,7 +5524,7 @@ export const fallbackCases: OversightCase[] = [
       "created_at": "2026-06-03T07:45:00+00:00",
       "updated_at": "2026-06-04T10:00:00+00:00",
       "sla_state": "overdue",
-      "hours_remaining": -1250.6,
+      "hours_remaining": -1254.6,
       "overdue": true,
       "at_risk": false,
       "breached": true
@@ -5563,7 +5564,7 @@ export const fallbackCases: OversightCase[] = [
         "created_at": "2026-06-03T07:45:00+00:00",
         "updated_at": "2026-06-04T10:00:00+00:00",
         "sla_state": "overdue",
-        "hours_remaining": -1250.6,
+        "hours_remaining": -1254.6,
         "overdue": true,
         "at_risk": false,
         "breached": true
@@ -5966,7 +5967,7 @@ export const fallbackCases: OversightCase[] = [
       "created_at": "2026-06-02T07:30:00+00:00",
       "updated_at": "2026-06-04T09:00:00+00:00",
       "sla_state": "paused",
-      "hours_remaining": -1274.8,
+      "hours_remaining": -1278.9,
       "overdue": false,
       "at_risk": false,
       "breached": false
@@ -6007,7 +6008,7 @@ export const fallbackCases: OversightCase[] = [
         "created_at": "2026-06-02T07:30:00+00:00",
         "updated_at": "2026-06-04T09:00:00+00:00",
         "sla_state": "paused",
-        "hours_remaining": -1274.8,
+        "hours_remaining": -1278.9,
         "overdue": false,
         "at_risk": false,
         "breached": false
@@ -6354,7 +6355,7 @@ export const fallbackCases: OversightCase[] = [
       "created_at": "2026-06-03T08:10:00+00:00",
       "updated_at": "2026-06-03T13:00:00+00:00",
       "sla_state": "overdue",
-      "hours_remaining": -1226.2,
+      "hours_remaining": -1230.2,
       "overdue": true,
       "at_risk": false,
       "breached": true
@@ -6394,7 +6395,7 @@ export const fallbackCases: OversightCase[] = [
         "created_at": "2026-06-03T08:10:00+00:00",
         "updated_at": "2026-06-03T13:00:00+00:00",
         "sla_state": "overdue",
-        "hours_remaining": -1226.2,
+        "hours_remaining": -1230.2,
         "overdue": true,
         "at_risk": false,
         "breached": true
@@ -6759,7 +6760,7 @@ export const fallbackCases: OversightCase[] = [
       "created_at": "2026-06-02T09:05:00+00:00",
       "updated_at": "2026-06-03T14:00:00+00:00",
       "sla_state": "overdue",
-      "hours_remaining": -1249.2,
+      "hours_remaining": -1253.3,
       "overdue": true,
       "at_risk": false,
       "breached": true
@@ -6800,7 +6801,7 @@ export const fallbackCases: OversightCase[] = [
         "created_at": "2026-06-02T09:05:00+00:00",
         "updated_at": "2026-06-03T14:00:00+00:00",
         "sla_state": "overdue",
-        "hours_remaining": -1249.2,
+        "hours_remaining": -1253.3,
         "overdue": true,
         "at_risk": false,
         "breached": true

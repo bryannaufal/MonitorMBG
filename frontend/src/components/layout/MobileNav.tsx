@@ -9,7 +9,6 @@ import {
   ClipboardList,
   Factory,
   FileSearch,
-  GitBranch,
   History,
   Inbox,
   LayoutDashboard,
@@ -23,7 +22,8 @@ import { cn } from "@/lib/utils";
 
 const mobileItems = [
   { name: "Pusat Kendali", href: "/", icon: LayoutDashboard },
-  { name: "Simulator Alur Pengawasan", href: "/simulation", icon: GitBranch },
+  // Disembunyikan sementara dari navigasi; halaman /simulation tetap ada.
+  // { name: "Simulator Alur Pengawasan", href: "/simulation", icon: GitBranch },
   { name: "Kotak Masuk Sinyal", href: "/intake", icon: Inbox },
   { name: "Kasus", href: "/cases", icon: FileSearch },
   { name: "Tiket Tindak Lanjut", href: "/tickets", icon: ClipboardList },

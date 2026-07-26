@@ -21,7 +21,6 @@ import {
   Plus,
 } from "lucide-react";
 
-import GovernanceNote from "@/components/monitoring/GovernanceNote";
 import GiziBar from "@/components/monitoring/GiziBar";
 import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
 import { LoadingState } from "@/components/monitoring/PageState";
@@ -451,7 +450,6 @@ export default function CaseDetailPage() {
         source={source}
         error={error}
       />
-      <GovernanceNote compact />
       {actionNote ? (
         <p className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-800 dark:text-emerald-200">{actionNote}</p>
       ) : null}

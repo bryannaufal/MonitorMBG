@@ -21,7 +21,6 @@ import {
   UserCheck,
 } from "lucide-react";
 
-import GovernanceNote from "@/components/monitoring/GovernanceNote";
 import GiziBar from "@/components/monitoring/GiziBar";
 import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
 import StatusBadge from "@/components/monitoring/StatusBadge";
@@ -314,7 +313,6 @@ export default function SimulationPage() {
           </div>
         }
       />
-      <GovernanceNote compact />
       <HelperPanel>
         Memerlukan tinjauan operator. Simulator ini memakai data demo deterministik untuk pra-verifikasi, penggabungan bukti, penilaian, dan tindakan tiket. Ini bukan keputusan audit final dan tidak memakai data pemerintah nyata, scraping media sosial nyata, OCR, inferensi CV, atau RAG produksi.
       </HelperPanel>

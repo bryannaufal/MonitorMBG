@@ -80,8 +80,7 @@ export default function DashboardHome() {
     <div className="space-y-6">
       <PageHeader
         title="Pusat Kendali"
-        description="Titik awal harian pengawasan MBG nasional: pantau situasi, buka kasus berisiko tinggi, dan dorong tindak lanjut tiket yang akuntabel."
-        breadcrumbs={[{ label: "Pusat Kendali" }]}
+        description=""
         source={source}
         error={error}
       />

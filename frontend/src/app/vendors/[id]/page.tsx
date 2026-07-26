@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import GovernanceNote from "@/components/monitoring/GovernanceNote";
 import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
 import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
@@ -56,7 +55,6 @@ export default function VendorProfilePage() {
         source={source}
         error={error}
       />
-      <GovernanceNote compact />
       <HelperPanel>
         Profil vendor menjawab apakah kasus saat ini terisolasi atau bagian dari pola risiko SPPG/vendor berulang yang perlu mengubah intensitas pengawasan.
       </HelperPanel>

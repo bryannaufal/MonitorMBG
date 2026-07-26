@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import CopilotPanel from "@/components/copilot/CopilotPanel";
-import GovernanceNote from "@/components/monitoring/GovernanceNote";
-import { EntityChip, HelperPanel, PageHeader } from "@/components/monitoring/PageHeader";
+import { EntityChip, PageHeader } from "@/components/monitoring/PageHeader";
 import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 import { getWithFallback } from "@/lib/api";
@@ -41,10 +40,6 @@ export default function CopilotPage() {
         source={source}
         error={error}
       />
-      <GovernanceNote compact />
-      <HelperPanel>
-        Setiap jawaban adalah sintesis berbantuan AI berdasar bukti kasus. Keputusan akhir memerlukan tinjauan operator berwenang.
-      </HelperPanel>
 
       <div className="grid min-h-[620px] grid-cols-1 gap-6 2xl:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">

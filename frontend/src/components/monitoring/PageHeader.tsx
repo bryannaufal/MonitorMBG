@@ -58,8 +58,11 @@ export function PageHeader({
           // ID-nya, yang harus terbaca lebih dulu.
           eyebrow ? "text-2xl leading-snug sm:text-3xl lg:text-4xl" : "text-2xl sm:text-3xl",
         )}>{title}</h1>
-        {/* max-w-[68ch]: panjang baris nyaman dibaca, bukan selebar layar. */}
-        <p className="mt-2 max-w-[68ch] break-words text-sm leading-relaxed text-muted-foreground sm:text-base">{description}</p>
+        {/* max-w-[68ch]: panjang baris nyaman dibaca, bukan selebar layar.
+            Deskripsi kosong tidak dirender agar tidak menyisakan jarak kosong. */}
+        {description ? (
+          <p className="mt-2 max-w-[68ch] break-words text-sm leading-relaxed text-muted-foreground sm:text-base">{description}</p>
+        ) : null}
       </div>
       <div className="flex max-w-full shrink-0 flex-wrap items-center gap-2">
         {action}

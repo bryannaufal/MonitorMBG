@@ -13,7 +13,6 @@ import {
   UserCog,
 } from "lucide-react";
 
-import GovernanceNote from "@/components/monitoring/GovernanceNote";
 import GiziBar from "@/components/monitoring/GiziBar";
 import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
 import { LoadingState } from "@/components/monitoring/PageState";
@@ -344,11 +343,6 @@ export default function SignalReviewPage() {
         breadcrumbs={[{ label: "Pusat Kendali", href: "/" }, { label: "Kotak Masuk Sinyal", href: "/intake" }, { label: "Tinjau Sinyal" }]}
         source={offline ? "fallback" : "api"}
       />
-      <div className="rounded-lg border border-brand-500/30 bg-brand-500/10 p-4 text-sm text-brand-800 dark:text-brand-100">
-        Pencocokan dan penilaian pada halaman ini adalah sinyal pra-verifikasi. Operator berwenang menentukan apakah
-        temuan terkait, membentuk kasus, dan menetapkan tindak lanjut.
-      </div>
-
       {/* 1. Ringkasan Signal Masuk */}
       <SectionCard icon={Inbox} title="1. Ringkasan Sinyal Masuk">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
@@ -385,14 +379,6 @@ export default function SignalReviewPage() {
 
       {/* 2. Temukan Sinyal, Laporan, dan Bukti Terkait */}
       <SectionCard icon={FileSearch} title="2. Temukan Sinyal, Laporan, dan Bukti Terkait">
-        <HelperPanel>
-          Pencarian ini memakai sumber data demo/internal, bukan crawling real-time. Hasil adalah sinyal
-          pra-verifikasi untuk membantu operator menilai keterkaitan — bukan pencocokan final.
-        </HelperPanel>
-        <p className="mt-3 rounded-lg border border-brand-500/25 bg-brand-500/10 p-3 text-xs text-brand-800 dark:text-brand-100">
-          Keterkaitan antar-sinyal merupakan rekomendasi pra-verifikasi. Validasi lokasi, waktu, dan sumber
-          tetap dilakukan oleh operator berwenang.
-        </p>
         <button
           onClick={runSearch}
           disabled={searching}
@@ -638,11 +624,6 @@ export default function SignalReviewPage() {
 
       {/* 5. Penugasan & Catatan Tindak Lanjut */}
       <SectionCard icon={UserCog} title="5. Kepemilikan & Catatan Tindak Lanjut">
-        <HelperPanel>
-          Kepemilikan yang diisi di sini menjadi kepemilikan kasus baru dan diwarisi tiket anak yang dibuat
-          setelahnya. Boleh dikosongkan — kasus tetap dibentuk dengan status “Belum ditetapkan” dan kepemilikan
-          dapat diubah kapan saja dari halaman kasus.
-        </HelperPanel>
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Pemilik utama / Investigator">
             <select value={investigator} onChange={(e) => setInvestigator(e.target.value)} className={inputCls}>
@@ -696,7 +677,6 @@ export default function SignalReviewPage() {
         </div>
       </SectionCard>
 
-      <GovernanceNote compact />
     </div>
   );
 }

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import GovernanceNote from "@/components/monitoring/GovernanceNote";
 import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
 import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
@@ -47,7 +46,6 @@ export default function HeatmapPage() {
         source={source}
         error={error}
       />
-      <GovernanceNote compact />
       <HelperPanel>
         Risiko wilayah adalah sinyal prioritisasi untuk perencanaan pengawasan. Operator sebaiknya membuka kasus terkait sebelum mengambil tindakan lapangan atau vendor.
       </HelperPanel>

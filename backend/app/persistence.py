@@ -132,6 +132,9 @@ def _signal_dict(row: Signal) -> dict[str, Any]:
         "attachment_note": row.attachment_note,
         "reviewer_note": row.reviewer_note,
         "created_at": _iso(row.created_at),
+        # Asal intake tidak punya kolom sendiri; diturunkan dari sumber sinyal
+        # agar badge asal tetap tampil setelah data melewati database.
+        **({"intake_origin": "scraper_twitter"} if row.source == "Media Sosial" else {}),
     }
 
 

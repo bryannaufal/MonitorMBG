@@ -5,8 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ImagePlus, Send, X } from "lucide-react";
 
-import GovernanceNote from "@/components/monitoring/GovernanceNote";
-import { HelperPanel, PageHeader } from "@/components/monitoring/PageHeader";
+import { PageHeader } from "@/components/monitoring/PageHeader";
 import { api, ApiError } from "@/lib/api";
 
 const ISSUES = [
@@ -104,12 +103,6 @@ export default function LaporPage() {
         description="Formulir publik untuk melaporkan dugaan isu Makan Bergizi Gratis. Tidak perlu login — laporan masuk sebagai sinyal pra-verifikasi."
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Lapor MBG" }]}
       />
-      <GovernanceNote compact />
-      <HelperPanel>
-        Laporan masuk ke <span className="font-medium">Kotak Masuk Sinyal</span> untuk ditinjau operator — bukan langsung ke tiket atau kasus.
-        Foto bukti opsional (JPG/PNG/WEBP/GIF, maks. 5 MB).
-      </HelperPanel>
-
       <form onSubmit={submit} className="space-y-4 rounded-xl border border-border bg-surface-raised p-5">
         <label className="block text-sm">
           <span className="font-medium">Jenis isu</span>
@@ -192,6 +185,11 @@ export default function LaporPage() {
           ) : null}
         </div>
       ) : null}
+
+      <p className="text-center text-xs text-muted-foreground">
+        Sudah pernah melapor?{" "}
+        <Link href="/lacak" className="text-brand-600 underline dark:text-brand-300">Lacak status laporan Anda</Link>
+      </p>
 
       <p className="text-center text-xs text-muted-foreground">
         Operator? <Link href="/intake" className="text-brand-600 underline dark:text-brand-300">Kotak Masuk Sinyal</Link>

@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowDownWideNarrow, Filter, Search } from "lucide-react";
 
-import GovernanceNote from "@/components/monitoring/GovernanceNote";
-import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
+import { EntityChip, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
 import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 import { getWithFallback } from "@/lib/api";
@@ -94,10 +93,6 @@ export default function CasesPage() {
         source={source}
         error={error}
       />
-      <GovernanceNote compact />
-      <HelperPanel>
-        Kasus adalah pusat MonitorMBG. Setiap sinyal, bukti, skor, tiket, pola vendor, ringkasan asisten, dan peristiwa audit terhubung kembali ke satu kasus.
-      </HelperPanel>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricTile label="Kasus Aktif" value={String(cases.filter((item) => !["Closed", "Merged / Invalid"].includes(item.status)).length)} detail="Dibentuk dari sinyal intake terhubung" />

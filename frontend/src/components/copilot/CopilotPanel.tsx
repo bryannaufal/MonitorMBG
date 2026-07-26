@@ -3,7 +3,7 @@
 import { useState } from "react";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
-import { Bot, ShieldCheck } from "lucide-react";
+import { Bot } from "lucide-react";
 import { api } from "@/lib/api";
 import { overlayCases } from "@/lib/runtimeOverlay";
 import type { CopilotResponse, CopilotSource } from "@/types/monitoring";
@@ -81,12 +81,6 @@ export default function CopilotPanel() {
         <div className="min-w-0">
           <h2 className="break-words text-lg font-semibold">Asisten Ringkasan Kasus</h2>
           <p className="break-words text-xs text-brand-400">Sintesis terbatas &bull; sumber internal</p>
-        </div>
-      </div>
-      <div className="border-b border-border bg-brand-500/10 px-4 py-3 text-xs text-brand-800 dark:text-brand-100">
-        <div className="flex items-start gap-2">
-          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-300" />
-          <span className="min-w-0 break-words">Sintesis berbantuan AI, memerlukan tinjauan operator. RAG memakai Gemini bila key tersedia; fallback embedding lokal tanpa API. Chat sintesis memakai Kimi.</span>
         </div>
       </div>
       <div className="border-b border-border bg-surface-raised px-4 py-3">

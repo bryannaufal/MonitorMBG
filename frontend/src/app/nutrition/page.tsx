@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import GovernanceNote from "@/components/monitoring/GovernanceNote";
 import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
 import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
@@ -48,7 +47,6 @@ export default function NutritionPage() {
         source={source}
         error={error}
       />
-      <GovernanceNote compact />
       <HelperPanel>
         Anomali gizi dan biaya bukan pelanggaran final. Ini sinyal pra-verifikasi yang memengaruhi prioritas kasus dan membantu operator memutuskan apakah perlu meminta klarifikasi atau menjadwalkan verifikasi lapangan.
       </HelperPanel>

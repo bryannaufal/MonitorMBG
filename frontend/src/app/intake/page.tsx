@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ClipboardList, FileText, Loader2, Megaphone, MessageSquareWarning } from "lucide-react";
 
-import GovernanceNote from "@/components/monitoring/GovernanceNote";
-import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
+import { EntityChip, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
 import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 import { getWithFallback } from "@/lib/api";
@@ -239,13 +238,6 @@ export default function IntakePage() {
       <ScrapeProgress status={scrapeStatus} />
       {scrapeMsg ? <p className="text-sm text-emerald-400">{scrapeMsg}</p> : null}
       {scrapeError ? <p className="text-sm text-red-400">{scrapeError}</p> : null}
-      <GovernanceNote compact />
-      <HelperPanel>
-        Sinyal yang sudah ditangani tidak dihapus dari antrean. Gunakan tab status untuk memisahkan yang{" "}
-        <span className="font-medium">perlu tindakan</span> dari yang sudah <span className="font-medium">terhubung ke kasus</span> atau{" "}
-        <span className="font-medium">selesai/arsip</span>.
-      </HelperPanel>
-
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <MetricTile label="Total Signal" value={String(counts.all)} />
         <MetricTile label="Perlu Tindakan" value={String(counts.action)} />

@@ -8,11 +8,11 @@ import {
   ClipboardList,
   Factory,
   FileSearch,
-  GitBranch,
   History,
   Inbox,
   LayoutDashboard,
   Map,
+  Search,
   ShieldAlert,
 } from "lucide-react";
 
@@ -23,7 +23,8 @@ const navGroups = [
     label: "Pemantauan",
     items: [
       { name: "Pusat Kendali", href: "/", icon: LayoutDashboard },
-      { name: "Simulator Alur Pengawasan", href: "/simulation", icon: GitBranch },
+      // Disembunyikan sementara dari navigasi; halaman /simulation tetap ada.
+      // { name: "Simulator Alur Pengawasan", href: "/simulation", icon: GitBranch },
     ],
   },
   {
@@ -31,6 +32,7 @@ const navGroups = [
     items: [
       { name: "Kotak Masuk Sinyal", href: "/intake", icon: Inbox },
       { name: "Lapor MBG (Publik)", href: "/lapor", icon: ClipboardList },
+      { name: "Lacak Laporan (Publik)", href: "/lacak", icon: Search },
     ],
   },
   {

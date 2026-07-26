@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import GovernanceNote from "@/components/monitoring/GovernanceNote";
-import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
+import { EntityChip, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
 import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 import { api, getWithFallback } from "@/lib/api";
@@ -164,11 +163,6 @@ export default function TicketsPage() {
         source={source}
         error={error}
       />
-      <GovernanceNote compact />
-      <HelperPanel>
-        Tiket adalah workstream anak opsional di bawah kasus. Status tiket memberi visibilitas eksekusi dan masuk ke timeline kasus,
-        tetapi tidak mengubah lifecycle atau menutup kasus secara otomatis.
-      </HelperPanel>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <MetricTile label="Total Tiket" value={String(counters.total)} />

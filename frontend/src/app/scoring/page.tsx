@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import GovernanceNote from "@/components/monitoring/GovernanceNote";
 import GiziBar from "@/components/monitoring/GiziBar";
 import { EntityChip, HelperPanel, MetricTile, PageHeader } from "@/components/monitoring/PageHeader";
 import { LoadingState } from "@/components/monitoring/PageState";
@@ -51,7 +50,6 @@ export default function ScoringPage() {
         source={source}
         error={error}
       />
-      <GovernanceNote compact />
       <HelperPanel>
         Skor akhir = 50% dampak + 25% keyakinan + 25% dapat ditindak. GIZI terpisah — strip (—) bila belum dinilai.
       </HelperPanel>

@@ -133,8 +133,10 @@ def _load_baseline(session, scenarios: set[str]) -> None:
         session.add(RiskAssessment(
             id=r["id"], case_id=r["case_id"], vendor_id=r["vendor_id"], vendor_name=r["vendor_name"],
             region=r["region"], severity_score=r["severity_score"], confidence_score=r["confidence_score"],
-            nutrition_concern_score=r["nutrition_concern_score"], cost_anomaly_score=r["cost_anomaly_score"],
-            anomaly_score=r["anomaly_score"], final_priority_score=r["final_priority_score"],
+            # Seed memakai skema skor baru (nutrition_score/actionability_score).
+            # Kolom lama cost_anomaly/anomaly tidak lagi diisi seed; biarkan default 0.
+            nutrition_concern_score=r.get("nutrition_score") or 0,
+            final_priority_score=r["final_priority_score"],
             priority_label=r["priority_label"], explanation=r["explanation"],
             recommended_action=r["recommended_action"], computed_at=_dt(r["computed_at"]),
             is_seeded=True, seed_group=BASELINE,

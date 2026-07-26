@@ -628,6 +628,9 @@ SIGNALS: list[dict[str, Any]] = [
         "attachment_source": "Media Sosial",
         "attachment_note": ("Sinyal pendukung dari wilayah Lampung; hubungan dengan SDN 1 Karang Agung belum "
                             "terkonfirmasi dan memerlukan verifikasi operator."),
+        # Ditandai sebagai hasil penarikan kanal publik agar tampil dengan badge
+        # asal intake yang sama seperti sinyal hasil scraper runtime.
+        "intake_origin": "scraper_twitter",
         "created_at": _ts(4, 11, 40),
     },
 ]
