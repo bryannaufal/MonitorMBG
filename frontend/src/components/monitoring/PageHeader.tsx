@@ -15,6 +15,7 @@ interface Breadcrumb {
 export function PageHeader({
   title,
   description,
+  eyebrow,
   breadcrumbs = [],
   action,
   source,
@@ -22,6 +23,8 @@ export function PageHeader({
 }: {
   title: string;
   description: string;
+  /** Label kecil di atas judul (mis. nomor kasus) agar ID tidak mendominasi judul. */
+  eyebrow?: string;
   breadcrumbs?: Breadcrumb[];
   action?: ReactNode;
   source?: "api" | "fallback";
@@ -46,8 +49,17 @@ export function PageHeader({
             ))}
           </nav>
         ) : null}
-        <h1 className="break-words text-2xl font-bold tracking-tight sm:text-3xl">{title}</h1>
-        <p className="mt-1 max-w-3xl break-words text-sm text-muted-foreground sm:text-base">{description}</p>
+        {eyebrow ? (
+          <p className="mb-1 font-mono text-xs font-semibold uppercase tracking-wider text-brand-300">{eyebrow}</p>
+        ) : null}
+        <h1 className={cn(
+          "break-words font-bold tracking-tight",
+          // Judul yang punya eyebrow dinaikkan satu langkah: judulnya, bukan
+          // ID-nya, yang harus terbaca lebih dulu.
+          eyebrow ? "text-2xl leading-snug sm:text-3xl lg:text-4xl" : "text-2xl sm:text-3xl",
+        )}>{title}</h1>
+        {/* max-w-[68ch]: panjang baris nyaman dibaca, bukan selebar layar. */}
+        <p className="mt-2 max-w-[68ch] break-words text-sm leading-relaxed text-muted-foreground sm:text-base">{description}</p>
       </div>
       <div className="flex max-w-full shrink-0 flex-wrap items-center gap-2">
         {action}

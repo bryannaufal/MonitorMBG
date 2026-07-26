@@ -750,7 +750,9 @@ export function reviewSignal(signalId: number, p: ReviewPayload): ReviewResult {
       issue_category: issueCategory,
       // Kasus baru belum punya tiket anak, jadi belum ada SLA tiket. Jangan
       // mengarang target 72h yang tidak pernah ditetapkan.
-      sla_status: "Tanpa SLA tiket", assigned_unit: assign.unit || "Unit Pengawasan Vendor MBG Nasional", assigned_investigator: assign.investigator || null,
+      // Tanpa unit terpilih, kasus dibentuk tanpa pemilik — bukan diberi unit
+      // default diam-diam yang tidak pernah ditugaskan operator.
+      sla_status: "Tanpa SLA tiket", assigned_unit: assign.unit || "", assigned_investigator: assign.investigator || null,
       recommended_action: score.recommended_action,
       summary: nc.summary || sig.text || sig.summary,
       what_happened: `Kasus ${caseNumber(cid)} dibentuk dari sinyal intake #${signalId} setelah tinjauan operator.`,

@@ -16,6 +16,7 @@ import {
   ShieldAlert,
   Ticket as TicketIcon,
   UserCog,
+  Pencil,
   Plus,
 } from "lucide-react";
 
@@ -84,6 +85,17 @@ function fmt(dt: string) {
   return new Date(dt).toLocaleString("id-ID");
 }
 
+const OWNER_FIELDS = ["primary_owner", "handling_team", "secondary_owner"] as const;
+
+/** Pilih hanya field kepemilikan dari payload; "" berarti dikosongkan (null). */
+function ownerFields(extra: Record<string, string>): Partial<Record<(typeof OWNER_FIELDS)[number], string | null>> {
+  const out: Partial<Record<(typeof OWNER_FIELDS)[number], string | null>> = {};
+  for (const key of OWNER_FIELDS) {
+    if (key in extra) out[key] = extra[key].trim() || null;
+  }
+  return out;
+}
+
 export default function CaseDetailPage() {
   const params = useParams<{ id: string }>();
   const fallback = getCase(params.id);
@@ -101,6 +113,9 @@ export default function CaseDetailPage() {
   const [resolutionSummary, setResolutionSummary] = useState("");
   const [newTicket, setNewTicket] = useState({ ...EMPTY_TICKET_FORM });
   const [newBlocker, setNewBlocker] = useState("");
+  const [editingOwners, setEditingOwners] = useState(false);
+  const [ownerDraft, setOwnerDraft] = useState({ primary_owner: "", handling_team: "", secondary_owner: "" });
+  const [savingOwners, setSavingOwners] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -173,7 +188,7 @@ export default function CaseDetailPage() {
     }
   }
 
-  async function saveCaseUpdate(extra: Record<string, string> = {}) {
+  async function saveCaseUpdate(extra: Record<string, string> = {}, successNote?: string) {
     if (!item) return;
     if (caseStatus === "Closed" && !resolutionSummary.trim()) {
       setActionNote("Kasus hanya dapat ditutup setelah ringkasan resolusi terverifikasi diisi.");
@@ -186,17 +201,60 @@ export default function CaseDetailPage() {
       overlay.recordCase(result.case);
       setCaseStatus(result.case.status);
       setProgressNote("");
-      setActionNote("Progres kasus diperbarui dan tercatat di timeline.");
+      setActionNote(successNote ?? "Progres kasus diperbarui dan tercatat di timeline.");
     } catch {
       const now = new Date().toISOString();
-      const event: AuditTrailEvent = { id: Date.now(), case_id: item.case_id, ticket_id: "", event_type: "handling_update", actor: "Operator Demo", role: "Operator Distrik", description: progressNote || "Pembaruan penanganan kasus (mode lokal).", timestamp: now };
-      const nextCase = { ...item, status: caseStatus, resolution_summary: resolutionSummary || item.resolution_summary, audit_events: [event, ...item.audit_events], updated_at: now };
+      const event: AuditTrailEvent = { id: Date.now(), case_id: item.case_id, ticket_id: "", event_type: "handling_update", actor: "Operator Demo", role: "Operator Distrik", description: progressNote || successNote || "Pembaruan penanganan kasus (mode lokal).", timestamp: now };
+      // `extra` carries the ownership/blocker fields; applying it here (not just
+      // status) is what makes an offline edit survive a refresh, because the
+      // overlay snapshot below is what the page reads back.
+      const owners = ownerFields(extra);
+      const blockers = extra.blocker && !(item.blockers ?? []).includes(extra.blocker)
+        ? [...(item.blockers ?? []), extra.blocker]
+        : item.blockers;
+      const nextCase: OversightCase = {
+        ...item, ...owners, blockers,
+        status: caseStatus,
+        resolution_summary: resolutionSummary || item.resolution_summary,
+        // Legacy aliases stay in sync with the case-centric fields, mirroring
+        // what the backend does on the same PATCH.
+        assigned_investigator: "primary_owner" in owners ? owners.primary_owner ?? null : item.assigned_investigator,
+        assigned_unit: "handling_team" in owners ? owners.handling_team ?? "" : item.assigned_unit,
+        audit_events: [event, ...item.audit_events],
+        updated_at: now,
+      };
       setItem(nextCase);
       overlay.recordCase(nextCase);
       setSource("fallback");
       setProgressNote("");
-      setActionNote("Progres kasus disimpan pada mode lokal.");
+      setActionNote(successNote ? `${successNote} (mode lokal).` : "Progres kasus disimpan pada mode lokal.");
     }
+  }
+
+  function startOwnerEdit() {
+    if (!item) return;
+    setOwnerDraft({
+      primary_owner: item.primary_owner ?? item.assigned_investigator ?? "",
+      handling_team: item.handling_team ?? item.assigned_unit ?? "",
+      secondary_owner: item.secondary_owner ?? "",
+    });
+    setEditingOwners(true);
+  }
+
+  async function saveOwners() {
+    setSavingOwners(true);
+    // Empty strings are sent deliberately: the backend reads them as an
+    // explicit "clear this owner" rather than skipping the field.
+    await saveCaseUpdate(
+      {
+        primary_owner: ownerDraft.primary_owner.trim(),
+        handling_team: ownerDraft.handling_team.trim(),
+        secondary_owner: ownerDraft.secondary_owner.trim(),
+      },
+      "Kepemilikan kasus diperbarui dan tercatat di jejak audit.",
+    );
+    setSavingOwners(false);
+    setEditingOwners(false);
   }
 
   async function createChildTicket() {
@@ -315,9 +373,12 @@ export default function CaseDetailPage() {
 
   return (
     <div className="space-y-6">
+      {/* Judul kasus (bukan nomornya) yang dominan: nomor kasus turun jadi
+          eyebrow supaya pembaca langsung menangkap kasus ini tentang apa. */}
       <PageHeader
-        title={`Kasus ${number}`}
-        description={item.title}
+        title={item.title}
+        eyebrow={number}
+        description={item.impact_summary || item.summary}
         breadcrumbs={[{ label: "Pusat Kendali", href: "/" }, { label: "Kasus", href: "/cases" }, { label: number }]}
         source={source}
         error={error}
@@ -336,10 +397,19 @@ export default function CaseDetailPage() {
               <StatusBadge label={item.status} />
               <StatusBadge label={item.handling_strategy === "direct" ? "Tangani langsung" : item.handling_strategy === "multi_ticket" ? "Multi-workstream" : "Single workstream"} />
               <EntityChip label={item.vendor_name} href={item.vendor_id === "vnd-unknown" ? undefined : `/vendors/${item.vendor_id}`} tone="vendor" />
-              {item.ticket_id ? <EntityChip label={item.ticket_id} tone="ticket" /> : null}
+              {/* Semua tiket anak, bukan hanya tickets[0] (ticket_id). Di atas 3
+                  tiket diringkas jadi "+N" agar baris chip tidak meledak. */}
+              {childTickets.slice(0, 3).map((ticket) => <EntityChip key={ticket.id} label={ticket.id} tone="ticket" />)}
+              {childTickets.length > 3 ? <EntityChip label={`+${childTickets.length - 3} tiket`} tone="ticket" /> : null}
             </div>
-            <p className="mt-4 max-w-4xl break-words text-sm leading-6 text-muted-foreground">{item.summary}</p>
-            <p className="mt-3 break-words text-sm leading-6 text-muted-foreground">
+            <h3 className="mt-4 max-w-[68ch] break-words text-base font-semibold leading-snug text-foreground sm:text-lg">
+              {item.title}
+            </h3>
+            {item.impact_summary && item.impact_summary !== item.summary ? (
+              <p className="mt-2 max-w-[68ch] break-words text-sm leading-6 text-foreground/90">{item.impact_summary}</p>
+            ) : null}
+            <p className="mt-3 max-w-[68ch] break-words text-sm leading-6 text-muted-foreground">{item.summary}</p>
+            <p className="mt-4 max-w-[68ch] break-words rounded-lg border border-border bg-surface p-3 text-sm leading-6 text-muted-foreground">
               <span className="font-medium text-foreground">Rekomendasi tindakan: </span>{item.recommended_action}
             </p>
             {item.vendor_source_note ? <p className="mt-2 break-words text-xs text-muted-foreground">Sumber identifikasi vendor: {item.vendor_source_note}</p> : null}
@@ -351,8 +421,8 @@ export default function CaseDetailPage() {
             <Info label="Vendor" value={item.vendor_name} />
             <Info label="Lokasi" value={`${item.school}, ${item.district}, ${item.region}`} />
             <Info label="SLA" value={item.sla_status} />
-            <Info label="Penanggung Jawab" value={item.assigned_investigator || "Belum ditetapkan"} />
-            <Info label="Unit Penanggung Jawab" value={item.assigned_unit} />
+            <Info label="Pemilik Utama" value={item.primary_owner || item.assigned_investigator || "Belum ditetapkan"} />
+            <Info label="Tim / Unit Penanggung Jawab" value={item.handling_team || item.assigned_unit || "Belum ditetapkan"} />
             <Info label="Usia kasus" value={`${Math.max(0, Math.floor((Date.now() - Date.parse(item.created_at)) / 86_400_000))} hari`} />
           </div>
         </div>
@@ -368,7 +438,34 @@ export default function CaseDetailPage() {
         </div>
         <button onClick={() => void saveCaseUpdate()} className="mt-3 rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-400">Simpan progres kasus</button>
         <div className="mt-5 grid grid-cols-1 gap-3 lg:grid-cols-2">
-          <div className="rounded-lg border border-border bg-surface p-4"><p className="flex items-center gap-2 text-sm font-medium"><UserCog className="h-4 w-4" /> Kepemilikan</p><p className="mt-2 text-sm text-muted-foreground">Pemilik utama: {item.primary_owner ?? item.assigned_investigator ?? "Belum ditetapkan"}</p><p className="mt-1 text-sm text-muted-foreground">Tim: {item.handling_team ?? item.assigned_unit ?? "Belum ditetapkan"}</p>{item.secondary_owner ? <p className="mt-1 text-sm text-muted-foreground">Pemilik sekunder: {item.secondary_owner}</p> : null}</div>
+          <div className="rounded-lg border border-border bg-surface p-4">
+            <div className="flex items-start justify-between gap-3">
+              <p className="flex items-center gap-2 text-sm font-medium"><UserCog className="h-4 w-4" /> Kepemilikan</p>
+              {editingOwners ? null : (
+                <button onClick={startOwnerEdit} className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-surface-raised hover:text-foreground">
+                  <Pencil className="h-3.5 w-3.5" /> Ubah
+                </button>
+              )}
+            </div>
+            {editingOwners ? (
+              <div className="mt-3 space-y-3">
+                <OwnerField label="Pemilik utama" value={ownerDraft.primary_owner} onChange={(v) => setOwnerDraft({ ...ownerDraft, primary_owner: v })} placeholder="Nama penanggung jawab kasus" />
+                <OwnerField label="Tim / unit penanggung jawab" value={ownerDraft.handling_team} onChange={(v) => setOwnerDraft({ ...ownerDraft, handling_team: v })} placeholder="mis. Unit Pengawasan Vendor MBG" />
+                <OwnerField label="Pemilik sekunder (opsional)" value={ownerDraft.secondary_owner} onChange={(v) => setOwnerDraft({ ...ownerDraft, secondary_owner: v })} placeholder="Nama pemilik pendamping" />
+                <p className="text-xs text-muted-foreground">Kolom yang dikosongkan berarti kepemilikan dilepas dan ditandai “Belum ditetapkan”. Tiket anak yang dibuat setelahnya mewarisi nilai baru ini; tiket yang sudah ada tidak ikut berubah.</p>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={() => void saveOwners()} disabled={savingOwners} className="rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-400 disabled:opacity-60">{savingOwners ? "Menyimpan…" : "Simpan kepemilikan"}</button>
+                  <button onClick={() => setEditingOwners(false)} disabled={savingOwners} className="rounded-md border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-surface-raised disabled:opacity-60">Batal</button>
+                </div>
+              </div>
+            ) : (
+              <dl className="mt-3 space-y-2">
+                <OwnerRow label="Pemilik utama" value={item.primary_owner ?? item.assigned_investigator} />
+                <OwnerRow label="Tim / unit" value={item.handling_team ?? item.assigned_unit} />
+                <OwnerRow label="Pemilik sekunder" value={item.secondary_owner} />
+              </dl>
+            )}
+          </div>
           <div className="rounded-lg border border-border bg-surface p-4"><p className="flex items-center gap-2 text-sm font-medium"><CircleAlert className="h-4 w-4" /> Hambatan & dependensi</p>{(item.blockers ?? []).length ? <ul className="mt-2 space-y-1 text-sm text-muted-foreground">{item.blockers!.map((blocker) => <li key={blocker}>• {blocker}</li>)}</ul> : <p className="mt-2 text-sm text-muted-foreground">Tidak ada hambatan aktif.</p>}<div className="mt-3 flex gap-2"><input value={newBlocker} onChange={(e) => setNewBlocker(e.target.value)} placeholder="Tambahkan hambatan" className="min-w-0 flex-1 rounded-md border border-border bg-surface-raised px-2 py-1.5 text-xs" /><button onClick={() => { if (newBlocker.trim()) { void saveCaseUpdate({ blocker: newBlocker.trim() }); setNewBlocker(""); } }} className="rounded-md border border-border px-2 py-1.5 text-xs">Tambah</button></div></div>
         </div>
       </SectionCard>
@@ -533,8 +630,8 @@ export default function CaseDetailPage() {
                 {URGENCIES.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
             </label>
-            <input value={newTicket.assignee} onChange={(e) => setNewTicket({ ...newTicket, assignee: e.target.value })} placeholder={`Penanggung jawab (default: ${item.primary_owner ?? "dari kasus"})`} className="rounded-md border border-border bg-surface px-3 py-2 text-sm" />
-            <input value={newTicket.assignment_group} onChange={(e) => setNewTicket({ ...newTicket, assignment_group: e.target.value })} placeholder={`Grup penanganan (default: ${item.handling_team ?? item.assigned_unit})`} className="rounded-md border border-border bg-surface px-3 py-2 text-sm" />
+            <input value={newTicket.assignee} onChange={(e) => setNewTicket({ ...newTicket, assignee: e.target.value })} placeholder={`Penanggung jawab (default: ${item.primary_owner || item.assigned_investigator || "belum ditetapkan di kasus"})`} className="rounded-md border border-border bg-surface px-3 py-2 text-sm" />
+            <input value={newTicket.assignment_group} onChange={(e) => setNewTicket({ ...newTicket, assignment_group: e.target.value })} placeholder={`Grup penanganan (default: ${item.handling_team || item.assigned_unit || "belum ditetapkan di kasus"})`} className="rounded-md border border-border bg-surface px-3 py-2 text-sm" />
             <label className="text-xs text-muted-foreground">Target penyelesaian (opsional)
               <input type="datetime-local" value={newTicket.due_at} onChange={(e) => setNewTicket({ ...newTicket, due_at: e.target.value })} className="mt-1 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground" />
             </label>
@@ -705,6 +802,27 @@ function ReportBlock({ title, children }: { title: string; children: React.React
     <p className="break-words">
       <span className="font-medium text-foreground">{title}: </span>{children}
     </p>
+  );
+}
+
+function OwnerRow({ label, value }: { label: string; value?: string | null }) {
+  const empty = !value?.trim();
+  return (
+    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+      <dt className="text-xs uppercase text-muted-foreground">{label}</dt>
+      <dd className={empty ? "text-sm italic text-muted-foreground/70" : "break-words text-sm font-medium"}>
+        {empty ? "Belum ditetapkan" : value}
+      </dd>
+    </div>
+  );
+}
+
+function OwnerField({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder: string }) {
+  return (
+    <label className="block text-xs">
+      <span className="mb-1 block uppercase text-muted-foreground">{label}</span>
+      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full rounded-md border border-border bg-surface-raised px-3 py-2 text-sm text-foreground" />
+    </label>
   );
 }
 

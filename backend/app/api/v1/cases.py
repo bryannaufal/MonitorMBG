@@ -25,6 +25,7 @@ class CaseUpdate(BaseModel):
     status: str | None = None
     primary_owner: str | None = None
     handling_team: str | None = None
+    secondary_owner: str | None = None
     severity: str | None = None
     handling_strategy: Literal["direct", "single_ticket", "multi_ticket"] | None = None
     blocker: str | None = None
@@ -130,18 +131,31 @@ async def update_case(case_id: str, update: CaseUpdate):
             raise HTTPException(status_code=422, detail="Status kasus tidak didukung.")
         if update.status == "Closed" and not (update.resolution_summary or case.get("resolution_summary")):
             raise HTTPException(status_code=422, detail="Penutupan kasus memerlukan ringkasan resolusi terverifikasi.")
-        before = case.get("status", "Open & Monitored")
-        case["status"] = update.status
-        events.append(_audit(case_id, "case_status_changed", f"Status kasus diubah dari {before} menjadi {update.status}.", update.actor))
-    for field, label in (("primary_owner", "Pemilik utama"), ("handling_team", "Tim penanganan"), ("severity", "Keparahan"), ("handling_strategy", "Strategi penanganan")):
+        # Compare against the *normalised* stored status: legacy seeds hold the
+        # old per-ticket vocabulary, so a raw compare would read every save as a
+        # transition.
+        before = demo_data.normalise_case_status(case.get("status"))
+        # Only a real transition is auditable.  Ownership-only saves resend the
+        # current status, and those must not spam the timeline.
+        if update.status != before:
+            case["status"] = update.status
+            events.append(_audit(case_id, "case_status_changed", f"Status kasus diubah dari {before} menjadi {update.status}.", update.actor))
+    for field, label in (("primary_owner", "Pemilik utama"), ("handling_team", "Tim penanganan"), ("secondary_owner", "Pemilik sekunder"), ("severity", "Keparahan"), ("handling_strategy", "Strategi penanganan")):
         value = getattr(update, field)
-        if value is not None and value != case.get(field):
-            before = case.get(field) or "Belum ditetapkan"
-            case[field] = value
-            # Keep old consumers functioning while they migrate.
-            if field == "primary_owner": case["assigned_investigator"] = value
-            if field == "handling_team": case["assigned_unit"] = value
-            events.append(_audit(case_id, f"{field}_changed", f"{label} diubah dari {before} menjadi {value}.", update.actor))
+        if value is None:
+            continue
+        # An empty string is an explicit "clear this owner", not a no-op: it is
+        # stored as NULL so the read path shows "Belum ditetapkan" instead of
+        # silently falling back to a stale legacy assigned_* value.
+        value = value.strip() or None
+        if value == case.get(field):
+            continue
+        before = case.get(field) or "Belum ditetapkan"
+        case[field] = value
+        # Keep old consumers functioning while they migrate.
+        if field == "primary_owner": case["assigned_investigator"] = value
+        if field == "handling_team": case["assigned_unit"] = value
+        events.append(_audit(case_id, f"{field}_changed", f"{label} diubah dari {before} menjadi {value or 'Belum ditetapkan'}.", update.actor))
     blockers = list(case.get("blockers") or [])
     if update.blocker and update.blocker not in blockers:
         blockers.append(update.blocker)

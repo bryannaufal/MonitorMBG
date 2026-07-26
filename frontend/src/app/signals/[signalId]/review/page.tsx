@@ -250,7 +250,9 @@ export default function SignalReviewPage() {
       defer_reason: decision === "defer" ? deferReason : undefined,
       selected_signal_ids: [...selSignals],
       selected_evidence_ids: [...selEvidence],
-      assignment: { investigator: investigator || undefined, unit, urgency, sla, reviewer_note: reviewerNote, recommended_action: recommended, secondary_owner: secondaryOwner || undefined, watchers: watchers.split(",").map((value) => value.trim()).filter(Boolean) },
+      // Kepemilikan kosong dikirim sebagai undefined, bukan "": kasus dibentuk
+      // dengan pemilik null yang jelas dan dapat diisi dari halaman kasus.
+      assignment: { investigator: investigator || undefined, unit: unit || undefined, urgency, sla, reviewer_note: reviewerNote, recommended_action: recommended, secondary_owner: secondaryOwner || undefined, watchers: watchers.split(",").map((value) => value.trim()).filter(Boolean) },
       override: {
         operator_adjusted: overrideAdjusted, priority_label: ovPriority, final_priority_score: ovScore,
         override_reason: ovReason || undefined,
@@ -618,17 +620,22 @@ export default function SignalReviewPage() {
       ) : null}
 
       {/* 5. Penugasan & Catatan Tindak Lanjut */}
-      <SectionCard icon={UserCog} title="5. Penugasan & Catatan Tindak Lanjut">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Field label="Penanggung Jawab / Investigator">
+      <SectionCard icon={UserCog} title="5. Kepemilikan & Catatan Tindak Lanjut">
+        <HelperPanel>
+          Kepemilikan yang diisi di sini menjadi kepemilikan kasus baru dan diwarisi tiket anak yang dibuat
+          setelahnya. Boleh dikosongkan — kasus tetap dibentuk dengan status “Belum ditetapkan” dan kepemilikan
+          dapat diubah kapan saja dari halaman kasus.
+        </HelperPanel>
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label="Pemilik utama / Investigator">
             <select value={investigator} onChange={(e) => setInvestigator(e.target.value)} className={inputCls}>
-              <option value="">— pilih —</option>
+              <option value="">Belum ditetapkan</option>
               {assignmentOptions.investigators.map((item) => <option key={item.id} value={item.name}>{item.name} · {item.role}</option>)}
             </select>
           </Field>
-          <Field label="Unit Penanggung Jawab">
+          <Field label="Tim / Unit Penanggung Jawab">
             <select value={unit} onChange={(e) => setUnit(e.target.value)} className={inputCls}>
-              <option value="">— pilih —</option>
+              <option value="">Belum ditetapkan</option>
               {assignmentOptions.units.map((item) => <option key={item.id} value={item.name}>{item.name} · {item.role}</option>)}
             </select>
           </Field>

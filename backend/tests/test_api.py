@@ -391,3 +391,55 @@ async def test_mbg001_and_seed_still_intact():
         cases = {x["case_id"] for x in (await client.get("/api/v1/cases")).json()["items"]}
         for s in signals:
             assert s["case_id"] is None or s["case_id"] in cases
+
+
+@pytest.mark.asyncio
+async def test_case_ownership_edit_roundtrip():
+    """Kepemilikan dapat diubah, dikosongkan, dan terbaca ulang apa adanya."""
+    async with await make_client() as client:
+        cases = (await client.get("/api/v1/cases")).json()["items"]
+        cid = cases[0]["case_id"]
+        before_status = cases[0]["status"]
+
+        set_res = await client.patch(f"/api/v1/cases/{cid}", json={
+            "primary_owner": "Rina Prasetyo",
+            "handling_team": "Unit Audit Distrik",
+            "secondary_owner": "Bagas Nugroho",
+            # Status dikirim ulang tanpa berubah: tidak boleh jadi event audit.
+            "status": before_status,
+        })
+        assert set_res.status_code == 200
+        assert not any(e["event_type"] == "case_status_changed" for e in set_res.json()["audit_events"])
+
+        detail = (await client.get(f"/api/v1/cases/{cid}")).json()
+        assert detail["primary_owner"] == "Rina Prasetyo"
+        assert detail["handling_team"] == "Unit Audit Distrik"
+        assert detail["secondary_owner"] == "Bagas Nugroho"
+        # Alias lama ikut tersinkron.
+        assert detail["assigned_investigator"] == "Rina Prasetyo"
+        assert detail["assigned_unit"] == "Unit Audit Distrik"
+
+        # String kosong = dilepas eksplisit, bukan diabaikan dan bukan fallback
+        # diam-diam ke assigned_investigator lama.
+        await client.patch(f"/api/v1/cases/{cid}", json={"primary_owner": "", "secondary_owner": ""})
+        cleared = (await client.get(f"/api/v1/cases/{cid}")).json()
+        assert cleared["primary_owner"] is None
+        assert cleared["secondary_owner"] is None
+        assert cleared["handling_team"] == "Unit Audit Distrik"
+
+
+@pytest.mark.asyncio
+async def test_case_detail_lists_every_child_ticket():
+    """Ringkasan kasus harus punya semua tiket anak, bukan hanya yang pertama."""
+    async with await make_client() as client:
+        cases = (await client.get("/api/v1/cases")).json()["items"]
+        cid = cases[0]["case_id"]
+        for title in ("Workstream verifikasi", "Workstream klarifikasi vendor"):
+            assert (await client.post(f"/api/v1/cases/{cid}/tickets", json={"title": title})).status_code == 200
+
+        detail = (await client.get(f"/api/v1/cases/{cid}")).json()
+        ids = [t["id"] for t in detail["tickets"]]
+        assert len(ids) >= 2
+        # `ticket_id` hanya alias tiket pertama — chip UI tidak boleh memakainya.
+        assert detail["ticket_id"] == ids[0]
+        assert detail["ticket_summary"]["total"] == len(ids)

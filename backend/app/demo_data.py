@@ -190,6 +190,25 @@ def vendor_profile(vendor_id: str) -> dict[str, Any]:
 
 
 # ── Kasus (investigation hub) ────────────────────────────────────────────
+
+# Seed lama memakai kosakata status per-tiket untuk kasus.  Peta ini dipakai
+# baik saat membaca maupun saat menulis (lihat api/v1/cases.py) supaya status
+# tersimpan dan status yang ditampilkan tidak pernah berbeda — perbedaan itu
+# membuat penyimpanan tanpa perubahan status ikut tercatat sebagai transisi.
+LEGACY_CASE_STATUS = {
+    "Sedang Ditinjau": "Assessing",
+    "Verifikasi Lapangan Terjadwal": "In Handling",
+    "Menunggu Klarifikasi Vendor": "Pending / Blocked",
+    "Selesai": "Resolved – Pending Verification",
+}
+
+
+def normalise_case_status(status: str | None) -> str:
+    """Status kasus dalam kosakata kanonik."""
+    status = status or "Open & Monitored"
+    return LEGACY_CASE_STATUS.get(status, status)
+
+
 def _build_case(case: dict[str, Any]) -> dict[str, Any]:
     cid = case["case_id"]
     vendor = _vendor_lookup[case["vendor_id"]]
@@ -218,14 +237,7 @@ def _build_case(case: dict[str, Any]) -> dict[str, Any]:
         f"Kasus ini menyangkut {case['school']} di {district}, {region} dan dapat "
         f"mengindikasikan {case['issue_category']} terkait vendor dengan skor risiko {vendor['risk_score']}."
     )
-    legacy_status = {
-        "Sedang Ditinjau": "Assessing",
-        "Verifikasi Lapangan Terjadwal": "In Handling",
-        "Menunggu Klarifikasi Vendor": "Pending / Blocked",
-        "Selesai": "Resolved – Pending Verification",
-    }
-    case_status = case.get("status") or "Open & Monitored"
-    case_status = legacy_status.get(case_status, case_status)
+    case_status = normalise_case_status(case.get("status"))
     handling_strategy = case.get("handling_strategy") or ("single_ticket" if tickets else "direct")
     # Counters come from the shared ticketing engine so the case workspace and
     # the ticket board can never report different numbers for the same rows.
