@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ClipboardList,
   Activity,
+  ChevronDown,
   CircleAlert,
   FileText,
   History,
@@ -151,6 +152,9 @@ export default function CaseDetailPage() {
 
   const childTickets = useMemo(() => item?.tickets ?? (item?.ticket ? [item.ticket] : []), [item]);
 
+  // sortedAudit is newest-first, so [0] is the latest activity.
+  const lastEvent = sortedAudit[0];
+
   async function updateTicketStatus(ticketToUpdate: Ticket, status: string) {
     if (!item) return;
     const now = new Date().toISOString();
@@ -173,18 +177,32 @@ export default function CaseDetailPage() {
         `/tickets/${ticketToUpdate.id}/status`,
         { status, note: `Aksi demo kasus ${item.case_id}: ${status}` },
       );
-      setItem((cur) =>
-        cur
-          ? {
-              ...cur,
-              ticket: cur.ticket?.id === result.ticket.id ? result.ticket : cur.ticket,
-              tickets: (cur.tickets ?? (cur.ticket ? [cur.ticket] : [])).map((ticket) => ticket.id === result.ticket.id ? result.ticket : ticket),
-              audit_events: [result.audit_event, ...cur.audit_events.filter((e) => e.id !== auditEvent.id)],
-            }
-          : cur,
-      );
+      setItem((cur) => {
+        if (!cur) return cur;
+        const next = {
+          ...cur,
+          ticket: cur.ticket?.id === result.ticket.id ? result.ticket : cur.ticket,
+          tickets: (cur.tickets ?? (cur.ticket ? [cur.ticket] : [])).map((ticket) => ticket.id === result.ticket.id ? result.ticket : ticket),
+          audit_events: [result.audit_event, ...cur.audit_events.filter((e) => e.id !== auditEvent.id)],
+          updated_at: result.ticket.updated_at ?? now,
+        };
+        // Without this the overlay keeps a snapshot holding the *old* ticket
+        // status, and reconcileCase can serve it back on the next visit —
+        // which is why the case page used to disagree with the ticket board.
+        overlay.recordCase(next);
+        return next;
+      });
     } catch {
       setSource("fallback");
+      // Offline: the optimistic ticket is all we have, so persist it too rather
+      // than leaving the overlay holding a pre-change snapshot.
+      overlay.recordCase({
+        ...item,
+        ticket: item.ticket?.id === optimisticTicket.id ? optimisticTicket : item.ticket,
+        tickets: childTickets.map((t) => (t.id === optimisticTicket.id ? optimisticTicket : t)),
+        audit_events: [auditEvent, ...item.audit_events],
+        updated_at: now,
+      });
     }
   }
 
@@ -470,26 +488,6 @@ export default function CaseDetailPage() {
         </div>
       </SectionCard>
 
-      {/* 3. Kronologi Aktivitas */}
-      <SectionCard icon={History} title="3. Kronologi Aktivitas">
-        <p className="mb-4 break-words text-sm text-muted-foreground">
-          Alur kasus: sinyal masuk → kasus dibentuk dan dimonitor → penilaian/penugasan → penanganan langsung atau workstream tiket → resolusi → verifikasi → penutupan.
-        </p>
-        <ol className="relative space-y-4 border-l border-border pl-5">
-          {[...sortedAudit].reverse().map((event) => (
-            <li key={event.id} className="min-w-0">
-              <span className="absolute -left-[6.5px] mt-1.5 h-3 w-3 rounded-full border-2 border-brand-400 bg-surface" />
-              <div className="flex flex-wrap items-center gap-2">
-                <StatusBadge label={event.event_type.replaceAll("_", " ")} />
-                <span className="text-xs text-muted-foreground">{fmt(event.timestamp)}</span>
-              </div>
-              <p className="mt-1 break-words text-sm text-muted-foreground">{event.description}</p>
-              <p className="mt-0.5 break-words text-xs text-muted-foreground">{event.actor} · {event.role}</p>
-            </li>
-          ))}
-        </ol>
-      </SectionCard>
-
       {/* 3. Bukti & Verifikasi */}
       <SectionCard icon={ImageIcon} title="3. Bukti & Verifikasi">
         <HelperPanel>
@@ -666,8 +664,39 @@ export default function CaseDetailPage() {
         </div>
       </SectionCard>
 
-      {/* 7. Jejak Audit */}
-      <SectionCard icon={History} title="7. Jejak Audit">
+      {/* 7. Kronologi Aktivitas — konteks pendukung, bukan permukaan keputusan:
+          diletakkan di bawah bagian aksi dan terlipat secara default. */}
+      <SectionCard
+        icon={History}
+        title="7. Kronologi Aktivitas"
+        collapsible
+        summary={`${sortedAudit.length} peristiwa${lastEvent ? ` · terakhir ${fmt(lastEvent.timestamp)}` : ""}`}
+      >
+        <p className="mb-4 break-words text-sm text-muted-foreground">
+          Alur kasus: sinyal masuk → kasus dibentuk dan dimonitor → penilaian/penugasan → penanganan langsung atau workstream tiket → resolusi → verifikasi → penutupan.
+        </p>
+        <ol className="relative space-y-4 border-l border-border pl-5">
+          {[...sortedAudit].reverse().map((event) => (
+            <li key={event.id} className="min-w-0">
+              <span className="absolute -left-[6.5px] mt-1.5 h-3 w-3 rounded-full border-2 border-brand-400 bg-surface" />
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge label={event.event_type.replaceAll("_", " ")} />
+                <span className="text-xs text-muted-foreground">{fmt(event.timestamp)}</span>
+              </div>
+              <p className="mt-1 break-words text-sm text-muted-foreground">{event.description}</p>
+              <p className="mt-0.5 break-words text-xs text-muted-foreground">{event.actor} · {event.role}</p>
+            </li>
+          ))}
+        </ol>
+      </SectionCard>
+
+      {/* 8. Jejak Audit */}
+      <SectionCard
+        icon={History}
+        title="8. Jejak Audit"
+        collapsible
+        summary={`${sortedAudit.length} entri`}
+      >
         <div className="space-y-3">
           {sortedAudit.map((event) => (
             <div key={event.id} className="grid min-w-0 gap-4 rounded-lg border border-border bg-surface p-4 lg:grid-cols-[170px_minmax(0,1fr)_180px]">
@@ -745,19 +774,51 @@ function SectionCard({
   icon: Icon,
   title,
   children,
+  collapsible = false,
+  defaultOpen = false,
+  summary,
 }: {
   icon: typeof FileText;
   title: string;
   children: React.ReactNode;
+  /** Render as a native <details> so the section can be folded away. */
+  collapsible?: boolean;
+  defaultOpen?: boolean;
+  /** One-line preview shown while collapsed, so folding costs no context. */
+  summary?: string;
 }) {
+  const heading = (
+    <>
+      <Icon className="h-5 w-5 shrink-0 text-brand-300" />
+      <span className="break-words">{title}</span>
+    </>
+  );
+  const shell = "min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5";
+
+  if (!collapsible) {
+    return (
+      <section className={shell}>
+        <h2 className="flex items-center gap-2 text-lg font-semibold">{heading}</h2>
+        <div className="mt-4">{children}</div>
+      </section>
+    );
+  }
+
+  // <details> carries the expanded/collapsed state and keyboard handling
+  // natively; no useState, and the content stays findable via browser find.
   return (
-    <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5">
-      <h2 className="flex items-center gap-2 text-lg font-semibold">
-        <Icon className="h-5 w-5 shrink-0 text-brand-300" />
-        <span className="break-words">{title}</span>
-      </h2>
+    <details open={defaultOpen} className={`group ${shell}`}>
+      <summary className="flex cursor-pointer list-none items-center gap-2 text-lg font-semibold [&::-webkit-details-marker]:hidden">
+        {heading}
+        {summary ? (
+          <span className="ml-1 truncate text-sm font-normal text-muted-foreground group-open:hidden">
+            {summary}
+          </span>
+        ) : null}
+        <ChevronDown className="ml-auto h-5 w-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+      </summary>
       <div className="mt-4">{children}</div>
-    </section>
+    </details>
   );
 }
 

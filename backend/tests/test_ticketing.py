@@ -431,3 +431,63 @@ def test_legacy_ticket_dict_without_new_fields_still_evaluates():
     assert state["sla_state"] == "unknown"  # no due date -> not a false breach
     summary = ticketing.summarise([legacy])
     assert summary["total"] == 1 and summary["unassigned"] == 1
+
+
+# ── Case close guard: a case cannot outrun its children ──────────────────
+def test_active_tickets_covers_every_unfinished_status():
+    """The guard's definition of "active" must partition against terminal."""
+    for status in ticketing.TICKET_STATUSES:
+        active = ticketing.active_tickets([{"id": "t", "status": status}])
+        assert bool(active) is (status not in ticketing.TERMINAL_STATUSES), status
+    # A ticket with no status yet is treated as Baru, i.e. active.
+    assert ticketing.active_tickets([{"id": "t"}])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("target", ["Closed", "Resolved – Pending Verification"])
+async def test_case_cannot_close_while_a_child_ticket_is_active(target):
+    async with await make_client() as client:
+        cid = (await client.post("/api/v1/signals/19/review", json=create_payload())).json()["case_id"]
+        tid = (await client.post(f"/api/v1/cases/{cid}/tickets",
+                                 json={"title": "Verifikasi lapangan"})).json()["ticket"]["id"]
+
+        blocked = await client.patch(f"/api/v1/cases/{cid}",
+                                     json={"status": target, "resolution_summary": "Sudah diverifikasi."})
+        assert blocked.status_code == 422
+        assert tid in blocked.json()["detail"]
+        # The rejected transition must not have been applied.
+        assert (await client.get(f"/api/v1/cases/{cid}")).json()["status"] != target
+
+
+@pytest.mark.asyncio
+async def test_case_closes_once_its_tickets_are_finished():
+    async with await make_client() as client:
+        cid = (await client.post("/api/v1/signals/19/review", json=create_payload())).json()["case_id"]
+        tid = (await client.post(f"/api/v1/cases/{cid}/tickets",
+                                 json={"title": "Verifikasi lapangan"})).json()["ticket"]["id"]
+        for status in ("Sedang Ditinjau", "Selesai"):
+            assert (await client.patch(f"/api/v1/tickets/{tid}/status",
+                                       json={"status": status})).status_code == 200
+
+        ok = await client.patch(f"/api/v1/cases/{cid}",
+                                json={"status": "Closed", "resolution_summary": "Sudah diverifikasi."})
+        assert ok.status_code == 200
+        assert ok.json()["case"]["status"] == "Closed"
+
+
+@pytest.mark.asyncio
+async def test_case_detail_reflects_a_status_change_made_on_the_ticket_board():
+    """Case detail joins tickets live, so both pages must never disagree."""
+    async with await make_client() as client:
+        cid = (await client.post("/api/v1/signals/19/review", json=create_payload())).json()["case_id"]
+        tid = (await client.post(f"/api/v1/cases/{cid}/tickets",
+                                 json={"title": "Verifikasi lapangan"})).json()["ticket"]["id"]
+
+        await client.patch(f"/api/v1/tickets/{tid}/status", json={"status": "Sedang Ditinjau"})
+        detail = (await client.get(f"/api/v1/cases/{cid}")).json()
+        board = (await client.get(f"/api/v1/tickets/{tid}")).json()
+
+        assert board["status"] == "Sedang Ditinjau"
+        assert [t["status"] for t in detail["tickets"] if t["id"] == tid] == ["Sedang Ditinjau"]
+        assert detail["ticket_summary"]["in_progress"] == 1
+        assert detail["ticket_summary"]["completed"] == 0
