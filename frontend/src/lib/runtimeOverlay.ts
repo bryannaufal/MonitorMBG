@@ -154,10 +154,25 @@ function pickFreshest(a: OversightCase | null, b: OversightCase | null): Oversig
   if (!b) return a;
   // Snapshot dengan evidence terbanyak = paling lengkap pasca-fusion; bila sama,
   // pakai updated_at terbaru.
-  if ((b.evidence?.length ?? 0) !== (a.evidence?.length ?? 0)) {
-    return (b.evidence?.length ?? 0) > (a.evidence?.length ?? 0) ? b : a;
-  }
-  return Date.parse(b.updated_at) >= Date.parse(a.updated_at) ? b : a;
+  const base =
+    (b.evidence?.length ?? 0) !== (a.evidence?.length ?? 0)
+      ? ((b.evidence?.length ?? 0) > (a.evidence?.length ?? 0) ? b : a)
+      : (Date.parse(b.updated_at) >= Date.parse(a.updated_at) ? b : a);
+  // Evidence-richness decides the *envelope*, but never ticket status: tickets
+  // are recomputed live server-side, so an API response is always the newer
+  // truth about them. Keeping the overlay's tickets here is what made the case
+  // page show stale statuses after an edit on the ticket board.
+  return base === a ? base : { ...base, ...freshTickets(a, base) };
+}
+
+/** Ticket fields from the API snapshot, when it actually carries them. */
+function freshTickets(apiCase: OversightCase, overlayCase: OversightCase): Partial<OversightCase> {
+  if (!apiCase.tickets && !apiCase.ticket) return {};
+  return {
+    tickets: apiCase.tickets ?? overlayCase.tickets,
+    ticket: apiCase.ticket ?? overlayCase.ticket,
+    ticket_summary: apiCase.ticket_summary ?? overlayCase.ticket_summary,
+  };
 }
 
 function markUnlinkedEvidence(caseData: OversightCase): OversightCase {

@@ -141,6 +141,20 @@ def can_transition(current: str, target: str) -> bool:
     return target in TRANSITIONS.get(current, set())
 
 
+# Active = not yet finished.  A ticket in any of these still holds work open,
+# so its parent case cannot be resolved or closed over the top of it.
+ACTIVE_STATUSES = OPEN_STATUSES | IN_PROGRESS_STATUSES | WAITING_STATUSES
+
+
+def active_tickets(tickets: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Child tickets that still hold work open, in queue order.
+
+    Single definition of "active" so the case close guard and any future
+    caller agree; `summarise` counts the same buckets for display.
+    """
+    return [t for t in tickets if (t.get("status") or "Baru") in ACTIVE_STATUSES]
+
+
 # ── SLA evaluation ───────────────────────────────────────────────────────
 def _parse(value: str | None) -> datetime | None:
     if not value:

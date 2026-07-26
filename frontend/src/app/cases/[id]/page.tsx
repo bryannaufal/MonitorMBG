@@ -173,18 +173,32 @@ export default function CaseDetailPage() {
         `/tickets/${ticketToUpdate.id}/status`,
         { status, note: `Aksi demo kasus ${item.case_id}: ${status}` },
       );
-      setItem((cur) =>
-        cur
-          ? {
-              ...cur,
-              ticket: cur.ticket?.id === result.ticket.id ? result.ticket : cur.ticket,
-              tickets: (cur.tickets ?? (cur.ticket ? [cur.ticket] : [])).map((ticket) => ticket.id === result.ticket.id ? result.ticket : ticket),
-              audit_events: [result.audit_event, ...cur.audit_events.filter((e) => e.id !== auditEvent.id)],
-            }
-          : cur,
-      );
+      setItem((cur) => {
+        if (!cur) return cur;
+        const next = {
+          ...cur,
+          ticket: cur.ticket?.id === result.ticket.id ? result.ticket : cur.ticket,
+          tickets: (cur.tickets ?? (cur.ticket ? [cur.ticket] : [])).map((ticket) => ticket.id === result.ticket.id ? result.ticket : ticket),
+          audit_events: [result.audit_event, ...cur.audit_events.filter((e) => e.id !== auditEvent.id)],
+          updated_at: result.ticket.updated_at ?? now,
+        };
+        // Without this the overlay keeps a snapshot holding the *old* ticket
+        // status, and reconcileCase can serve it back on the next visit —
+        // which is why the case page used to disagree with the ticket board.
+        overlay.recordCase(next);
+        return next;
+      });
     } catch {
       setSource("fallback");
+      // Offline: the optimistic ticket is all we have, so persist it too rather
+      // than leaving the overlay holding a pre-change snapshot.
+      overlay.recordCase({
+        ...item,
+        ticket: item.ticket?.id === optimisticTicket.id ? optimisticTicket : item.ticket,
+        tickets: childTickets.map((t) => (t.id === optimisticTicket.id ? optimisticTicket : t)),
+        audit_events: [auditEvent, ...item.audit_events],
+        updated_at: now,
+      });
     }
   }
 

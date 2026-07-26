@@ -20,6 +20,11 @@ CASE_STATUSES = {
     "Escalated", "Resolved – Pending Verification", "Closed", "Reopened", "Merged / Invalid",
 }
 
+# Case statuses that assert the work is finished.  Guarded by the active-ticket
+# check in ``update_case``: neither may be entered while child workstreams are
+# still open.
+TERMINAL_CASE_STATUSES = {"Closed", "Resolved – Pending Verification"}
+
 
 class CaseUpdate(BaseModel):
     status: str | None = None
@@ -131,6 +136,19 @@ async def update_case(case_id: str, update: CaseUpdate):
             raise HTTPException(status_code=422, detail="Status kasus tidak didukung.")
         if update.status == "Closed" and not (update.resolution_summary or case.get("resolution_summary")):
             raise HTTPException(status_code=422, detail="Penutupan kasus memerlukan ringkasan resolusi terverifikasi.")
+        # A case cannot outrun its children: unfinished workstreams block both
+        # terminal transitions.  Checked against the live ticket list, never a
+        # snapshot, so the answer matches whatever the ticket board just wrote.
+        if update.status in TERMINAL_CASE_STATUSES:
+            blocking = ticketing.active_tickets(
+                [t for t in demo_data.TICKETS if t["case_id"] == case_id])
+            if blocking:
+                listed = ", ".join(f"{t['id']} ({t['status']})" for t in blocking)
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"Kasus tidak dapat diubah ke '{update.status}': "
+                           f"{len(blocking)} tiket masih aktif — {listed}. "
+                           "Selesaikan atau batalkan tiket tersebut lebih dulu.")
         # Compare against the *normalised* stored status: legacy seeds hold the
         # old per-ticket vocabulary, so a raw compare would read every save as a
         # transition.
