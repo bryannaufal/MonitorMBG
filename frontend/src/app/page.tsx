@@ -5,8 +5,7 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, ArrowRight, Clock, RadioTower, ShieldAlert } from "lucide-react";
 
 import StatsCard from "@/components/dashboard/StatsCard";
-import GovernanceNote from "@/components/monitoring/GovernanceNote";
-import { EntityChip, HelperPanel, PageHeader } from "@/components/monitoring/PageHeader";
+import { EntityChip, PageHeader } from "@/components/monitoring/PageHeader";
 import { LoadingState } from "@/components/monitoring/PageState";
 import StatusBadge from "@/components/monitoring/StatusBadge";
 import { getWithFallback } from "@/lib/api";
@@ -86,7 +85,6 @@ export default function DashboardHome() {
         source={source}
         error={error}
       />
-      <GovernanceNote />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
         <StatsCard title="Kasus Aktif" value={String(activeCases)} trend="Antrean kasus" />
@@ -96,17 +94,6 @@ export default function DashboardHome() {
         <StatsCard title="Respons Tiket" value={`${data.overview.ticket_response_rate}%`} trend="+6%" />
         <StatsCard title="Daftar Pantauan" value={String(data.overview.vendors_on_watchlist)} trend="Vendor" />
       </div>
-
-      <HelperPanel>
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <span>
-            Alur demo yang disarankan: Kotak Masuk Sinyal {"->"} Buka Kasus {"->"} Bukti & Verifikasi {"->"} Penilaian Risiko {"->"} Tiket Tindak Lanjut {"->"} Jejak Audit.
-          </span>
-          <Link href="/intake" className="inline-flex shrink-0 items-center gap-2 rounded-md bg-brand-500 px-3 py-2 text-sm font-medium text-white hover:bg-brand-400">
-            Mulai dari Sinyal <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      </HelperPanel>
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
         <section className="min-w-0 rounded-xl border border-border bg-surface-raised p-4 sm:p-5 xl:col-span-2">
